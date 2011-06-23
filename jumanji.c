@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <girara.h>
+#include <gtk/gtk.h>
 
 #include "callbacks.h"
 #include "config.h"
@@ -97,6 +98,22 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  /* webkit */
+  jumanji->global.browser_settings = webkit_web_settings_new();
+  if (jumanji->global.browser_settings == NULL) {
+    goto error_free;
+  }
+
+  /* load tabs */
+  if(argc < 2) {
+    jumanji_tab_new(jumanji, "http://pwmt.org", false);
+  } else {
+    for (unsigned int i = argc - 1; i >= 1; i--) {
+      jumanji_tab_new(jumanji, argv[i], false);
+    }
+
+  }
+
   return jumanji;
 
 error_free:
@@ -124,6 +141,103 @@ jumanji_free(jumanji_t* jumanji)
   }
 
   free(jumanji);
+}
+
+jumanji_tab_t*
+jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
+{
+  if (jumanji == NULL || url == NULL) {
+    goto error_out;
+  }
+
+  jumanji_tab_t* tab = malloc(sizeof(jumanji_tab_t));
+
+  if (tab == NULL) {
+    goto error_out;
+  }
+
+  tab->scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  tab->web_view        = webkit_web_view_new();
+  tab->jumanji         = jumanji;
+
+  if (tab->scrolled_window == NULL || tab->web_view == NULL) {
+    goto error_free;
+  }
+
+  gtk_container_add(GTK_CONTAINER(tab->scrolled_window), tab->web_view);
+  gtk_widget_show_all(tab->scrolled_window);
+
+  /* apply browser setting */
+  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(tab->web_view), webkit_web_settings_copy(jumanji->global.browser_settings));
+
+  /* load url */
+  jumanji_tab_load_url(tab, url);
+
+  /* create new tab */
+  girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
+  g_object_set_data(G_OBJECT(tab->scrolled_window), "jumanji-tab", tab);
+
+  return tab;
+
+error_free:
+
+  free(tab);
+
+error_out:
+
+  return NULL;
+}
+
+void
+jumanji_tab_free(jumanji_tab_t* tab)
+{
+  if (tab == NULL) {
+    return;
+  }
+
+  free(tab);
+}
+
+jumanji_tab_t*
+jumanji_tab_get_current(jumanji_t* jumanji)
+{
+  if (jumanji == NULL || jumanji->ui.session == NULL) {
+    return NULL;
+  }
+
+  girara_tab_t* girara_tab = girara_tab_current_get(jumanji->ui.session);
+
+  if (girara_tab == NULL) {
+    return NULL;
+  }
+
+  return g_object_get_data(G_OBJECT(girara_tab->widget), "jumanji-tab");
+}
+
+jumanji_tab_t*
+jumanji_tab_get_nth(jumanji_t* jumanji, unsigned int index)
+{
+  if (jumanji == NULL || jumanji->ui.session == NULL) {
+    return NULL;
+  }
+
+  girara_tab_t* girara_tab = girara_tab_get(jumanji->ui.session, index);
+
+  if (girara_tab == NULL) {
+    return NULL;
+  }
+
+  return g_object_get_data(G_OBJECT(girara_tab->widget), "jumanji-tab");
+}
+
+void
+jumanji_tab_load_url(jumanji_tab_t* tab, const char* url)
+{
+  if (tab == NULL || url == NULL || tab->web_view == NULL) {
+    return;
+  }
+
+  webkit_web_view_load_uri(WEBKIT_WEB_VIEW(tab->web_view), url);
 }
 
 /* main function */
