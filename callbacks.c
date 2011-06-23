@@ -40,3 +40,20 @@ cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
 
 	jumanji_tab_free(tab);
 }
+
+void
+cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer data)
+{
+	if (web_view == NULL || data == NULL) {
+		return;
+	}
+
+	jumanji_tab_t* tab = (jumanji_tab_t*) data;
+  const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+
+	if (title) {
+		girara_tab_title_set(tab->girara_tab, title);
+	} else {
+		girara_tab_title_set(tab->girara_tab, "Connecting...");
+	}
+}

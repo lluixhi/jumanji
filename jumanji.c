@@ -164,8 +164,14 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
     goto error_free;
   }
 
-  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
+  /* save reference to tab */
+  g_object_set_data(G_OBJECT(tab->scrolled_window), "jumanji-tab", tab);
 
+  /* connect signals */
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),     tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status), tab);
+
+  /* ui */
   gtk_container_add(GTK_CONTAINER(tab->scrolled_window), tab->web_view);
   gtk_widget_show_all(tab->scrolled_window);
 
@@ -176,8 +182,7 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   jumanji_tab_load_url(tab, url);
 
   /* create new tab */
-  girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
-  g_object_set_data(G_OBJECT(tab->scrolled_window), "jumanji-tab", tab);
+  tab->girara_tab = girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
 
   return tab;
 

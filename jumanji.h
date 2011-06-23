@@ -42,6 +42,7 @@ typedef struct jumanji_tab_s
 {
   GtkWidget* scrolled_window; /**> Scrolled window */
   GtkWidget* web_view; /**> Webkit webview */
+  girara_tab_t* girara_tab; /** The girara tab */
   jumanji_t* jumanji; /**> The jumanji session */
 } jumanji_tab_t;
 

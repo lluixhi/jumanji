@@ -32,5 +32,6 @@ void cb_girara_buffer_changed(girara_session_t* session);
  */
 void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
+void cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer data);
 
 #endif // CALLBACKS_H
