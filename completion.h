@@ -1,5 +1,8 @@
 /* See LICENSE file for license and copyright information */
 
+#ifndef COMPLETION_H
+#define COMPLETION_H
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -16,3 +19,5 @@ cc_open(girara_session_t* session, char* input)
 
   return NULL;
 }
+
+#endif // COMPLETION_H

@@ -24,6 +24,11 @@ typedef struct jumanji_s
     gchar* config_dir; /**> Path to the configuration directory */
     gchar* data_dir; /**> Path to the data directory */
   } config;
+
+  struct
+  {
+    girara_mode_t normal; /**> Normal mode */
+  } modes;
 } jumanji_t;
 
 /**
