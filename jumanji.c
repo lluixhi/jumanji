@@ -13,10 +13,47 @@
 jumanji_t*
 jumanji_init(int argc, char* argv[])
 {
-  jumanji_t* jumanji = malloc(sizeof(jumanji_t));
+  /* parse command line options */
+  gchar* config_dir = NULL, *data_dir = NULL;
+  GOptionEntry entries[] = {
+    { "config-dir", 'c', 0, G_OPTION_ARG_FILENAME, &config_dir, "Path to the config directory", "path" },
+    { "data-dir",   'd', 0, G_OPTION_ARG_FILENAME, &data_dir,   "Path to the data directory",   "path" },
+    { NULL }
+  };
+
+  GOptionContext* context = g_option_context_new(" [url]");
+  g_option_context_add_main_entries(context, entries, NULL);
+
+  GError* error = NULL;
+  if (g_option_context_parse(context, &argc, &argv, &error) == FALSE) {
+    girara_error("Error parsing command line arguments: %s\n", error->message);
+    g_option_context_free(context);
+    g_error_free(error);
+    goto error_out;
+  }
+  g_option_context_free(context);
+
+  /* jumanji */
+  jumanji_t* jumanji  = malloc(sizeof(jumanji_t));
 
   if (jumanji == NULL) {
     goto error_out;
+  }
+
+  if (config_dir) {
+    jumanji->config.config_dir = g_strdup(config_dir);
+  } else {
+    gchar* path = girara_get_xdg_path(XDG_CONFIG);
+    jumanji->config.config_dir = g_build_filename(path, "jumanji", NULL);
+    g_free(path);
+  }
+
+  if (data_dir) {
+    jumanji->config.data_dir = g_strdup(config_dir);
+  } else {
+    gchar* path = girara_get_xdg_path(XDG_DATA);
+    jumanji->config.data_dir = g_build_filename(path, "jumanji", NULL);
+    g_free(path);
   }
 
   /* UI */
@@ -33,10 +70,18 @@ jumanji_init(int argc, char* argv[])
   /* load global configuration files */
   config_load_file(jumanji, GLOBAL_RC);
 
+  /* load local configuration files */
+  char* configuration_file = g_build_filename(jumanji->config.config_dir, JUMANJI_RC, NULL);
+  config_load_file(jumanji, configuration_file);
+  g_free(configuration_file);
+
   /* initialize girara */
   if (girara_session_init(jumanji->ui.session) == false) {
     goto error_free;
   }
+
+  /* enable tabs */
+  girara_tabs_enable(jumanji->ui.session);
 
   /* girara events */
   jumanji->ui.session->events.buffer_changed = buffer_changed;
@@ -56,7 +101,10 @@ jumanji_init(int argc, char* argv[])
 
 error_free:
 
-  girara_session_destroy(jumanji->ui.session);
+  if (jumanji && jumanji->ui.session) {
+    girara_session_destroy(jumanji->ui.session);
+  }
+
   free(jumanji);
 
 error_out:

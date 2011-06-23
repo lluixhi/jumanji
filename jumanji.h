@@ -18,6 +18,12 @@ typedef struct jumanji_s
       girara_statusbar_item_t* url; /**> url statusbar entry */
     } statusbar;
   } ui;
+
+  struct
+  {
+    gchar* config_dir; /**> Path to the configuration directory */
+    gchar* data_dir; /**> Path to the data directory */
+  } config;
 } jumanji_t;
 
 /**
