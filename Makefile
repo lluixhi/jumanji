@@ -1,12 +1,11 @@
 # See LICENSE file for license and copyright information
-# jumanji - user interface
 
 include config.mk
 
 PROJECT  = jumanji
-SOURCE   = jumanji.c
-OBJECTS  = ${SOURCE:.c=.o}
-DOBJECTS = ${SOURCE:.c=.do}
+SOURCE   = $(shell find . -iname "*.c")
+OBJECTS  = $(patsubst %.c, %.o,  $(SOURCE))
+DOBJECTS = $(patsubst %.c, %.do, $(SOURCE))
 
 all: options ${PROJECT}
 
@@ -19,22 +18,16 @@ options:
 
 %.o: %.c
 	@echo CC $<
-	@${CC} -c ${CFLAGS} -o $@ $<
+	@mkdir -p .depend
+	@${CC} -c ${CFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
 
 %.do: %.c
 	@echo CC $<
-	@${CC} -c ${CFLAGS} ${DFLAGS} -o $@ $<
+	@mkdir -p .depend
+	@${CC} -c ${CFLAGS} ${DFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
 
-${OBJECTS}:  config.h config.mk
-${DOBJECTS}: config.h config.mk
-
-config.h: config.def.h
-	@if [ -f $@ ] ; then \
-		echo "config.h exists, but config.def.h is newer. Please check your" \
-		"config.h or ${PROJECT} might fail to build." ; \
-	else \
-		cp $< $@ ; \
-	fi
+${OBJECTS}:  config.mk
+${DOBJECTS}: config.mk
 
 ${PROJECT}: ${OBJECTS}
 	@echo CC -o $@
@@ -42,10 +35,7 @@ ${PROJECT}: ${OBJECTS}
 
 clean:
 	@rm -rf ${PROJECT} ${OBJECTS} ${PROJECT}-${VERSION}.tar.gz \
-		${DOBJECTS} ${PROJECT}-debug
-
-distclean: clean
-	@rm -rf config.h
+		${DOBJECTS} ${PROJECT}-debug .depend
 
 ${PROJECT}-debug: ${DOBJECTS}
 	@echo CC -o ${PROJECT}-debug
@@ -61,8 +51,8 @@ gdb: debug
 	cgdb ${PROJECT}-debug
 
 dist: clean
-	@mkdir -p ${PROJECT}-${VERSION}
-	@cp -R LICENSE Makefile config.mk config.def.h README \
+	@${MAKE} -p ${PROJECT}-${VERSION}
+	@cp -R LICENSE Makefile config.mk README \
 			${PROJECT}.1 ${SOURCE} ${PROJECT}-${VERSION}
 	@tar -cf ${PROJECT}-${VERSION}.tar ${PROJECT}-${VERSION}
 	@gzip ${PROJECT}-${VERSION}.tar
@@ -80,6 +70,10 @@ install: all
 
 uninstall:
 	@echo removing executable file
-	@rm -f ${DESTDIR}${MANPREFIX}/bin/${PROJECT}
+	@rm -f ${DESTDIR}${PREFIX}/bin/${PROJECT}
 	@echo removing manual page
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+
+-include $(wildcard .depend/*.dep)
+
+.PHONY: all options clean debug valgrind gdb dist install uninstall
