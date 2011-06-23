@@ -10,8 +10,6 @@
 gboolean
 cb_destroy(GtkWidget* widget, gpointer data)
 {
-  jumanji_free(data);
-
   return TRUE;
 }
 

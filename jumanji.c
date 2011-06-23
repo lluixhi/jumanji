@@ -74,6 +74,8 @@ jumanji_free(jumanji_t* jumanji)
   if (jumanji->ui.session != NULL) {
     girara_session_destroy(jumanji->ui.session);
   }
+
+  free(jumanji);
 }
 
 /* main function */
@@ -92,6 +94,8 @@ int main(int argc, char* argv[])
   gdk_threads_enter();
   gtk_main();
   gdk_threads_leave();
+
+  jumanji_free(jumanji);
 
   return 0;
 }
