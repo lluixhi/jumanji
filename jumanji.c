@@ -85,7 +85,7 @@ jumanji_init(int argc, char* argv[])
   girara_tabs_enable(jumanji->ui.session);
 
   /* girara events */
-  jumanji->ui.session->events.buffer_changed = buffer_changed;
+  jumanji->ui.session->events.buffer_changed = cb_girara_buffer_changed;
 
   /* statusbar */
   jumanji->ui.statusbar.url = girara_statusbar_item_add(jumanji->ui.session, TRUE, TRUE, TRUE, NULL);
@@ -163,6 +163,8 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   if (tab->scrolled_window == NULL || tab->web_view == NULL) {
     goto error_free;
   }
+
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
 
   gtk_container_add(GTK_CONTAINER(tab->scrolled_window), tab->web_view);
   gtk_widget_show_all(tab->scrolled_window);

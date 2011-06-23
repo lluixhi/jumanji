@@ -6,6 +6,8 @@
 #include <gtk/gtk.h>
 #include <girara.h>
 
+#include "jumanji.h"
+
 /**
  * Quits the current jumanji session
  *
@@ -20,7 +22,15 @@ gboolean cb_destroy(GtkWidget* widget, gpointer data);
  *
  * @param session The girara session
  */
-void buffer_changed(girara_session_t* session);
+void cb_girara_buffer_changed(girara_session_t* session);
+
+/**
+ * Called when a jumanji tab is destroyed
+ *
+ * @param object The tab scrolld window widget
+ * @param tab The jumanji tab
+ */
+void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
 
 #endif // CALLBACKS_H

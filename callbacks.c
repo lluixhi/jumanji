@@ -14,7 +14,7 @@ cb_destroy(GtkWidget* widget, gpointer data)
 }
 
 void
-buffer_changed(girara_session_t* session)
+cb_girara_buffer_changed(girara_session_t* session)
 {
   g_return_if_fail(session != NULL);
   g_return_if_fail(session->global.data != NULL);
@@ -29,4 +29,14 @@ buffer_changed(girara_session_t* session)
   } else {
     girara_statusbar_item_set_text(session, jumanji->ui.statusbar.buffer, "");
   }
+}
+
+void
+cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
+{
+	if (object == NULL || tab == NULL) {
+		return;
+	}
+
+	jumanji_tab_free(tab);
 }
