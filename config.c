@@ -85,6 +85,9 @@ config_load_default(jumanji_t* jumanji)
   girara_argument_mapping_add(gsession, "out",        ZOOM_OUT);
   girara_argument_mapping_add(gsession, "default",    DEFAULT);
   girara_argument_mapping_add(gsession, "specific",   ZOOM_SPECIFIC);
+
+  /* add config handles */
+  girara_config_handle_add(gsession, "searchengine", cmd_search_engine);
 }
 
 void

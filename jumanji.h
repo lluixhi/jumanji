@@ -38,6 +38,7 @@ typedef struct jumanji_s
   struct
   {
     WebKitWebSettings* browser_settings; /*>> Browser settings */
+    girara_list_t* search_engines; /**> Search engines */
   } global;
 } jumanji_t;
 
@@ -48,6 +49,12 @@ typedef struct jumanji_tab_s
   girara_tab_t* girara_tab; /** The girara tab */
   jumanji_t* jumanji; /**> The jumanji session */
 } jumanji_tab_t;
+
+typedef struct jumanji_search_engine_s
+{
+  char* identifier; /**> Identifier */
+  char* url; /**> Url */
+} jumanji_search_engine_t;
 
 /**
  * Initializes jumanji

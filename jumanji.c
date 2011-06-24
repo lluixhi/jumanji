@@ -64,8 +64,13 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
-  jumanji->ui.session->global.data  = jumanji;
-  jumanji->ui.statusbar.buffer      = NULL;
+  jumanji->ui.session->global.data = jumanji;
+  jumanji->ui.statusbar.buffer     = NULL;
+  jumanji->global.search_engines   = girara_list_new();
+
+  if (jumanji->global.search_engines == NULL) {
+    goto error_free;
+  }
 
   /* configuration */
   config_load_default(jumanji);
@@ -148,8 +153,24 @@ jumanji_free(jumanji_t* jumanji)
     return;
   }
 
+  /* destroy girara session */
   if (jumanji->ui.session != NULL) {
     girara_session_destroy(jumanji->ui.session);
+  }
+
+  /* free search engines */
+  if (jumanji->global.search_engines) {
+    girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.search_engines);
+    do {
+      jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_iterator_data(iter);
+      if (search_engine != NULL) {
+        g_free(search_engine->identifier);
+        g_free(search_engine->url);
+        g_free(search_engine);
+      }
+    } while (girara_list_iterator_next(iter));
+    girara_list_iterator_free(iter);
+    girara_list_free(jumanji->global.search_engines);
   }
 
   free(jumanji);
@@ -296,7 +317,64 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
       }
     }
   } else if (list_length > 1) {
-    /* find search engines */
+    char* identifier = (char*) girara_list_nth(list, 0);
+    char* search_url = NULL;
+
+    /* search matching search engine */
+    if (girara_list_size(jumanji->global.search_engines) > 0) {
+      girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.search_engines);
+      do {
+        jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_iterator_data(iter);
+
+        if (search_engine == NULL) {
+          continue;
+        }
+
+        if (!g_strcmp0(search_engine->identifier, identifier)) {
+          search_url = search_engine->url;
+          break;
+        }
+      } while (girara_list_iterator_next(iter));
+
+      /* if no search engine matches, we use the default one (first one) */
+      if (search_url == NULL) {
+        jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_nth(jumanji->global.search_engines, 0);
+        search_url = search_engine ? g_strdup(search_engine->url) : NULL;
+        if (search_url == NULL) {
+          return NULL;
+        }
+      }
+    /* there is no search engine available */
+    } else {
+      return NULL;
+    }
+
+    /* if the search url does not contain any %s we abort */
+    if (strstr(search_url, "%s") == NULL) {
+      girara_error("Search engine (%s) url is invalid", identifier);
+      g_free(search_url);
+      return NULL;
+    }
+
+    /* build search item */
+    char* search_item = g_strdup((char*) girara_list_nth(list, 1));
+    for (unsigned int i = 2; i < girara_list_size(list); i++) {
+      char* tmp = g_strjoin("+", search_item, (char*) girara_list_nth(list, i), NULL);
+      g_free(search_item);
+      search_item = tmp;
+    }
+
+    /* replace all spaces in the search item with '+' */
+    for (unsigned int i = 0; i < strlen(search_item); i++ ) {
+      if (search_item[i] == ' ') {
+        search_item[i] = '+';
+      }
+    }
+
+    url = g_strdup_printf(search_url, search_item);
+
+    g_free(search_url);
+    g_free(search_item);
   } else {
     char* input = (char*) girara_list_nth(list, 0);
 
