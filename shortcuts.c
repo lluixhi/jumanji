@@ -55,7 +55,8 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
   }
 
   GtkAdjustment* adjustment = NULL;
-  if ( (argument->n == LEFT) || (argument->n == RIGHT) )
+  if ( (argument->n == LEFT) || (argument->n == RIGHT) || (argument->n == BEGIN)
+      || (argument->n == END) )
     adjustment = gtk_scrolled_window_get_hadjustment(GTK_SCROLLED_WINDOW(tab->scrolled_window));
   else
     adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(tab->scrolled_window));
@@ -63,7 +64,9 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
   gdouble view_size   = gtk_adjustment_get_page_size(adjustment);
   gdouble value       = gtk_adjustment_get_value(adjustment);
   gdouble max         = gtk_adjustment_get_upper(adjustment) - view_size;
-  gdouble scroll_step = 40;
+
+  int* tmp = (int*) girara_setting_get(jumanji->ui.session, "scroll-step");
+  gdouble scroll_step = tmp ? *tmp : 40;
 
   gdouble new_value;
   switch(argument->n)
@@ -88,9 +91,11 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
     case DOWN:
       new_value = (value + scroll_step) > max ? max : (value + scroll_step);
       break;
+    case BEGIN:
     case TOP:
       new_value = 0;
       break;
+    case END:
     case BOTTOM:
       new_value = max;
       break;

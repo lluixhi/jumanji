@@ -13,6 +13,7 @@ config_load_default(jumanji_t* jumanji)
     return;
   }
 
+  int int_value              = 0;
   char* string_value         = NULL;
   girara_session_t* gsession = jumanji->ui.session;
 
@@ -25,7 +26,9 @@ config_load_default(jumanji_t* jumanji)
 
   /* zathura settings */
   string_value = "http://pwmt.org";
-  girara_setting_add(gsession, "homepage", string_value, STRING, false, "Home page",  NULL);
+  girara_setting_add(gsession, "homepage",    string_value, STRING, true, "Home page",   NULL);
+  int_value = 40;
+  girara_setting_add(gsession, "scroll-step", &int_value,   INT,    true, "Scroll step", NULL);
 
   /* define default shortcuts */
   girara_shortcut_add(gsession, 0,                GDK_KEY_o,      NULL, sc_focus_inputbar, NORMAL, 0,          &(":open "));
@@ -46,6 +49,8 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, GDK_SHIFT_MASK,   GDK_KEY_space,  NULL, sc_scroll,         NORMAL, FULL_UP,    NULL);
   girara_shortcut_add(gsession, 0,                0,              "gg", sc_scroll,         NORMAL, TOP,        NULL);
   girara_shortcut_add(gsession, 0,                0,              "G",  sc_scroll,         NORMAL, BOTTOM,     NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_0,      NULL, sc_scroll,         NORMAL, BEGIN,      NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_dollar, NULL, sc_scroll,         NORMAL, END,        NULL);
 
   /* define default inputbar commands */
   girara_inputbar_command_add(gsession, "open",    "o",  cmd_open,    cc_open, "Open URL in the current tab");
