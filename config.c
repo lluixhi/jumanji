@@ -33,6 +33,7 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "zoom-step",   &int_value,   INT,    true, "Zoom step", NULL);
 
   /* define default shortcuts */
+  girara_shortcut_add(gsession, 0,                GDK_KEY_d,        NULL, girara_sc_tab_close,    NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_K,        NULL, girara_sc_tab_navigate, NORMAL, GIRARA_NEXT,     NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_J,        NULL, girara_sc_tab_navigate, NORMAL, GIRARA_PREVIOUS, NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_slash,    NULL, sc_focus_inputbar,      NORMAL, 0,               &("/"));
