@@ -37,6 +37,19 @@ bool
 sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab->web_view) {
+    if (argument->n == NEXT) {
+      webkit_web_view_go_forward(WEBKIT_WEB_VIEW(tab->web_view));
+    } else {
+      webkit_web_view_go_back(WEBKIT_WEB_VIEW(tab->web_view));
+    }
+  }
 
   return false;
 }
