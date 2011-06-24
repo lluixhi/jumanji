@@ -55,7 +55,7 @@ cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer 
 
 	girara_tab_title_set(tab->girara_tab, title ? title : "Loading...");
 
-	if (tab == jumanji_tab_get_current(jumanji)) {
+	if (tab == jumanji_tab_get_current(tab->jumanji)) {
 		girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, title ? (char*) title : "Loading...");
 	}
 }

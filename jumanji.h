@@ -104,4 +104,14 @@ jumanji_tab_t* jumanji_tab_get_nth(jumanji_t* jumanji, unsigned int index);
  */
 void jumanji_tab_load_url(jumanji_tab_t* tab, const char* url);
 
+/**
+ * Builds an url based upon the input
+ *
+ * @param jumanji The jumanji session
+ * @param list The input list
+ * @return A uri that can be passed to jumanji_tab_load_url or NULL if an error
+ * occured
+ */
+char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
+
 #endif // JUMANJI_H

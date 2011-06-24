@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <girara.h>
+#include <string.h>
 #include <gtk/gtk.h>
 
 #include "callbacks.h"
@@ -109,7 +110,11 @@ jumanji_init(int argc, char* argv[])
 
   /* load tabs */
   if(argc < 2) {
-    jumanji_tab_new(jumanji, "http://pwmt.org", false);
+    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+    if (homepage != NULL) {
+      jumanji_tab_new(jumanji, homepage, false);
+      free(homepage);
+    }
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       jumanji_tab_new(jumanji, argv[i], false);
@@ -248,6 +253,44 @@ jumanji_tab_load_url(jumanji_tab_t* tab, const char* url)
   }
 
   webkit_web_view_load_uri(WEBKIT_WEB_VIEW(tab->web_view), url);
+}
+
+char*
+jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
+{
+  if (jumanji == NULL || list == NULL || jumanji->ui.session == NULL) {
+    return NULL;
+  }
+
+  unsigned int list_length = girara_list_size(list);
+  char* url                = NULL;
+
+  if (list_length == 0) {
+    /* open homepage */
+    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+    if (homepage != NULL) {
+      url = g_strdup(homepage);
+      free(homepage);
+    }
+  } else if (list_length > 1) {
+    /* find search engines */
+  } else {
+    char* input = (char*) girara_list_nth(list, 0);
+
+    /* file path */
+    if (input[0] == '/' || strncmp(input, "./", 2) == 0) {
+      url = g_strconcat("file://", input, NULL);
+    /* uri does not contain any '.', ':', '/' nor starts with localhost so the default
+     * search engine will be used */
+    } else if (strpbrk(input, ".:/") == NULL
+        && strncmp(input, "localhost", 9) != 0 ) {
+    /* just use the url as it is */
+    } else {
+      url = strstr(input, "://") ? g_strdup(input) : g_strconcat("http://", input, NULL);
+    }
+  }
+
+  return url;
 }
 
 /* main function */

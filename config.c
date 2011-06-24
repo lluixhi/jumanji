@@ -13,12 +13,19 @@ config_load_default(jumanji_t* jumanji)
     return;
   }
 
+  char* string_value         = NULL;
   girara_session_t* gsession = jumanji->ui.session;
 
   /* mode settings */
   jumanji->modes.normal = gsession->modes.normal;
 
 #define NORMAL jumanji->modes.normal
+
+	girara_mode_set(gsession, NORMAL);
+
+  /* zathura settings */
+  string_value = "http://pwmt.org";
+  girara_setting_add(gsession, "homepage", string_value, STRING, false, "Home page",  NULL);
 
   /* define default shortcuts */
   girara_shortcut_add(gsession, 0, GDK_KEY_o, NULL, sc_focus_inputbar, NORMAL, 0, &(":open "));
