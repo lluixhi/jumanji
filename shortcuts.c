@@ -105,5 +105,41 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
 
   gtk_adjustment_set_value(adjustment, new_value);
 
+  if (new_value == max || new_value == 0) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool
+sc_zoom(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL) {
+    return false;
+  }
+
+  int* tmp = (int*) girara_setting_get(jumanji->ui.session, "zoom-step");
+  float zoom_step = tmp ? *tmp : 10;
+
+  float zoom_level = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if(argument->n == ZOOM_IN) {
+    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), zoom_level + (float) (zoom_step / 100));
+  } else if(argument->n == ZOOM_OUT) {
+    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), zoom_level - (float) (zoom_step / 100));
+  } else if(argument->n == ZOOM_ORIGINAL) {
+    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), 1.0f);
+  } else if(argument->n == ZOOM_SPECIFIC) {
+    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), (float) (t / 100));
+  }
+
   return false;
 }
