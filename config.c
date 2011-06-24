@@ -66,6 +66,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "focus_inputbar", sc_focus_inputbar);
   girara_shortcut_mapping_add(gsession, "quit",           sc_quit);
   girara_shortcut_mapping_add(gsession, "scroll",         sc_scroll);
+  girara_shortcut_mapping_add(gsession, "zoom",           sc_zoom);
 }
 
 void
