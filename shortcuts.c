@@ -135,7 +135,7 @@ sc_zoom(girara_session_t* session, girara_argument_t* argument, unsigned int t)
     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), zoom_level + (float) (zoom_step / 100));
   } else if(argument->n == ZOOM_OUT) {
     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), zoom_level - (float) (zoom_step / 100));
-  } else if(argument->n == ZOOM_ORIGINAL) {
+  } else if(argument->n == DEFAULT) {
     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), 1.0f);
   } else if(argument->n == ZOOM_SPECIFIC) {
     webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(tab->web_view), (float) (t / 100));

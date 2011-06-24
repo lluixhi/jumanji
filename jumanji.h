@@ -9,7 +9,7 @@
 #include <webkit/webkit.h>
 
 enum { LEFT, RIGHT, UP, DOWN, FULL_UP, FULL_DOWN, HALF_UP, HALF_DOWN, TOP,
-  BOTTOM, BEGIN, END, ZOOM_IN, ZOOM_OUT, ZOOM_ORIGINAL, ZOOM_SPECIFIC };
+  BOTTOM, BEGIN, END, ZOOM_IN, ZOOM_OUT, DEFAULT, ZOOM_SPECIFIC };
 
 typedef struct jumanji_s
 {

@@ -22,7 +22,7 @@ config_load_default(jumanji_t* jumanji)
 
 #define NORMAL jumanji->modes.normal
 
-	girara_mode_set(gsession, NORMAL);
+  girara_mode_set(gsession, NORMAL);
 
   /* zathura settings */
   string_value = "http://pwmt.org";
@@ -55,7 +55,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_dollar, NULL, sc_scroll,         NORMAL, END,           NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_plus,   "zI", sc_zoom,           NORMAL, ZOOM_IN,       NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_minus,  "zO", sc_zoom,           NORMAL, ZOOM_OUT,      NULL);
-  girara_shortcut_add(gsession, 0,                0,  						"z0", sc_zoom,           NORMAL, ZOOM_ORIGINAL, NULL);
+  girara_shortcut_add(gsession, 0,                0,              "z0", sc_zoom,           NORMAL, DEFAULT,       NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_Z,      NULL, sc_zoom,           NORMAL, ZOOM_SPECIFIC, NULL);
 
   /* define default inputbar commands */
@@ -67,6 +67,24 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "quit",           sc_quit);
   girara_shortcut_mapping_add(gsession, "scroll",         sc_scroll);
   girara_shortcut_mapping_add(gsession, "zoom",           sc_zoom);
+
+  /* add argument mappings */
+  girara_argument_mapping_add(gsession, "left",       LEFT);
+  girara_argument_mapping_add(gsession, "right",      RIGHT);
+  girara_argument_mapping_add(gsession, "up",         UP);
+  girara_argument_mapping_add(gsession, "down",       DOWN);
+  girara_argument_mapping_add(gsession, "full_up",    FULL_UP);
+  girara_argument_mapping_add(gsession, "full_down",  FULL_DOWN);
+  girara_argument_mapping_add(gsession, "half_up",    HALF_UP);
+  girara_argument_mapping_add(gsession, "half_down",  HALF_DOWN);
+  girara_argument_mapping_add(gsession, "top",        TOP);
+  girara_argument_mapping_add(gsession, "bottom",     BOTTOM);
+  girara_argument_mapping_add(gsession, "begin",      BEGIN);
+  girara_argument_mapping_add(gsession, "end",        END);
+  girara_argument_mapping_add(gsession, "in",         ZOOM_IN);
+  girara_argument_mapping_add(gsession, "out",        ZOOM_OUT);
+  girara_argument_mapping_add(gsession, "default",    DEFAULT);
+  girara_argument_mapping_add(gsession, "specific",   ZOOM_SPECIFIC);
 }
 
 void
