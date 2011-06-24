@@ -55,6 +55,11 @@ config_load_default(jumanji_t* jumanji)
   /* define default inputbar commands */
   girara_inputbar_command_add(gsession, "open",    "o",  cmd_open,    cc_open, "Open URL in the current tab");
   girara_inputbar_command_add(gsession, "tabopen", "t",  cmd_tabopen, cc_open, "Open URL in a new tab");
+
+  /* add shortcut mappings */
+  girara_shortcut_mapping_add(gsession, "focus_inputbar", sc_focus_inputbar);
+  girara_shortcut_mapping_add(gsession, "quit",           sc_quit);
+  girara_shortcut_mapping_add(gsession, "scroll",         sc_scroll);
 }
 
 void
