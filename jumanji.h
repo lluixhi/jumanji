@@ -108,6 +108,16 @@ jumanji_tab_t* jumanji_tab_get_nth(jumanji_t* jumanji, unsigned int index);
 void jumanji_tab_load_url(jumanji_tab_t* tab, const char* url);
 
 /**
+ * Builds an url based upon a string
+ *
+ * @param jumanji The jumanji session
+ * @param string The string
+ * @return A url that can be passed to jumanji_tab_load_url or NULL if an error
+ * occured
+ */
+char* jumanji_build_url_from_string(jumanji_t* jumanji, const char* string);
+
+/**
  * Builds an url based upon the input
  *
  * @param jumanji The jumanji session

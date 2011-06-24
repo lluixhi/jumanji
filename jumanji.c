@@ -113,27 +113,15 @@ jumanji_init(int argc, char* argv[])
   if(argc < 2) {
     char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
     if (homepage != NULL) {
-      girara_list_t* list = build_girara_list(homepage);
-      if (list != NULL) {
-        char* url = jumanji_build_url(jumanji, list);
-        jumanji_tab_new(jumanji, url, false);
-        free(url);
-
-        girara_list_free(list);
-      }
+      char* url = jumanji_build_url_from_string(jumanji, homepage);
+      jumanji_tab_new(jumanji, url, false);
+      free(url);
     }
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
-      girara_list_t* list = build_girara_list(argv[i]);
-      if (list == NULL) {
-        continue;
-      }
-
-      char* url = jumanji_build_url(jumanji, list);
+      char* url = jumanji_build_url_from_string(jumanji, argv[i]);
       jumanji_tab_new(jumanji, url, false);
       free(url);
-
-      girara_list_free(list);
     }
 
   }
@@ -272,6 +260,24 @@ jumanji_tab_load_url(jumanji_tab_t* tab, const char* url)
 }
 
 char*
+jumanji_build_url_from_string(jumanji_t* jumanji, const char* string)
+{
+  if (jumanji == NULL || string == NULL || jumanji->ui.session == NULL) {
+    return NULL;
+  }
+
+  girara_list_t* list = build_girara_list(string);
+  if (list == NULL) {
+    return NULL;
+  }
+
+  char* url = jumanji_build_url(jumanji, list);
+  girara_list_free(list);
+
+  return url;
+}
+
+char*
 jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 {
   if (jumanji == NULL || list == NULL || jumanji->ui.session == NULL) {
@@ -285,11 +291,8 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
     /* open homepage */
     char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
     if (homepage != NULL) {
-      girara_list_t* list = build_girara_list(homepage);
       if (list != NULL) {
-        url = jumanji_build_url(jumanji, list);
-        girara_list_free(list);
-        free(homepage);
+        url = jumanji_build_url_from_string(jumanji, homepage);
       }
     }
   } else if (list_length > 1) {
