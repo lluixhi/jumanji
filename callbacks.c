@@ -67,7 +67,7 @@ cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
 		return;
 	}
 
-	jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+	jumanji_tab_t* tab = jumanji_tab_get_nth(jumanji, page_num);
 
 	if (tab != NULL) {
 		const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
