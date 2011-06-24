@@ -28,8 +28,24 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "homepage", string_value, STRING, false, "Home page",  NULL);
 
   /* define default shortcuts */
-  girara_shortcut_add(gsession, 0, GDK_KEY_o, NULL, sc_focus_inputbar, NORMAL, 0, &(":open "));
-  girara_shortcut_add(gsession, 0, GDK_KEY_t, NULL, sc_focus_inputbar, NORMAL, 0, &(":tabopen "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_o,      NULL, sc_focus_inputbar, NORMAL, 0,          &(":open "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_t,      NULL, sc_focus_inputbar, NORMAL, 0,          &(":tabopen "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_h,      NULL, sc_scroll,         NORMAL, LEFT,       NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_j,      NULL, sc_scroll,         NORMAL, DOWN,       NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_k,      NULL, sc_scroll,         NORMAL, UP,         NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_l,      NULL, sc_scroll,         NORMAL, RIGHT,      NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_Left,   NULL, sc_scroll,         NORMAL, LEFT,       NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_Up,     NULL, sc_scroll,         NORMAL, UP,         NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_Down,   NULL, sc_scroll,         NORMAL, DOWN,       NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_Right,  NULL, sc_scroll,         NORMAL, RIGHT,      NULL);
+  girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_d,      NULL, sc_scroll,         NORMAL, HALF_DOWN,  NULL);
+  girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_u,      NULL, sc_scroll,         NORMAL, HALF_UP,    NULL);
+  girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_f,      NULL, sc_scroll,         NORMAL, FULL_DOWN,  NULL);
+  girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_b,      NULL, sc_scroll,         NORMAL, FULL_UP,    NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_space,  NULL, sc_scroll,         NORMAL, FULL_DOWN,  NULL);
+  girara_shortcut_add(gsession, GDK_SHIFT_MASK,   GDK_KEY_space,  NULL, sc_scroll,         NORMAL, FULL_UP,    NULL);
+  girara_shortcut_add(gsession, 0,                0,              "gg", sc_scroll,         NORMAL, TOP,        NULL);
+  girara_shortcut_add(gsession, 0,                0,              "G",  sc_scroll,         NORMAL, BOTTOM,     NULL);
 
   /* define default inputbar commands */
   girara_inputbar_command_add(gsession, "open",    "o",  cmd_open,    cc_open, "Open URL in the current tab");

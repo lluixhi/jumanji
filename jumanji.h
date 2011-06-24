@@ -8,6 +8,9 @@
 
 #include <webkit/webkit.h>
 
+enum { LEFT, RIGHT, UP, DOWN, FULL_UP, FULL_DOWN, HALF_UP, HALF_DOWN, TOP,
+  BOTTOM };
+
 typedef struct jumanji_s
 {
   struct
