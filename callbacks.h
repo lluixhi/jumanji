@@ -32,6 +32,23 @@ void cb_girara_buffer_changed(girara_session_t* session);
  */
 void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
+/**
+ * Update the title of the tab if status changes
+ *
+ * @param web_view Webkit web view
+ * @param pspec -
+ * @param data Custom data
+ */
 void cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer data);
+
+/**
+ * Updates the statusbar entry
+ *
+ * @param tabs Tab container
+ * @param page Current tab
+ * @param page_num Current tab id
+ * @param jumanji The jumanji session
+ */
+void cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
 
 #endif // CALLBACKS_H

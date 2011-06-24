@@ -87,6 +87,9 @@ jumanji_init(int argc, char* argv[])
   /* girara events */
   jumanji->ui.session->events.buffer_changed = cb_girara_buffer_changed;
 
+  /* connect additional signals */
+  g_signal_connect(G_OBJECT(jumanji->ui.session->gtk.tabs), "switch-page", G_CALLBACK(cb_jumanji_tab_changed), jumanji);
+
   /* statusbar */
   jumanji->ui.statusbar.url = girara_statusbar_item_add(jumanji->ui.session, TRUE, TRUE, TRUE, NULL);
   if (jumanji->ui.statusbar.url == NULL) {
