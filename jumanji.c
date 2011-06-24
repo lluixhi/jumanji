@@ -8,6 +8,7 @@
 #include "callbacks.h"
 #include "config.h"
 #include "jumanji.h"
+#include "utils.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
@@ -112,12 +113,27 @@ jumanji_init(int argc, char* argv[])
   if(argc < 2) {
     char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
     if (homepage != NULL) {
-      jumanji_tab_new(jumanji, homepage, false);
-      free(homepage);
+      girara_list_t* list = build_girara_list(homepage);
+      if (list != NULL) {
+        char* url = jumanji_build_url(jumanji, list);
+        jumanji_tab_new(jumanji, url, false);
+        free(url);
+
+        girara_list_free(list);
+      }
     }
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
-      jumanji_tab_new(jumanji, argv[i], false);
+      girara_list_t* list = build_girara_list(argv[i]);
+      if (list == NULL) {
+        continue;
+      }
+
+      char* url = jumanji_build_url(jumanji, list);
+      jumanji_tab_new(jumanji, url, false);
+      free(url);
+
+      girara_list_free(list);
     }
 
   }
@@ -269,8 +285,12 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
     /* open homepage */
     char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
     if (homepage != NULL) {
-      url = g_strdup(homepage);
-      free(homepage);
+      girara_list_t* list = build_girara_list(homepage);
+      if (list != NULL) {
+        url = jumanji_build_url(jumanji, list);
+        girara_list_free(list);
+        free(homepage);
+      }
     }
   } else if (list_length > 1) {
     /* find search engines */

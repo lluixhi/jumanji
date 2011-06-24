@@ -8,10 +8,10 @@ PREFIX ?= /usr
 MANPREFIX ?= ${PREFIX}/share/man
 
 # libs
-GTK_INC = $(shell pkg-config --cflags gtk+-3.0 webkitgtk-3.0)
-GTK_LIB = $(shell pkg-config --libs   gtk+-3.0 webkitgtk-3.0)
+GTK_INC = $(shell pkg-config --cflags gtk+-3.0 webkitgtk-3.0 girara)
+GTK_LIB = $(shell pkg-config --libs   gtk+-3.0 webkitgtk-3.0 girara)
 INCS = -I. -I/usr/include ${GTK_INC}
-LIBS = -lc ${GTK_LIB} -lpthread -lgirara
+LIBS = -lc ${GTK_LIB} -lpthread
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
