@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "callbacks.h"
+#include "shortcuts.h"
 #include "jumanji.h"
 
 gboolean
@@ -139,5 +140,9 @@ cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
       default:
         return;
     }
+
+    /* reload website */
+    girara_argument_t argument = { 0, NULL };
+    sc_reload(session, &argument, 0);
   }
 }

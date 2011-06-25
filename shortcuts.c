@@ -286,7 +286,7 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
 
-  if (tab->web_view) {
+  if (tab && tab->web_view) {
     if (argument->n == BYPASS_CACHE) {
       webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(tab->web_view));
     } else {
