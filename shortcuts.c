@@ -3,6 +3,7 @@
 #include <girara.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "callbacks.h"
 #include "jumanji.h"
@@ -32,6 +33,76 @@ sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, unsigne
   }
 
   free(url);
+
+  return false;
+}
+
+bool
+sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL || tab->web_view == NULL) {
+    return false;
+  }
+
+  char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (url == NULL) {
+    return false;
+  }
+
+  /* calculate root of the website */
+  unsigned int offset      = strstr(url, "://") - url + 3;
+  unsigned int root_length = offset + 1;
+  char* root_string        = url + offset;
+
+  while(root_string && *root_string != '/') {
+    root_length++;
+    root_string++;
+  }
+
+  char* root = g_strndup(url, root_length);
+
+  if (argument->n == DEFAULT) {
+    jumanji_tab_load_url(tab, root);
+  } else {
+    unsigned int count = (t == 0) ? 1 : t;
+    char* directories = g_strndup(url + strlen(root), strlen(url) - strlen(root));
+
+    if (directories == NULL || strlen(directories) == 0) {
+      return false;
+    }
+
+    gchar **tokens = g_strsplit(directories, "/", -1);
+    int     length = g_strv_length(tokens);
+    GString* tmp   = g_string_new("");
+
+    int limit = length - count;
+    for(int i = 0; i < limit; i++) {
+      if (i == 0) {
+        g_string_append(tmp, tokens[i]);
+      } else {
+        g_string_append(tmp, "/");
+        g_string_append(tmp, tokens[i]);
+      }
+    }
+
+    char* new_url = g_strconcat(root, tmp->str, NULL);
+    jumanji_tab_load_url(tab, new_url);
+
+    g_free(new_url);
+    g_string_free(tmp, TRUE);
+    g_strfreev(tokens);
+    g_free(directories);
+  }
+
+  g_free(root);
 
   return false;
 }
