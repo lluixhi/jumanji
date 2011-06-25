@@ -120,7 +120,7 @@ cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
   /* special case: set value in webkitview */
   if (g_strcmp0(setting->name, "full-content-zoom") == 0) {
     if (tab && tab->web_view) {
-      g_object_set(G_OBJECT(tab), setting->name, setting->value.b, NULL);
+      g_object_set(G_OBJECT(tab->web_view), setting->name, setting->value.b, NULL);
     }
   } else if (browser_settings != NULL) {
     switch (setting->type) {
