@@ -51,9 +51,13 @@ cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer 
     return;
   }
 
+  unsigned int position = girara_tab_position_get(tab->jumanji->ui.session, tab->girara_tab) + 1;
   const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+  title = title ? title : "Loading...";
 
-  girara_tab_title_set(tab->girara_tab, title ? title : "Loading...");
+  char* text = g_strdup_printf("%d | %s", position, title);
+  girara_tab_title_set(tab->girara_tab, text);
+  g_free(text);
 
   if (tab == jumanji_tab_get_current(tab->jumanji)) {
     const gchar* url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
