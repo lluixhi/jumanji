@@ -96,3 +96,11 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
     }
   }
 }
+
+void
+cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
+{
+  if (session == NULL || setting == NULL) {
+    return;
+  }
+}

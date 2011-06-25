@@ -1,5 +1,6 @@
 /* See LICENSE file for license and copyright information */
 
+#include "callbacks.h"
 #include "config.h"
 #include "commands.h"
 #include "completion.h"
@@ -15,6 +16,7 @@ config_load_default(jumanji_t* jumanji)
 
   int int_value              = 0;
   char* string_value         = NULL;
+  bool bool_value            = true;
   girara_session_t* gsession = jumanji->ui.session;
 
   /* mode settings */
@@ -26,11 +28,40 @@ config_load_default(jumanji_t* jumanji)
 
   /* zathura settings */
   string_value = "http://pwmt.org";
-  girara_setting_add(gsession, "homepage",    string_value, STRING, true, "Home page",   NULL);
+  girara_setting_add(gsession, "homepage",    string_value, STRING, false, "Home page",   NULL);
   int_value = 40;
-  girara_setting_add(gsession, "scroll-step", &int_value,   INT,    true, "Scroll step", NULL);
+  girara_setting_add(gsession, "scroll-step", &int_value,   INT,    true,  "Scroll step", NULL);
   int_value = 10;
-  girara_setting_add(gsession, "zoom-step",   &int_value,   INT,    true, "Zoom step", NULL);
+  girara_setting_add(gsession, "zoom-step",   &int_value,   INT,    true,  "Zoom step", NULL);
+
+  /* webkit settings */
+  girara_setting_add(gsession, "auto-load-images",            &bool_value,   BOOLEAN, false, "Load images automatically",            cb_settings_webkit);
+  girara_setting_add(gsession, "auto-shrink-images",          &bool_value,   BOOLEAN, false, "Shrink standalone images to fit",      cb_settings_webkit);
+  girara_setting_add(gsession, "cursive-font-family",         &string_value, STRING,  false, "Default cursive font family",          cb_settings_webkit);
+  girara_setting_add(gsession, "default-encoding",            &string_value, STRING , false, "Default encoding",                     cb_settings_webkit);
+  girara_setting_add(gsession, "default-font-family",         &string_value, STRING , false, "Default font family",                  cb_settings_webkit);
+  girara_setting_add(gsession, "default-font-size",           &int_value,    INT,     false, "Default font size",                    cb_settings_webkit);
+  girara_setting_add(gsession, "default-monospace-font-size", &int_value,    INT,     false, "Default monospace font size",          cb_settings_webkit);
+  girara_setting_add(gsession, "enable-caret-browsing",       &bool_value,   BOOLEAN, false, "Wheter to enable caret browsing mode", cb_settings_webkit);
+  girara_setting_add(gsession, "enable-developer-extras",     &bool_value,   BOOLEAN, false, "Enable webkit developer extensions",   cb_settings_webkit);
+  girara_setting_add(gsession, "enable-java-applet",          &bool_value,   BOOLEAN, false, "Enable java applets",                  cb_settings_webkit);
+  girara_setting_add(gsession, "enable-page-cache",           &bool_value,   BOOLEAN, false, "Enable page caching",                  cb_settings_webkit);
+  girara_setting_add(gsession, "enable-plugins",              &bool_value,   BOOLEAN, false, "Enable plugins",                       cb_settings_webkit);
+  girara_setting_add(gsession, "enable-private-browsing",     &bool_value,   BOOLEAN, false, "Enable private browsing",              cb_settings_webkit);
+  girara_setting_add(gsession, "enable-scripts",              &bool_value,   BOOLEAN, false, "Enable scripts",                       cb_settings_webkit);
+  girara_setting_add(gsession, "enable-spell-checking",       &bool_value,   BOOLEAN, false, "Enable spell checking",                cb_settings_webkit);
+  girara_setting_add(gsession, "enforce-96-dpi",              &bool_value,   BOOLEAN, false, "Enforce a resolution of 96 DPI",       cb_settings_webkit);
+  girara_setting_add(gsession, "fantasy-font-family",         &string_value, STRING , false, "Fantasy font family",                  cb_settings_webkit);
+  girara_setting_add(gsession, "full-content-zoom",           &bool_value,   BOOLEAN, false, "Full-content zoom",                    cb_settings_webkit);
+  girara_setting_add(gsession, "minimum-font-size",           &int_value,    INT,     false, "Minimum font size",                    cb_settings_webkit);
+  girara_setting_add(gsession, "monospace-font-family",       &string_value, STRING,  false, "Monospace font family",                cb_settings_webkit);
+  girara_setting_add(gsession, "print-backgrounds",           &bool_value,   BOOLEAN, false, "Print background images",              cb_settings_webkit);
+  girara_setting_add(gsession, "resizeable-text-areas",       &bool_value,   BOOLEAN, false, "Allow resizeable text areas",          cb_settings_webkit);
+  girara_setting_add(gsession, "sans-serif-font-family",      &string_value, STRING,  false, "Sans-serif font family",               cb_settings_webkit);
+  girara_setting_add(gsession, "serif-font-family",           &string_value, STRING,  false, "Serif font family",                    cb_settings_webkit);
+  girara_setting_add(gsession, "spell-checking-languages",    &string_value, STRING,  false, "Spell checking languages",             cb_settings_webkit);
+  girara_setting_add(gsession, "user-agent",                  &string_value, STRING,  false, "User agent",                           cb_settings_webkit);
+  girara_setting_add(gsession, "user-stylesheet-uri",         &string_value, STRING,  false, "Custom stylesheet",                    cb_settings_webkit);
 
   /* define default shortcuts */
   girara_shortcut_add(gsession, 0,                GDK_KEY_d,        NULL, girara_sc_tab_close,      NORMAL, 0,               NULL);

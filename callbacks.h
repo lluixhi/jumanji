@@ -61,4 +61,12 @@ void cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, 
  */
 void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
 
+/**
+ * Called when a webkit settings has been changed
+ *
+ * @param session The girara session
+ * @param setting The girara setting
+ */
+void cb_settings_webkit(girara_session_t* session, girara_setting_t* setting);
+
 #endif // CALLBACKS_H
