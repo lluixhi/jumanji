@@ -100,7 +100,44 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
 void
 cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
 {
-  if (session == NULL || setting == NULL) {
+  g_return_if_fail(session != NULL);
+  g_return_if_fail(setting != NULL);
+  g_return_if_fail(session->global.data != NULL);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  WebKitWebSettings* browser_settings = NULL;
+  jumanji_tab_t* tab                  = jumanji_tab_get_current(jumanji);
+
+  /* get settings */
+  if (girara_get_number_of_tabs(session) == 0) {
+    browser_settings = jumanji->global.browser_settings;
+  } else if (tab != NULL) {
+    browser_settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(tab->web_view));
+  } else {
     return;
+  }
+
+  /* special case: set value in webkitview */
+  if (g_strcmp0(setting->name, "full-content-zoom") == 0) {
+    if (tab && tab->web_view) {
+      g_object_set(G_OBJECT(tab), setting->name, setting->value.b, NULL);
+    }
+  } else if (browser_settings != NULL) {
+    switch (setting->type) {
+      case STRING:
+        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.s, NULL);
+        break;
+      case INT:
+        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.i, NULL);
+        break;
+      case FLOAT:
+        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.f, NULL);
+        break;
+      case BOOLEAN:
+        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.b, NULL);
+        break;
+      default:
+        return;
+    }
   }
 }
