@@ -74,6 +74,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_0,        NULL, sc_scroll,                NORMAL, BEGIN,           NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_dollar,   NULL, sc_scroll,                NORMAL, END,             NULL);
   girara_shortcut_add(gsession, 0,                0,                "gf", sc_toggle_source_mode,    NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_y,        NULL, sc_yank,                  NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_plus,     "zI", sc_zoom,                  NORMAL, ZOOM_IN,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_minus,    "zO", sc_zoom,                  NORMAL, ZOOM_OUT,        NULL);
   girara_shortcut_add(gsession, 0,                0,                "z0", sc_zoom,                  NORMAL, DEFAULT,         NULL);

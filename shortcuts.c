@@ -289,6 +289,34 @@ sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, un
 }
 
 bool
+sc_yank(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL) {
+    return false;
+  }
+
+  char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (url == NULL) {
+    return false;
+  }
+
+  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  if (clipboard != NULL) {
+    gtk_clipboard_set_text(clipboard, url, -1);
+  }
+
+  return false;
+}
+
+bool
 sc_zoom(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
