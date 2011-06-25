@@ -51,4 +51,14 @@ void cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpoi
  */
 void cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
 
+/**
+ * Tab has been removed
+ *
+ * @param tabs Tab container
+ * @param page Current tab
+ * @param page_num Current tab id
+ * @param jumanji The jumanji session
+ */
+void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
+
 #endif // CALLBACKS_H

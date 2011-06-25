@@ -95,13 +95,16 @@ jumanji_init(int argc, char* argv[])
   jumanji->ui.session->events.buffer_changed = cb_girara_buffer_changed;
 
   /* connect additional signals */
-  g_signal_connect(G_OBJECT(jumanji->ui.session->gtk.tabs), "switch-page", G_CALLBACK(cb_jumanji_tab_changed), jumanji);
+  g_signal_connect(G_OBJECT(jumanji->ui.session->gtk.tabs), "switch-page",  G_CALLBACK(cb_jumanji_tab_changed), jumanji);
+  g_signal_connect(G_OBJECT(jumanji->ui.session->gtk.tabs), "page-removed", G_CALLBACK(cb_jumanji_tab_removed), jumanji);
 
   /* statusbar */
   jumanji->ui.statusbar.url = girara_statusbar_item_add(jumanji->ui.session, TRUE, TRUE, TRUE, NULL);
   if (jumanji->ui.statusbar.url == NULL) {
     goto error_free;
   }
+
+  girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.url, "[No name]");
 
   jumanji->ui.statusbar.buffer = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, NULL);
   if (jumanji->ui.statusbar.buffer == NULL) {
@@ -128,7 +131,6 @@ jumanji_init(int argc, char* argv[])
       jumanji_tab_new(jumanji, url, false);
       free(url);
     }
-
   }
 
   return jumanji;

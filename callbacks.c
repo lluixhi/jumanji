@@ -79,3 +79,20 @@ cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
     girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.url, url ? (char*) url : "Loading...");
   }
 }
+
+void
+cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji)
+{
+  if (tabs == NULL || jumanji == NULL) {
+    return;
+  }
+
+  if (gtk_notebook_get_n_pages(tabs) == 0) {
+    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+    if (homepage != NULL) {
+      char* url = jumanji_build_url_from_string(jumanji, homepage);
+      jumanji_tab_new(jumanji, url, false);
+      free(url);
+    }
+  }
+}
