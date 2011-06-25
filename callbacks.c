@@ -56,7 +56,8 @@ cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer 
   girara_tab_title_set(tab->girara_tab, title ? title : "Loading...");
 
   if (tab == jumanji_tab_get_current(tab->jumanji)) {
-    girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, title ? (char*) title : "Loading...");
+    const gchar* url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, url ? (char*) url : "Loading...");
   }
 }
 
@@ -70,7 +71,7 @@ cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
   jumanji_tab_t* tab = jumanji_tab_get_nth(jumanji, page_num);
 
   if (tab != NULL) {
-    const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
-    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.url, title ? (char*) title : "Loading...");
+    const gchar* url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.url, url ? (char*) url : "Loading...");
   }
 }
