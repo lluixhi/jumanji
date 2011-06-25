@@ -72,6 +72,12 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  /* webkit */
+  jumanji->global.browser_settings = webkit_web_settings_new();
+  if (jumanji->global.browser_settings == NULL) {
+    goto error_free;
+  }
+
   /* configuration */
   config_load_default(jumanji);
 
@@ -108,12 +114,6 @@ jumanji_init(int argc, char* argv[])
 
   jumanji->ui.statusbar.buffer = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, NULL);
   if (jumanji->ui.statusbar.buffer == NULL) {
-    goto error_free;
-  }
-
-  /* webkit */
-  jumanji->global.browser_settings = webkit_web_settings_new();
-  if (jumanji->global.browser_settings == NULL) {
     goto error_free;
   }
 
