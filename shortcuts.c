@@ -163,6 +163,32 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
+sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL || tab->web_view == NULL) {
+    return false;
+  }
+
+  char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if(webkit_web_view_get_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view)))
+    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), FALSE);
+  else
+    webkit_web_view_set_view_source_mode(WEBKIT_WEB_VIEW(tab->web_view), TRUE);
+
+  jumanji_tab_load_url(tab, url);
+
+  return false;
+}
+
+bool
 sc_zoom(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);

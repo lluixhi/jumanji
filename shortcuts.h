@@ -66,6 +66,16 @@ bool sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned 
 bool sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t);
 
 /**
+ * Toggle between the rendered and source code view
+ *
+ * @param session The used girara session
+ * @param argument The used argument
+ * @param t Number of executions
+ * @return true if no error occured otherwise false
+ */
+bool sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, unsigned int t);
+
+/**
  * Zoom in/out
  *
  * @param session The used girara session
