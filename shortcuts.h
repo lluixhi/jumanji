@@ -56,6 +56,16 @@ bool sc_follow_link(girara_session_t* session, girara_argument_t* argument, unsi
 bool sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsigned int t);
 
 /**
+ * Open (put) a URL based on the current clipboard content
+ *
+ * @param session The used girara session
+ * @param argument The used argument
+ * @param t Number of executions
+ * @return true if no error occured otherwise false
+ */
+bool sc_put(girara_session_t* session, girara_argument_t* argument, unsigned int t);
+
+/**
  * Quit jumanji
  *
  * @param session The used girara session

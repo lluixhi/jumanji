@@ -155,6 +155,41 @@ sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsi
 }
 
 bool
+sc_put(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  if (clipboard == NULL) {
+    return false;
+  }
+
+  char* text = gtk_clipboard_wait_for_text(clipboard);
+  char* url  = jumanji_build_url_from_string(jumanji, text);
+
+  if (url == NULL) {
+    return false;
+  }
+
+  if (argument->n == NEW_TAB) {
+    jumanji_tab_new(jumanji, url, false);
+  } else {
+    jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+    if (tab != NULL) {
+      jumanji_tab_load_url(tab, url);
+    }
+  }
+
+  g_free(url);
+  g_free(text);
+
+  return false;
+}
+
+bool
 sc_quit(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
