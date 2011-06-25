@@ -36,6 +36,8 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_d,        NULL, girara_sc_tab_close,    NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_K,        NULL, girara_sc_tab_navigate, NORMAL, GIRARA_NEXT,     NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_J,        NULL, girara_sc_tab_navigate, NORMAL, GIRARA_PREVIOUS, NULL);
+  girara_shortcut_add(gsession, 0,                0,                "gh", sc_goto_homepage,       NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                0,                "gH", sc_goto_homepage,       NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_slash,    NULL, sc_focus_inputbar,      NORMAL, 0,               &("/"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_question, NULL, sc_focus_inputbar,      NORMAL, APPEND_URL,      &("?"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_colon,    NULL, sc_focus_inputbar,      NORMAL, 0,               &(":"));

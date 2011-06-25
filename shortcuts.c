@@ -2,10 +2,39 @@
 
 #include <girara.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
 
 #include "callbacks.h"
 #include "jumanji.h"
 #include "shortcuts.h"
+
+bool
+sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+  char* url      = NULL;
+  if (homepage != NULL) {
+    url = jumanji_build_url_from_string(jumanji, homepage);
+  }
+
+  if (argument->n == NEW_TAB) {
+    jumanji_tab_new(jumanji, url, false);
+  } else {
+    jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+    if (tab != NULL) {
+      jumanji_tab_load_url(tab, url);
+    }
+  }
+
+  free(url);
+
+  return false;
+}
 
 bool
 sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsigned int t)
