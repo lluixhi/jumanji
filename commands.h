@@ -25,6 +25,15 @@ bool cmd_buffer_delete(girara_session_t* session, girara_list_t* argument_list);
 bool cmd_open(girara_session_t* session, girara_list_t* argument_list);
 
 /**
+ * Adds a proxy to the proxy list
+ *
+ * @param session The used girara session
+ * @param argument_list List of passed arguments
+ * @return true if no error occured
+ */
+bool cmd_proxy(girara_session_t* session, girara_list_t* argument_list);
+
+/**
  * Adds a search engine
  *
  * @param session The used girara session

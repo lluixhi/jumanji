@@ -1,6 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "commands.h"
 #include "jumanji.h"
@@ -23,6 +24,67 @@ cmd_open(girara_session_t* session, girara_list_t* argument_list)
 
   char* url = jumanji_build_url(jumanji, argument_list);
   jumanji_tab_load_url(jumanji_tab_get_current(jumanji), url);
+
+  return true;
+}
+
+bool
+cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  if (jumanji->global.proxies == NULL) {
+    return false;
+  }
+
+  unsigned int number_of_arguments = girara_list_size(argument_list);
+  if (number_of_arguments < 1) {
+    return false;
+  }
+
+  char* url         = (char*) girara_list_nth(argument_list, 0);
+  char* description = (number_of_arguments == 2) ? (char*) girara_list_nth(argument_list, 0) : NULL;
+
+  if (url == NULL) {
+    return false;
+  }
+
+  url = (strstr(url, "://") != NULL) ? g_strdup(url) : g_strconcat("http://", url, NULL);
+
+  /* search for existing search engine */
+  if (girara_list_size(jumanji->global.proxies) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
+
+    do {
+      jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
+      if (proxy == NULL) {
+        continue;
+      }
+
+      if (!g_strcmp0(proxy->url, url)) {
+        g_free(proxy->url);
+        g_free(proxy->description);
+        proxy->url         = g_strdup(url);
+        proxy->description = description ? g_strdup(description) : NULL;
+        g_free(url);
+        return true;
+      }
+    } while (girara_list_iterator_next(iter));
+  }
+
+  /* create new entry */
+  jumanji_proxy_t* proxy = malloc(sizeof(jumanji_proxy_t));
+  if (proxy == NULL) {
+    g_free(url);
+    return false;
+  }
+
+  proxy->url         = url;
+  proxy->description = g_strdup(description);
+
+  girara_list_append(jumanji->global.proxies, proxy);
 
   return true;
 }

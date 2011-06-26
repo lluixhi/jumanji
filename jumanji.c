@@ -67,8 +67,10 @@ jumanji_init(int argc, char* argv[])
   jumanji->ui.session->global.data = jumanji;
   jumanji->ui.statusbar.buffer     = NULL;
   jumanji->global.search_engines   = girara_list_new();
+  jumanji->global.proxies          = girara_list_new();
 
-  if (jumanji->global.search_engines == NULL) {
+  if (jumanji->global.search_engines == NULL ||
+      jumanji->global.proxies == NULL) {
     goto error_free;
   }
 
@@ -173,6 +175,22 @@ jumanji_free(jumanji_t* jumanji)
     } while (girara_list_iterator_next(iter));
     girara_list_iterator_free(iter);
     girara_list_free(jumanji->global.search_engines);
+  }
+
+  /* free proxies */
+  if (jumanji->global.proxies) {
+    girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
+    do {
+      jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
+      if (proxy != NULL) {
+				fprintf(stderr, "removing proxy: %s\n", proxy->url);
+        g_free(proxy->description);
+        g_free(proxy->url);
+        g_free(proxy);
+      }
+    } while (girara_list_iterator_next(iter));
+    girara_list_iterator_free(iter);
+    girara_list_free(jumanji->global.proxies);
   }
 
   free(jumanji);

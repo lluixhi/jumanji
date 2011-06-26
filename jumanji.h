@@ -40,6 +40,7 @@ typedef struct jumanji_s
   {
     WebKitWebSettings* browser_settings; /*>> Browser settings */
     girara_list_t* search_engines; /**> Search engines */
+    girara_list_t* proxies; /**> Proxies */
   } global;
 } jumanji_t;
 
@@ -56,6 +57,12 @@ typedef struct jumanji_search_engine_s
   char* identifier; /**> Identifier */
   char* url; /**> Url */
 } jumanji_search_engine_t;
+
+typedef struct jumanji_proxy_s
+{
+  char* url; /**> Url */
+  char* description; /**> Description (optional) */
+} jumanji_proxy_t;
 
 /**
  * Initializes jumanji

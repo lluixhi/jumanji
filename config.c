@@ -143,6 +143,7 @@ config_load_default(jumanji_t* jumanji)
 
   /* add config handles */
   girara_config_handle_add(gsession, "searchengine", cmd_search_engine);
+  girara_config_handle_add(gsession, "proxy",        cmd_proxy);
 }
 
 void
