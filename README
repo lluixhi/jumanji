@@ -7,6 +7,7 @@ Requirements
 ------------
 gtk3 (>= 3.0.11)
 libwebkit3 (>= 1.4.1)
+libsoup (>= 2.22.4)
 
 Please note that you need to have a working pkg-config installation
 and that the Makefile is only compatible with GNU make.

@@ -5,6 +5,8 @@
 
 #include <stdbool.h>
 #include <girara.h>
+#include <gtk/gtk.h>
+#include <libsoup/soup.h>
 
 #include <webkit/webkit.h>
 
@@ -39,6 +41,7 @@ typedef struct jumanji_s
   struct
   {
     WebKitWebSettings* browser_settings; /*>> Browser settings */
+    SoupSession* soup_session; /*>> Soup session */
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
   } global;

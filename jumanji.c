@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <girara.h>
 #include <string.h>
-#include <gtk/gtk.h>
 
 #include "callbacks.h"
 #include "config.h"
@@ -12,6 +11,7 @@
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
+#define JUMANJI_COOKIE_FILE "cookies"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -79,6 +79,25 @@ jumanji_init(int argc, char* argv[])
   if (jumanji->global.browser_settings == NULL) {
     goto error_free;
   }
+
+  /* libsoup */
+  jumanji->global.soup_session = webkit_get_default_session();
+  if (jumanji->global.soup_session == NULL) {
+    goto error_free;
+  }
+
+  char* cookie_file = g_build_filename(jumanji->config.config_dir, JUMANJI_COOKIE_FILE, NULL);
+  if (cookie_file == NULL) {
+    goto error_free;
+  }
+
+  SoupCookieJar* cookie_jar = soup_cookie_jar_text_new(cookie_file, FALSE);
+  if (cookie_jar != NULL) {
+    soup_session_add_feature(jumanji->global.soup_session, (SoupSessionFeature*) cookie_jar);
+  } else {
+    girara_error("Could not initialize cookie jar");
+  }
+  g_free(cookie_file);
 
   /* configuration */
   config_load_default(jumanji);
@@ -183,7 +202,6 @@ jumanji_free(jumanji_t* jumanji)
     do {
       jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
       if (proxy != NULL) {
-				fprintf(stderr, "removing proxy: %s\n", proxy->url);
         g_free(proxy->description);
         g_free(proxy->url);
         g_free(proxy);
