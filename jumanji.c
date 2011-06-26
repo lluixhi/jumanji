@@ -261,6 +261,12 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   /* apply browser setting */
   webkit_web_view_set_settings(WEBKIT_WEB_VIEW(tab->web_view), webkit_web_settings_copy(jumanji->global.browser_settings));
 
+  /* set web inspector */
+  WebKitWebInspector* web_inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(tab->web_view));
+  if (web_inspector != NULL) {
+    g_signal_connect(G_OBJECT(web_inspector), "inspect-web-view", G_CALLBACK(cb_jumanji_tab_web_inspector), tab);
+  }
+
   /* load url */
   jumanji_tab_load_url(tab, url);
 

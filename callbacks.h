@@ -62,6 +62,16 @@ void cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, 
 void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
 
 /**
+ * Inspect web view
+ *
+ * @param inspector The web inspector object
+ * @param web_view The web view
+ * @param data Custom data
+ * @return webkit web view or NULL if an error occured
+ */
+WebKitWebView* cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_view, gpointer data);
+
+/**
  * Called when a webkit settings has been changed
  *
  * @param session The girara session
