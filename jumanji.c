@@ -68,6 +68,7 @@ jumanji_init(int argc, char* argv[])
   jumanji->ui.statusbar.buffer     = NULL;
   jumanji->global.search_engines   = girara_list_new();
   jumanji->global.proxies          = girara_list_new();
+  jumanji->global.current_proxy    = NULL;
 
   if (jumanji->global.search_engines == NULL ||
       jumanji->global.proxies == NULL) {
@@ -136,6 +137,21 @@ jumanji_init(int argc, char* argv[])
   jumanji->ui.statusbar.buffer = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, NULL);
   if (jumanji->ui.statusbar.buffer == NULL) {
     goto error_free;
+  }
+
+  jumanji->ui.statusbar.proxy = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, cb_statusbar_proxy);
+  if (jumanji->ui.statusbar.proxy == NULL) {
+    goto error_free;
+  }
+
+  if (jumanji->global.proxies && girara_list_size(jumanji->global.proxies) > 0 && jumanji->global.current_proxy == NULL) {
+    bool* auto_set_proxy = (bool*) girara_setting_get(jumanji->ui.session, "auto-set-proxy");
+    if (auto_set_proxy && *auto_set_proxy == true) {
+      jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_nth(jumanji->global.proxies, 0);
+      jumanji_proxy_set(jumanji, proxy);
+    } else {
+      girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");
+    }
   }
 
   /* load tabs */
@@ -430,6 +446,29 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
   }
 
   return url;
+}
+
+void
+jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy)
+{
+  if (jumanji == NULL || jumanji->global.soup_session == NULL) {
+    return;
+  }
+
+  if (proxy != NULL && proxy->url != NULL) {
+    SoupURI* soup_uri = soup_uri_new(proxy->url);
+    g_object_set(jumanji->global.soup_session, "proxy-uri", soup_uri, NULL);
+    soup_uri_free(soup_uri);
+    jumanji->global.current_proxy = proxy;
+
+    char* text = (proxy->description != NULL) ? proxy->description : proxy->url;
+    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, text);
+  } else {
+    g_object_set(jumanji->global.soup_session, "proxy-uri", NULL, NULL);
+    jumanji->global.current_proxy = NULL;
+
+    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");
+  }
 }
 
 /* main function */

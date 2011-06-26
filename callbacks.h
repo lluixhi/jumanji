@@ -69,4 +69,14 @@ void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, 
  */
 void cb_settings_webkit(girara_session_t* session, girara_setting_t* setting);
 
+/**
+ * Executed when someone clicks the statusbar entry
+ *
+ * @param widget The statusbar
+ * @param event Occured event
+ * @param session The girara session
+ * @return true if no error occured
+ */
+bool cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* session);
+
 #endif // CALLBACKS_H

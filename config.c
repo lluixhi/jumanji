@@ -28,11 +28,13 @@ config_load_default(jumanji_t* jumanji)
 
   /* zathura settings */
   string_value = "http://pwmt.org";
-  girara_setting_add(gsession, "homepage",    string_value, STRING, false, "Home page",   NULL);
+  girara_setting_add(gsession, "homepage",       string_value, STRING,  false, "Home page",                   NULL);
   int_value = 40;
-  girara_setting_add(gsession, "scroll-step", &int_value,   INT,    true,  "Scroll step", NULL);
+  girara_setting_add(gsession, "scroll-step",    &int_value,   INT,     true,  "Scroll step",                 NULL);
   int_value = 10;
-  girara_setting_add(gsession, "zoom-step",   &int_value,   INT,    true,  "Zoom step", NULL);
+  girara_setting_add(gsession, "zoom-step",      &int_value,   INT,     true,  "Zoom step",                   NULL);
+  bool_value = true;
+  girara_setting_add(gsession, "auto-set-proxy", &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL);
 
   /* webkit settings */
   girara_setting_add(gsession, "auto-load-images",            &bool_value,   BOOLEAN, false, "Load images automatically",            cb_settings_webkit);

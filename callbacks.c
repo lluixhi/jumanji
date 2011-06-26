@@ -146,3 +146,36 @@ cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
     sc_reload(session, &argument, 0);
   }
 }
+
+bool cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* session)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  if (jumanji->global.soup_session == NULL || jumanji->global.proxies == NULL) {
+    return false;
+  }
+
+  int number_of_proxies = girara_list_size(jumanji->global.proxies);
+
+  if (number_of_proxies == 0) {
+    return false;
+  }
+
+  jumanji_proxy_t* proxy = NULL;
+
+  if (jumanji->global.current_proxy == NULL) {
+    proxy = (jumanji_proxy_t*) girara_list_nth(jumanji->global.proxies, 0);
+  } else {
+    int current_proxy = girara_list_position(jumanji->global.proxies, jumanji->global.current_proxy);
+
+    if (current_proxy != (number_of_proxies - 1)) {
+      proxy = (jumanji_proxy_t*) girara_list_nth(jumanji->global.proxies, (current_proxy + 1) % number_of_proxies);
+    }
+  }
+
+  jumanji_proxy_set(jumanji, proxy);
+
+	return true;
+}

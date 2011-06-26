@@ -14,6 +14,12 @@ enum { LEFT, RIGHT, UP, DOWN, FULL_UP, FULL_DOWN, HALF_UP, HALF_DOWN, TOP,
   BOTTOM, BEGIN, END, ZOOM_IN, ZOOM_OUT, DEFAULT, ZOOM_SPECIFIC, APPEND_URL,
   BYPASS_CACHE, NEW_TAB, NEXT, PREVIOUS };
 
+typedef struct jumanji_proxy_s
+{
+  char* url; /**> Url */
+  char* description; /**> Description (optional) */
+} jumanji_proxy_t;
+
 typedef struct jumanji_s
 {
   struct
@@ -24,6 +30,7 @@ typedef struct jumanji_s
     {
       girara_statusbar_item_t* buffer; /**> buffer statusbar entry */
       girara_statusbar_item_t* url; /**> url statusbar entry */
+      girara_statusbar_item_t* proxy; /**> proxy statusbar entry */
     } statusbar;
   } ui;
 
@@ -44,6 +51,7 @@ typedef struct jumanji_s
     SoupSession* soup_session; /*>> Soup session */
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
+    jumanji_proxy_t* current_proxy; /**> Current proxy */
   } global;
 } jumanji_t;
 
@@ -60,12 +68,6 @@ typedef struct jumanji_search_engine_s
   char* identifier; /**> Identifier */
   char* url; /**> Url */
 } jumanji_search_engine_t;
-
-typedef struct jumanji_proxy_s
-{
-  char* url; /**> Url */
-  char* description; /**> Description (optional) */
-} jumanji_proxy_t;
 
 /**
  * Initializes jumanji
@@ -144,5 +146,13 @@ char* jumanji_build_url_from_string(jumanji_t* jumanji, const char* string);
  * occured
  */
 char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
+
+/**
+ * Activates a jumanji proxy
+ *
+ * @param jumanji The jumanji session
+ * @param proxy The jumanji proxy
+ */
+void jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy);
 
 #endif // JUMANJI_H

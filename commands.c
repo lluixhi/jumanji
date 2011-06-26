@@ -45,7 +45,7 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
   }
 
   char* url         = (char*) girara_list_nth(argument_list, 0);
-  char* description = (number_of_arguments == 2) ? (char*) girara_list_nth(argument_list, 0) : NULL;
+  char* description = (number_of_arguments > 1) ? (char*) girara_list_nth(argument_list, 1) : NULL;
 
   if (url == NULL) {
     return false;
