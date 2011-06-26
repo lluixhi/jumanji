@@ -298,6 +298,13 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
+sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  return cb_statusbar_proxy(NULL, NULL, session);
+}
+
+bool
 sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
