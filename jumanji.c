@@ -6,12 +6,14 @@
 
 #include "callbacks.h"
 #include "config.h"
+#include "database.h"
 #include "jumanji.h"
 #include "utils.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
 #define JUMANJI_COOKIE_FILE "cookies"
+#define JUMANJI_DATABASE_FILE "jumanji.db"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -153,6 +155,21 @@ jumanji_init(int argc, char* argv[])
       girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");
     }
   }
+
+  /* database */
+  char* database_file = g_build_filename(jumanji->config.config_dir, JUMANJI_DATABASE_FILE, NULL);
+  if (database_file == NULL) {
+    goto error_free;
+  }
+
+  jumanji->database.session = db_open(jumanji, database_file);
+  if (jumanji->database.session == NULL) {
+    girara_error("Could not establish a database connection.");
+    g_free(database_file);
+    goto error_free;
+  }
+
+  g_free(database_file);
 
   /* load tabs */
   if(argc < 2) {
