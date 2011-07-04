@@ -79,6 +79,7 @@ error_free:
       db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
       sqlite3_close(sqlite_session->session);
       free(sqlite_session);
+      free(session->data);
     }
   }
 
