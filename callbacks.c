@@ -203,5 +203,5 @@ bool cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* se
 
   jumanji_proxy_set(jumanji, proxy);
 
-	return true;
+  return true;
 }

@@ -41,11 +41,12 @@ jumanji_init(int argc, char* argv[])
 
   /* jumanji */
   jumanji_t* jumanji = malloc(sizeof(jumanji_t));
-  jumanji->database.session = NULL;
 
   if (jumanji == NULL) {
     goto error_out;
   }
+
+  jumanji->database.session = NULL;
 
   if (config_dir) {
     jumanji->config.config_dir = g_strdup(config_dir);

@@ -1,5 +1,6 @@
 /* See LICENSE file for license and copyright information */
 
+#include <girara.h>
 #include <stdlib.h>
 #include <sqlite3.h>
 #include <time.h>
@@ -14,6 +15,13 @@
  * @return Statement object
  */
 sqlite3_stmt* db_prepare_statement(sqlite3* session, const char* statement);
+
+/**
+ * Frees a result link
+ *
+ * @param data Link data
+ */
+void db_free_result_link(void* data);
 
 typedef struct db_sqlite_s
 {
@@ -191,6 +199,85 @@ error_free:
 }
 
 void
+db_free_result_link(void* data)
+{
+  if (data == NULL) {
+    return;
+  }
+
+  db_result_link_t* link = (db_result_link_t*) data;
+  g_free(link->url);
+  g_free(link->title);
+  free(link);
+}
+
+girara_list_t*
+db_bookmark_find(db_session_t* session, const char* input)
+{
+  if (session == NULL || input == NULL) {
+    return NULL;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->history_session == NULL) {
+    return NULL;
+  }
+
+  /* prepare statement */
+  static const char SQL_HISTORY_FIND[] =
+    "SELECT * FROM bookmarks WHERE "
+    "url LIKE (SELECT '%' || ? || '%') OR "
+    "title LIKE (SELECT '%' || ? || '%');";
+
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->bookmark_session, SQL_HISTORY_FIND);
+
+  if (statement == NULL) {
+    return NULL;
+  }
+
+  /* bind values */
+  if (sqlite3_bind_text(statement, 1, input, -1, NULL) != SQLITE_OK ||
+      sqlite3_bind_text(statement, 2, input, -1, NULL) != SQLITE_OK
+      ) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return NULL;
+  }
+
+  girara_list_t* results = girara_list_new();
+
+  if (results == NULL) {
+    sqlite3_finalize(statement);
+    return NULL;
+  }
+
+  girara_list_set_free_function(results, db_free_result_link);
+
+  while(sqlite3_step(statement) == SQLITE_ROW) {
+    db_result_link_t* link = malloc(sizeof(db_result_link_t));
+    if (link == NULL) {
+      sqlite3_finalize(statement);
+      return NULL;
+    }
+
+    char* url   = (char*) sqlite3_column_text(statement, 0);
+    char* title = (char*) sqlite3_column_text(statement, 1);
+
+    link->url   = g_strdup(url);
+    link->title = g_strdup(title);
+
+    girara_list_append(results, link);
+  }
+
+  sqlite3_finalize(statement);
+
+  return results;
+}
+
+
+void
 db_bookmark_add(db_session_t* session, const char* url, const char* title)
 {
   if (session == NULL || url == NULL || title == NULL || session->data == NULL) {
@@ -214,6 +301,7 @@ db_bookmark_add(db_session_t* session, const char* url, const char* title)
     return;
   }
 
+  /* bind values */
   if (sqlite3_bind_text(statement, 1, url,   -1, NULL) != SQLITE_OK ||
       sqlite3_bind_text(statement, 2, title, -1, NULL) != SQLITE_OK
       ) {
@@ -224,6 +312,71 @@ db_bookmark_add(db_session_t* session, const char* url, const char* title)
 
   sqlite3_step(statement);
   sqlite3_finalize(statement);
+}
+
+girara_list_t*
+db_history_find(db_session_t* session, const char* input)
+{
+  if (session == NULL || input == NULL) {
+    return NULL;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->history_session == NULL) {
+    return NULL;
+  }
+
+  /* prepare statement */
+  static const char SQL_HISTORY_FIND[] =
+    "SELECT * FROM history WHERE "
+    "url LIKE (SELECT '%' || ? || '%') OR "
+    "title LIKE (SELECT '%' || ? || '%');";
+
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->history_session, SQL_HISTORY_FIND);
+
+  if (statement == NULL) {
+    return NULL;
+  }
+
+  /* bind values */
+  if (sqlite3_bind_text(statement, 1, input, -1, NULL) != SQLITE_OK ||
+      sqlite3_bind_text(statement, 2, input, -1, NULL) != SQLITE_OK
+      ) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return NULL;
+  }
+
+  girara_list_t* results = girara_list_new();
+
+  if (results == NULL) {
+    sqlite3_finalize(statement);
+    return NULL;
+  }
+
+  girara_list_set_free_function(results, db_free_result_link);
+
+  while(sqlite3_step(statement) == SQLITE_ROW) {
+    db_result_link_t* link = malloc(sizeof(db_result_link_t));
+    if (link == NULL) {
+      sqlite3_finalize(statement);
+      return NULL;
+    }
+
+    char* url   = (char*) sqlite3_column_text(statement, 0);
+    char* title = (char*) sqlite3_column_text(statement, 0);
+
+    link->url   = g_strdup(url);
+    link->title = g_strdup(title);
+
+    girara_list_append(results, link);
+  }
+
+  sqlite3_finalize(statement);
+
+  return results;
 }
 
 void

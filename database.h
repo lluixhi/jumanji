@@ -17,6 +17,12 @@ typedef struct db_session_s
   void* data; /**> Implementation based data */
 } db_session_t;
 
+typedef struct db_result_link_s
+{
+  char* url; /**> The url of the link */
+  char* title; /**> The link title */
+} db_result_link_t;
+
 /**
  * Creates a new database object
  *
@@ -66,6 +72,15 @@ void db_close(db_session_t* session);
 void db_bookmark_add(db_session_t* session, const char* url, const char* title);
 
 /**
+ * Find bookmarks
+ *
+ * @param session The databases session
+ * @param input The data that the bookmark should match
+ * @return list or NULL if an error occured
+ */
+girara_list_t* db_bookmark_find(db_session_t* session, const char* input);
+
+/**
  * Save a new history item in the database
  *
  * @param session The database session
@@ -73,5 +88,15 @@ void db_bookmark_add(db_session_t* session, const char* url, const char* title);
  * @param title The title of the history item
  */
 void db_history_add(db_session_t* session, const char* url, const char* title);
+
+/**
+ * Find history
+ *
+ * @param session The databases session
+ * @param input The data that the bookmark should match
+ * @return list or NULL if an error occured
+ */
+girara_list_t* db_history_find(db_session_t* session, const char* input);
+
 
 #endif // DATABASE_H
