@@ -96,6 +96,16 @@ bool sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned 
 bool sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t);
 
 /**
+ * Saves (or removes) the current website as a bookmark
+ *
+ * @param session The used girara session
+ * @param argument The used argument
+ * @param t Number of executions
+ * @return true if no error occured otherwise false
+ */
+bool sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsigned int t);
+
+/**
  * Toggle through the proxy list
  *
  * @param session The used girara session
