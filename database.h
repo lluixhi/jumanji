@@ -81,6 +81,14 @@ void db_bookmark_add(db_session_t* session, const char* url, const char* title);
 girara_list_t* db_bookmark_find(db_session_t* session, const char* input);
 
 /**
+ * Removes a saved bookmark
+ *
+ * @param session The database session
+ * @param url The url that should be removed
+ */
+void db_bookmark_remove(db_session_t* session, const char* url);
+
+/**
  * Save a new history item in the database
  *
  * @param session The database session
@@ -97,6 +105,14 @@ void db_history_add(db_session_t* session, const char* url, const char* title);
  * @return list or NULL if an error occured
  */
 girara_list_t* db_history_find(db_session_t* session, const char* input);
+
+/**
+ * Cleans the history
+ *
+ * @param session The database session
+ * @param age The age of the entries in seconds
+ */
+void db_history_clean(db_session_t* session, unsigned int age);
 
 
 #endif // DATABASE_H

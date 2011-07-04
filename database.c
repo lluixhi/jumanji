@@ -276,6 +276,40 @@ db_bookmark_find(db_session_t* session, const char* input)
   return results;
 }
 
+void
+db_bookmark_remove(db_session_t* session, const char* url)
+{
+  if (session == NULL || url == NULL) {
+    return;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->bookmark_session == NULL) {
+    return;
+  }
+
+  /* prepare statement */
+  static const char SQL_BOOKMARK_ADD[] =
+    "DELETE FROM bookmarks WHERE url = ?;";
+
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->bookmark_session, SQL_BOOKMARK_ADD);
+
+  if (statement == NULL) {
+    return;
+  }
+
+  /* bind values */
+  if (sqlite3_bind_text(statement, 1, url, -1, NULL) != SQLITE_OK) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return;
+  }
+
+  sqlite3_step(statement);
+  sqlite3_finalize(statement);
+}
 
 void
 db_bookmark_add(db_session_t* session, const char* url, const char* title)
@@ -407,6 +441,42 @@ db_history_add(db_session_t* session, const char* url, const char* title)
       sqlite3_bind_text(statement, 2, title, -1, NULL) != SQLITE_OK ||
       sqlite3_bind_int( statement, 3, time(NULL))      != SQLITE_OK
       ) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return;
+  }
+
+  sqlite3_step(statement);
+  sqlite3_finalize(statement);
+}
+
+void
+db_history_clean(db_session_t* session, unsigned int age)
+{
+  if (session == NULL) {
+    return;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->history_session == NULL) {
+    return;
+  }
+
+  /* prepare statement */
+  static const char SQL_HISTORY_CLEAN[] =
+    "DELETE FROM history WHERE visited >= ?;";
+
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->history_session, SQL_HISTORY_CLEAN);
+
+  if (statement == NULL) {
+    return;
+  }
+
+  /* bind values */
+  int visited = time(NULL) - age;
+  if (sqlite3_bind_int(statement, 1, visited) != SQLITE_OK) {
     girara_error("Could not bind query parameters");
     sqlite3_finalize(statement);
     return;
