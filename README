@@ -14,12 +14,12 @@ and that the Makefile is only compatible with GNU make.
 
 Installation
 ------------
-To build and install zathura:
+To build and install jumanji:
 
   make install
 
 Uninstall:
 ----------
-To delete zathura from your system, just type:
+To delete jumanji from your system, just type:
 
   make uninstall
