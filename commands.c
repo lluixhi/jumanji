@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <girara.h>
 
 #include "commands.h"
 #include "jumanji.h"
@@ -11,6 +12,9 @@ cmd_buffer_delete(girara_session_t* session, girara_list_t* argument_list)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  girara_sc_tab_close(jumanji->ui.session, NULL, 0);
 
   return true;
 }
