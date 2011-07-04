@@ -4,7 +4,66 @@
 #include <string.h>
 
 #include "commands.h"
+#include "database.h"
 #include "jumanji.h"
+
+bool
+cmd_bookmark_add(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+
+  if (jumanji->database.session == NULL) {
+    return false;
+  }
+
+  int number_of_arguments = girara_list_size(argument_list);
+  char* url   = NULL;
+  char* title = NULL;
+
+  if (number_of_arguments > 0) {
+    url   = girara_list_nth(argument_list, 0);
+    title = (number_of_arguments > 1) ? girara_list_nth(argument_list, 1) : NULL;
+  } else {
+    jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+    if (tab != NULL && tab->web_view != NULL) {
+      url   = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+      title = (char*) webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+    }
+  }
+
+  db_bookmark_add(jumanji->database.session, url, title);
+
+  return true;
+}
+
+bool
+cmd_bookmark_delete(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+
+  if (jumanji->database.session == NULL) {
+    return false;
+  }
+
+  char* url = NULL;
+
+  if (girara_list_size(argument_list) > 0) {
+    url   = girara_list_nth(argument_list, 0);
+  } else {
+    jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+    if (tab != NULL && tab->web_view != NULL) {
+      url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    }
+  }
+
+  db_bookmark_remove(jumanji->database.session, url);
+
+  return true;
+}
 
 bool
 cmd_buffer_delete(girara_session_t* session, girara_list_t* argument_list)

@@ -118,8 +118,10 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_Z,        NULL, sc_zoom,                  NORMAL, ZOOM_SPECIFIC,   NULL);
 
   /* define default inputbar commands */
-  girara_inputbar_command_add(gsession, "open",    "o",  cmd_open,    cc_open, "Open URL in the cu  rrent tab");
-  girara_inputbar_command_add(gsession, "tabopen", "t",  cmd_tabopen, cc_open, "Open URL in a new tab");
+  girara_inputbar_command_add(gsession, "bmark",     NULL,  cmd_bookmark_add,    NULL,    "Add a bookmark");
+  girara_inputbar_command_add(gsession, "delbmarks", NULL,  cmd_bookmark_delete, NULL,    "Delete a bookmark");
+  girara_inputbar_command_add(gsession, "open",      "o",   cmd_open,            cc_open, "Open URL in the cu  rrent tab");
+  girara_inputbar_command_add(gsession, "tabopen",   "t",   cmd_tabopen,         cc_open, "Open URL in a new tab");
 
   /* add shortcut mappings */
   girara_shortcut_mapping_add(gsession, "focus_inputbar", sc_focus_inputbar);
