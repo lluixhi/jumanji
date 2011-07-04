@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <sqlite3.h>
+#include <time.h>
 
 #include "database.h"
 
@@ -204,7 +205,7 @@ db_bookmark_add(db_session_t* session, const char* url, const char* title)
 
   /* prepare statement */
   static const char SQL_BOOKMARK_ADD[] =
-    "INSERT INTO bookmarks (url, title) VALUES (?, ?);";
+    "REPLACE INTO bookmarks (url, title) VALUES (?, ?);";
 
   sqlite3_stmt* statement =
     db_prepare_statement(sqlite_session->bookmark_session, SQL_BOOKMARK_ADD);
@@ -238,9 +239,9 @@ db_history_add(db_session_t* session, const char* url, const char* title)
     return;
   }
 
-  /* prepare statement */
+  /* add to database */
   static const char SQL_HISTORY_ADD[] =
-    "INSERT INTO history (url, title) VALUES (?, ?);";
+    "REPLACE INTO history (url, title, visited) VALUES (?, ?, ?)";
 
   sqlite3_stmt* statement =
     db_prepare_statement(sqlite_session->history_session, SQL_HISTORY_ADD);
@@ -250,7 +251,8 @@ db_history_add(db_session_t* session, const char* url, const char* title)
   }
 
   if (sqlite3_bind_text(statement, 1, url,   -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_text(statement, 2, title, -1, NULL) != SQLITE_OK
+      sqlite3_bind_text(statement, 2, title, -1, NULL) != SQLITE_OK ||
+      sqlite3_bind_int( statement, 3, time(NULL))      != SQLITE_OK
       ) {
     girara_error("Could not bind query parameters");
     sqlite3_finalize(statement);
