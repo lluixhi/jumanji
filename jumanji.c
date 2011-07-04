@@ -13,7 +13,8 @@
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
 #define JUMANJI_COOKIE_FILE "cookies"
-#define JUMANJI_DATABASE_FILE "jumanji.db"
+#define JUMANJI_BOOKMARKS_FILE "bookmarks"
+#define JUMANJI_HISTORY_FILE "history"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -39,7 +40,8 @@ jumanji_init(int argc, char* argv[])
   g_option_context_free(context);
 
   /* jumanji */
-  jumanji_t* jumanji  = malloc(sizeof(jumanji_t));
+  jumanji_t* jumanji = malloc(sizeof(jumanji_t));
+  jumanji->database.session = NULL;
 
   if (jumanji == NULL) {
     goto error_out;
@@ -157,19 +159,32 @@ jumanji_init(int argc, char* argv[])
   }
 
   /* database */
-  char* database_file = g_build_filename(jumanji->config.config_dir, JUMANJI_DATABASE_FILE, NULL);
-  if (database_file == NULL) {
-    goto error_free;
-  }
-
-  jumanji->database.session = db_open(jumanji, database_file);
+  jumanji->database.session = db_new(jumanji);
   if (jumanji->database.session == NULL) {
-    girara_error("Could not establish a database connection.");
-    g_free(database_file);
+    girara_error("Could not create database object");
     goto error_free;
   }
 
-  g_free(database_file);
+  char* bookmark_file = g_build_filename(jumanji->config.config_dir, JUMANJI_BOOKMARKS_FILE, NULL);
+  if (bookmark_file != NULL) {
+    db_set_bookmark_file(jumanji->database.session, bookmark_file);
+    g_free(bookmark_file);
+  } else {
+    goto error_free;
+  }
+
+  char* history_file = g_build_filename(jumanji->config.config_dir, JUMANJI_HISTORY_FILE, NULL);
+  if (history_file != NULL) {
+    db_set_history_file(jumanji->database.session, history_file);
+    g_free(history_file);
+  } else {
+    goto error_free;
+  }
+
+  if (db_init(jumanji->database.session) == false) {
+    girara_error("Could not initialize database");
+    goto error_free;
+  }
 
   /* load tabs */
   if(argc < 2) {
@@ -191,8 +206,14 @@ jumanji_init(int argc, char* argv[])
 
 error_free:
 
-  if (jumanji && jumanji->ui.session) {
-    girara_session_destroy(jumanji->ui.session);
+  if (jumanji) {
+    if (jumanji->ui.session) {
+      girara_session_destroy(jumanji->ui.session);
+    }
+
+    if (jumanji->database.session) {
+      db_close(jumanji->database.session);
+    }
   }
 
   free(jumanji);

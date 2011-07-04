@@ -1,7 +1,6 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <sqlite3.h>
 
 #include "database.h"
@@ -13,37 +12,18 @@
  * @param statement The sql statement
  * @return Statement object
  */
-sqlite3_stmt* db_prepare_statement(db_session_t* session, const char* statement);
+sqlite3_stmt* db_prepare_statement(sqlite3* session, const char* statement);
 
 typedef struct db_sqlite_s
 {
-  sqlite3* session; /**> sqlite3 session */
+  sqlite3* bookmark_session; /**> sqlite3 session */
+  sqlite3* history_session; /**> sqlite3 session */
 } db_sqlite_t;
 
-static const char SQL_INIT[] =
-  /* history table */
-  "CREATE TABLE IF NOT EXISTS history ("
-    "url TEXT PRIMARY KEY,"
-    "title TEXT,"
-    "visited INT"
-    ");"
-
-  /* bookmarks table */
-  "CREATE TABLE IF NOT EXISTS bookmarks ("
-    "url TEXT PRIMARY KEY,"
-    "title TEXT"
-    ");";
-
-static const char SQL_LOOKUP_URL[] =
-  "SELECT url FROM history WHERE (url LIKE ?) AND (title LIKE ?);";
-
-static const char SQL_LOOKUP_BOOKMARK[] =
-  "SELECT url FROM bookmarks WHERE (url LIKE ?) AND (title LIKE ?);";
-
 db_session_t*
-db_open(jumanji_t* jumanji, const char* filename)
+db_new(jumanji_t* jumanji)
 {
-  if (jumanji == NULL || filename == NULL) {
+  if (jumanji == NULL) {
     goto error_out;
   }
 
@@ -53,24 +33,13 @@ db_open(jumanji_t* jumanji, const char* filename)
     goto error_out;
   }
 
-  session->filename = g_strdup(filename);
-  session->data     = malloc(sizeof(db_sqlite_t));
+  session->bookmark_file = NULL;
+  session->history_file  = NULL;
+  session->jumanji       = jumanji;
+
+  session->data = malloc(sizeof(db_sqlite_t));
 
   if (session->data == NULL) {
-    goto error_free;
-  }
-
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  sqlite_session->session     = NULL;
-
-  /* connect to database */
-  if (sqlite3_open(filename, &(sqlite_session->session)) != SQLITE_OK) {
-    goto error_free;
-  }
-
-  /* initialize database scheme */
-  if (sqlite3_exec(sqlite_session->session, SQL_INIT, NULL, 0, NULL) != SQLITE_OK) {
-    fprintf(stderr, "%s\n", sqlite3_errmsg(sqlite_session->session));
     goto error_free;
   }
 
@@ -78,24 +47,98 @@ db_open(jumanji_t* jumanji, const char* filename)
 
 error_free:
 
-  if (session) {
-    if (session->filename != NULL) {
-      g_free(session->filename);
-    }
-
-    if (session->data != NULL) {
-      db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-      sqlite3_close(sqlite_session->session);
-      free(sqlite_session);
-      free(session->data);
-    }
-  }
-
+  free(session->data);
   free(session);
 
 error_out:
 
   return NULL;
+}
+
+bool
+db_init(db_session_t* session)
+{
+  if (session == NULL || session->data == NULL) {
+    return false;
+  }
+
+  db_sqlite_t* sqlite_session      = (db_sqlite_t*) session->data;
+  sqlite_session->bookmark_session = NULL;
+  sqlite_session->history_session  = NULL;
+
+  /* connect/create to bookmark database */
+  static const char SQL_BOOKMARK_INIT[] =
+    /* bookmarks table */
+    "CREATE TABLE IF NOT EXISTS bookmarks ("
+      "url TEXT PRIMARY KEY,"
+      "title TEXT"
+      ");";
+
+  if (session->bookmark_file) {
+    if (sqlite3_open(session->bookmark_file, &(sqlite_session->bookmark_session)) != SQLITE_OK) {
+      goto error_free;
+    }
+
+    /* initialize database scheme */
+    if (sqlite3_exec(sqlite_session->bookmark_session, SQL_BOOKMARK_INIT, NULL, 0, NULL) != SQLITE_OK) {
+      girara_error("Could not initialize database: %s\n", session->bookmark_file);
+      goto error_free;
+    }
+  }
+
+  static const char SQL_HISTORY_INIT[] =
+    /* history table */
+    "CREATE TABLE IF NOT EXISTS history ("
+      "url TEXT PRIMARY KEY,"
+      "title TEXT,"
+      "visited INT"
+      ");";
+
+  if (session->history_file) {
+    if (sqlite3_open(session->history_file, &(sqlite_session->history_session)) != SQLITE_OK) {
+      goto error_free;
+    }
+
+    /* initialize database scheme */
+    if (sqlite3_exec(sqlite_session->history_session, SQL_HISTORY_INIT, NULL, 0, NULL) != SQLITE_OK) {
+      girara_error("Could not initialize database: %s\n", session->history_file);
+      goto error_free;
+    }
+  }
+
+  return true;
+
+error_free:
+
+  if (sqlite_session->bookmark_session) {
+    sqlite3_close(sqlite_session->bookmark_session);
+  }
+
+  if (sqlite_session->history_session) {
+    sqlite3_close(sqlite_session->history_session);
+  }
+
+  return false;
+}
+
+void
+db_set_bookmark_file(db_session_t* session, const char* bookmark_file)
+{
+  if (session == NULL || bookmark_file == NULL) {
+    return;
+  }
+
+  session->bookmark_file = g_strdup(bookmark_file);
+}
+
+void
+db_set_history_file(db_session_t* session, const char* history_file)
+{
+  if (session == NULL || history_file == NULL) {
+    return;
+  }
+
+  session->history_file = g_strdup(history_file);
 }
 
 void
@@ -105,34 +148,29 @@ db_close(db_session_t* session)
     return;
   }
 
-  if (session->data != NULL) {
-    db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-    sqlite3_close(sqlite_session->session);
-    free(sqlite_session);
+  if (session->bookmark_file) {
+    g_free(session->bookmark_file);
   }
 
-  g_free(session->filename);
+  if (session->history_file) {
+    g_free(session->history_file);
+  }
 
+  free(session->data);
   free(session);
 }
 
 sqlite3_stmt*
-db_prepare_statement(db_session_t* session, const char* statement)
+db_prepare_statement(sqlite3* session, const char* statement)
 {
-  if (session == NULL || session->data == NULL || statement == NULL) {
-    return false;
-  }
-
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->session == NULL) {
+  if (session == NULL || statement == NULL) {
     return false;
   }
 
   const char* pz_tail   = NULL;
   sqlite3_stmt* pp_stmt = NULL;
 
-  if (sqlite3_prepare(sqlite_session->session, statement, -1,
-        &pp_stmt, &pz_tail) != SQLITE_OK) {
+  if (sqlite3_prepare(session, statement, -1, &pp_stmt, &pz_tail) != SQLITE_OK) {
     girara_error("Failed to prepare query: %s", statement);
     goto error_free;
   } else if (pz_tail && *pz_tail != '\0') {
@@ -160,7 +198,7 @@ db_bookmark_add(db_session_t* session, const char* url, const char* title)
 
   /* get database connection */
   db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->session == NULL) {
+  if (sqlite_session->bookmark_session == NULL) {
     return;
   }
 
@@ -168,7 +206,8 @@ db_bookmark_add(db_session_t* session, const char* url, const char* title)
   static const char SQL_BOOKMARK_ADD[] =
     "INSERT INTO bookmarks (url, title) VALUES (?, ?);";
 
-  sqlite3_stmt* statement = db_prepare_statement(session, SQL_BOOKMARK_ADD);
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->bookmark_session, SQL_BOOKMARK_ADD);
 
   if (statement == NULL) {
     return;
@@ -195,7 +234,7 @@ db_history_add(db_session_t* session, const char* url, const char* title)
 
   /* get database connection */
   db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->session == NULL) {
+  if (sqlite_session->history_session == NULL) {
     return;
   }
 
@@ -203,7 +242,8 @@ db_history_add(db_session_t* session, const char* url, const char* title)
   static const char SQL_HISTORY_ADD[] =
     "INSERT INTO history (url, title) VALUES (?, ?);";
 
-  sqlite3_stmt* statement = db_prepare_statement(session, SQL_HISTORY_ADD);
+  sqlite3_stmt* statement =
+    db_prepare_statement(sqlite_session->history_session, SQL_HISTORY_ADD);
 
   if (statement == NULL) {
     return;

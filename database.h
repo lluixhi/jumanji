@@ -3,23 +3,51 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include <stdbool.h>
+
 #include "jumanji.h"
 
 typedef struct db_session_s
 {
-  jumanji_t* session; /**> Jumanji session */
-  char* filename; /**> Database file */
+  jumanji_t* jumanji; /**> Jumanji session */
+
+  char* bookmark_file; /**> Database file of the bookmarks */
+  char* history_file; /**> Database file of the history */
+
   void* data; /**> Implementation based data */
 } db_session_t;
 
 /**
- * Initializes a database connection
+ * Creates a new database object
  *
  * @param session The jumanji session
- * @param filename The database filetype
  * @return Session object or NULL if an error occured
  */
-db_session_t* db_open(jumanji_t* session, const char* filename);
+db_session_t* db_new(jumanji_t* session);
+
+/**
+ * Initializes the database
+ *
+ * @param session The database session
+ * @return true on success otherwise false
+ */
+bool db_init(db_session_t* session);
+
+/**
+ * Sets the path to the bookmark database file
+ *
+ * @param session The database session
+ * @param bookmark_file Path to the bookmark file
+ */
+void db_set_bookmark_file(db_session_t* session, const char* bookmark_file);
+
+/**
+ * Sets the path to the history database file
+ *
+ * @param session The database session
+ * @param history_file Path to the history file
+ */
+void db_set_history_file(db_session_t* session, const char* history_file);
 
 /**
  * Closes a database connection
