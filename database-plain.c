@@ -220,6 +220,34 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
 void
 db_plain_history_clean(db_session_t* session, unsigned int age)
 {
+  if (session == NULL || session->data == NULL)
+    return;
+  }
+
+  db_plain_t* plain_session = (db_plain_t*) session->data;
+
+  girara_list_t* history = db_plain_read_urls_from_file(plain_session->history_file_path);
+  if (history == NULL) {
+    return;
+  }
+
+  /* remove url from list */
+  girara_list_iterator_t* iter = girara_list_iterator(history);
+
+  int visited = time(NULL) - age;
+  do {
+    db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+
+    if (link->visited >= visited) {
+      girara_list_remove(bookmarks, link);
+    }
+  } while (girara_list_iterator_next(iter) != NULL);
+
+  girara_list_iterator_free(iter);
+
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, history, false);
+
+  girara_list_free(history);
 }
 
 girara_list_t*
