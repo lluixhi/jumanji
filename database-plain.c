@@ -255,7 +255,7 @@ db_plain_history_clean(db_session_t* session, unsigned int age)
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
 
     if (link->visited >= visited) {
-      girara_list_remove(bookmarks, link);
+      girara_list_remove(history, link);
     }
   } while (girara_list_iterator_next(iter) != NULL);
 
