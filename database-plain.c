@@ -188,6 +188,33 @@ db_plain_history_find(db_session_t* session, const char* input)
 void
 db_plain_history_add(db_session_t* session, const char* url, const char* title)
 {
+  if (session == NULL || session->data == NULL || url == NULL) {
+    return;
+  }
+
+  db_plain_t* plain_session = (db_plain_t*) session->data;
+
+  girara_list_t* history = db_plain_read_urls_from_file(plain_session->history_file_path);
+  if (history == NULL) {
+    return;
+  }
+
+  /* add url to list */
+  db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
+  if (link == NULL) {
+    girara_list_free(history);
+    return;
+  }
+
+  link->url     = g_strdup(url);
+  link->title   = g_strdup(title);
+  link->visited = time(NULL);
+
+  girara_list_append(history, link);
+
+  /* write to file */
+  db_plain_write_urls_to_file(plain_session->history_file_path, history, true);
+  girara_list_free(history);
 }
 
 void
