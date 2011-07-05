@@ -13,10 +13,7 @@
 
 typedef struct db_functions_s
 {
-  db_session_t* (*new)(jumanji_t*);
   bool (*init)(db_session_t*);
-  void (*set_bookmark_file)(db_session_t*, const char*);
-  void (*set_history_file)(db_session_t*, const char*);
   void (*close)(db_session_t*);
   void (*bookmark_add)(db_session_t*, const char*, const char*);
   girara_list_t* (*bookmark_find)(db_session_t*, const char*);
@@ -28,10 +25,7 @@ typedef struct db_functions_s
 
 static const db_functions_t db_function = {
 #ifdef SQLITE
-  db_sqlite_new,
   db_sqlite_init,
-  db_sqlite_set_bookmark_file,
-  db_sqlite_set_history_file,
   db_sqlite_close,
   db_sqlite_bookmark_add,
   db_sqlite_bookmark_find,
@@ -40,10 +34,7 @@ static const db_functions_t db_function = {
   db_sqlite_history_find,
   db_sqlite_history_clean
 #else
-  db_plain_new,
   db_plain_init,
-  db_plain_set_bookmark_file,
-  db_plain_set_history_file,
   db_plain_close,
   db_plain_bookmark_add,
   db_plain_bookmark_find,
@@ -57,11 +48,22 @@ static const db_functions_t db_function = {
 db_session_t*
 db_new(jumanji_t* jumanji)
 {
-  if (db_function.new) {
-    return db_function.new(jumanji);
-  } else {
+  if (jumanji == NULL) {
     return NULL;
   }
+
+  /* initialize database object */
+  db_session_t* session = malloc(sizeof(db_session_t));
+  if (session == NULL) {
+    return NULL;
+  }
+
+  session->bookmark_file = NULL;
+  session->history_file  = NULL;
+  session->jumanji       = jumanji;
+  session->data          = NULL;
+
+  return session;
 }
 
 bool
@@ -77,17 +79,21 @@ db_init(db_session_t* session)
 void
 db_set_bookmark_file(db_session_t* session, const char* bookmark_file)
 {
-  if (db_function.set_bookmark_file) {
-    db_function.set_bookmark_file(session, bookmark_file);
+  if (session == NULL || bookmark_file == NULL) {
+    return;
   }
+
+  session->bookmark_file = g_strdup(bookmark_file);
 }
 
 void
 db_set_history_file(db_session_t* session, const char* history_file)
 {
-  if (db_function.set_history_file) {
-    db_function.set_history_file(session, history_file);
+  if (session == NULL || history_file == NULL) {
+    return;
   }
+
+  session->history_file = g_strdup(history_file);
 }
 
 void

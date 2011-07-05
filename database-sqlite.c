@@ -6,51 +6,22 @@
 
 #include "database-sqlite.h"
 
-db_session_t*
-db_sqlite_new(jumanji_t* jumanji)
-{
-  if (jumanji == NULL) {
-    goto error_out;
-  }
-
-  /* initialize database object */
-  db_session_t* session = malloc(sizeof(db_session_t));
-  if (session == NULL) {
-    goto error_out;
-  }
-
-  session->bookmark_file = NULL;
-  session->history_file  = NULL;
-  session->jumanji       = jumanji;
-
-  session->data = malloc(sizeof(db_sqlite_t));
-
-  if (session->data == NULL) {
-    goto error_free;
-  }
-
-  return session;
-
-error_free:
-
-  free(session->data);
-  free(session);
-
-error_out:
-
-  return NULL;
-}
-
 bool
 db_sqlite_init(db_session_t* session)
 {
-  if (session == NULL || session->data == NULL) {
+  if (session == NULL) {
     return false;
   }
 
-  db_sqlite_t* sqlite_session      = (db_sqlite_t*) session->data;
+  db_sqlite_t* sqlite_session = malloc(sizeof(db_sqlite_t));
+  if (sqlite_session == NULL) {
+    return false;
+  }
+
   sqlite_session->bookmark_session = NULL;
   sqlite_session->history_session  = NULL;
+
+  session->data = sqlite_session;
 
   /* connect/create to bookmark database */
   static const char SQL_BOOKMARK_INIT[] =
@@ -105,26 +76,6 @@ error_free:
   }
 
   return false;
-}
-
-void
-db_sqlite_set_bookmark_file(db_session_t* session, const char* bookmark_file)
-{
-  if (session == NULL || bookmark_file == NULL) {
-    return;
-  }
-
-  session->bookmark_file = g_strdup(bookmark_file);
-}
-
-void
-db_sqlite_set_history_file(db_session_t* session, const char* history_file)
-{
-  if (session == NULL || history_file == NULL) {
-    return;
-  }
-
-  session->history_file = g_strdup(history_file);
 }
 
 void

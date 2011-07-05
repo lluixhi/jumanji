@@ -9,36 +9,12 @@
 #include "jumanji.h"
 
 /**
- * Creates a new database object
- *
- * @param session The jumanji session
- * @return Session object or NULL if an error occured
- */
-db_session_t* db_plain_new(jumanji_t* session);
-
-/**
  * Initializes the database
  *
  * @param session The database session
  * @return true on success otherwise false
  */
 bool db_plain_init(db_session_t* session);
-
-/**
- * Sets the path to the bookmark database file
- *
- * @param session The database session
- * @param bookmark_file Path to the bookmark file
- */
-void db_plain_set_bookmark_file(db_session_t* session, const char* bookmark_file);
-
-/**
- * Sets the path to the history database file
- *
- * @param session The database session
- * @param history_file Path to the history file
- */
-void db_plain_set_history_file(db_session_t* session, const char* history_file);
 
 /**
  * Closes a database connection

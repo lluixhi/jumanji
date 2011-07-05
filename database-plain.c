@@ -5,26 +5,10 @@
 
 #include "database-plain.h"
 
-db_session_t*
-db_plain_new(jumanji_t* jumanji)
-{
-  return NULL;
-}
-
 bool
 db_plain_init(db_session_t* session)
 {
   return false;
-}
-
-void
-db_plain_set_bookmark_file(db_session_t* session, const char* bookmark_file)
-{
-}
-
-void
-db_plain_set_history_file(db_session_t* session, const char* history_file)
-{
 }
 
 void
