@@ -31,7 +31,14 @@ db_plain_init(db_session_t* session)
       goto error_free;
     }
 
-    if (g_file_test(plain_session->bookmark_file_path, G_FILE_TEST_IS_REGULAR) == false) {
+    if (g_file_test(plain_session->bookmark_file_path, G_FILE_TEST_EXISTS) == false) {
+      FILE* file = fopen(plain_session->bookmark_file_path, "w");
+      if (file != NULL) {
+        fclose(file);
+      } else {
+        goto error_free;
+      }
+    } else if (g_file_test(plain_session->bookmark_file_path, G_FILE_TEST_IS_REGULAR) == false) {
       goto error_free;
     }
   }
@@ -44,7 +51,14 @@ db_plain_init(db_session_t* session)
       goto error_free;
     }
 
-    if (g_file_test(plain_session->history_file_path, G_FILE_TEST_IS_REGULAR) == false) {
+    if (g_file_test(plain_session->history_file_path, G_FILE_TEST_EXISTS) == false) {
+      FILE* file = fopen(plain_session->history_file_path, "w");
+      if (file != NULL) {
+        fclose(file);
+      } else {
+        goto error_free;
+      }
+    } else if (g_file_test(plain_session->history_file_path, G_FILE_TEST_IS_REGULAR) == false) {
       goto error_free;
     }
   }
@@ -58,6 +72,8 @@ error_free:
     g_free(plain_session->history_file_path);
     free(plain_session);
   }
+
+  session->data = NULL;
 
   return false;
 }
