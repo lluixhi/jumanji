@@ -26,4 +26,4 @@ CC ?= gcc
 SFLAGS = -s
 
 # possible values are: sqlite and plain
-DATABASE ?= sqlite
+DATABASE ?= plain
