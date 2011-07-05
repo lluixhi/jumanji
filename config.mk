@@ -11,7 +11,7 @@ MANPREFIX ?= ${PREFIX}/share/man
 GTK_INC = $(shell pkg-config --cflags gtk+-3.0 webkitgtk-3.0 girara-gtk3)
 GTK_LIB = $(shell pkg-config --libs   gtk+-3.0 webkitgtk-3.0 girara-gtk3)
 INCS = -I. -I/usr/include ${GTK_INC}
-LIBS = -lc ${GTK_LIB} -lpthread -lsqlite3
+LIBS = -lc ${GTK_LIB} -lpthread
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
@@ -24,3 +24,7 @@ CC ?= gcc
 
 # strip
 SFLAGS = -s
+
+# sqlite
+CFLAGS += -DSQLITE
+LIBS   += -lsqlite3
