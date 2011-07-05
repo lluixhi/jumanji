@@ -20,6 +20,8 @@ db_plain_init(db_session_t* session)
 
   plain_session->bookmark_file_path = NULL;
   plain_session->history_file_path  = NULL;
+  plain_session->history            = NULL;
+  plain_session->bookmarks          = NULL;
 
   session->data = plain_session;
 
@@ -63,6 +65,10 @@ db_plain_init(db_session_t* session)
     }
   }
 
+  /* read files */
+  plain_session->bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
+  plain_session->history   = db_plain_read_urls_from_file(plain_session->history_file_path);
+
   return true;
 
 error_free:
@@ -97,6 +103,8 @@ db_plain_close(db_session_t* session)
     db_plain_t* plain_session = (db_plain_t*) session->data;
     g_free(plain_session->bookmark_file_path);
     g_free(plain_session->history_file_path);
+    girara_list_free(plain_session->bookmarks);
+    girara_list_free(plain_session->history);
     free(session->data);
   }
 
@@ -112,12 +120,11 @@ db_plain_bookmark_find(db_session_t* session, const char* input)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
-  if (bookmarks == NULL) {
+  if (plain_session->bookmarks == NULL) {
     return NULL;
   }
 
-  return db_plain_filter_url_list(bookmarks, input);
+  return db_plain_filter_url_list(plain_session->bookmarks, input);
 }
 
 void
@@ -129,27 +136,24 @@ db_plain_bookmark_remove(db_session_t* session, const char* url)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
-  if (bookmarks == NULL) {
+  if (plain_session->bookmarks == NULL) {
     return;
   }
 
   /* remove url from list */
-  girara_list_iterator_t* iter = girara_list_iterator(bookmarks);
+  girara_list_iterator_t* iter = girara_list_iterator(plain_session->bookmarks);
 
   do {
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
 
     if (strcmp(link->url, url) == 0) {
-      girara_list_remove(bookmarks, link);
+      girara_list_remove(plain_session->bookmarks, link);
     }
   } while (girara_list_iterator_next(iter) != NULL);
 
   girara_list_iterator_free(iter);
 
-  db_plain_write_urls_to_file(plain_session->bookmark_file_path, bookmarks, false);
-
-  girara_list_free(bookmarks);
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
 }
 
 void
@@ -161,13 +165,12 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
-  if (bookmarks == NULL) {
+  if (plain_session->bookmarks == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  girara_list_iterator_t* iter = girara_list_iterator(bookmarks);
+  girara_list_iterator_t* iter = girara_list_iterator(plain_session->bookmarks);
   do {
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
     if (link == NULL) {
@@ -177,9 +180,8 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
     if (strstr(link->url, url) != NULL) {
       g_free(link->title);
       link->title = title ? g_strdup(title) : NULL;
-      db_plain_write_urls_to_file(plain_session->bookmark_file_path, bookmarks, false);
+      db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
       girara_list_iterator_free(iter);
-      girara_list_free(bookmarks);
       return;
     }
   } while (girara_list_iterator_next(iter) != NULL);
@@ -188,7 +190,6 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
   /* add url to list */
   db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
   if (link == NULL) {
-    girara_list_free(bookmarks);
     return;
   }
 
@@ -196,11 +197,10 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
   link->title   = g_strdup(title);
   link->visited = 0;
 
-  girara_list_append(bookmarks, link);
+  girara_list_append(plain_session->bookmarks, link);
 
   /* write to file */
-  db_plain_write_urls_to_file(plain_session->bookmark_file_path, bookmarks, false);
-  girara_list_free(bookmarks);
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
 }
 
 girara_list_t*
@@ -212,12 +212,11 @@ db_plain_history_find(db_session_t* session, const char* input)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* history = db_plain_read_urls_from_file(plain_session->history_file_path);
-  if (history == NULL) {
+  if (plain_session->history == NULL) {
     return NULL;
   }
 
-  return db_plain_filter_url_list(history, input);
+  return db_plain_filter_url_list(plain_session->history, input);
 }
 
 void
@@ -229,13 +228,12 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* history = db_plain_read_urls_from_file(plain_session->history_file_path);
-  if (history == NULL) {
+  if (plain_session->history == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  girara_list_iterator_t* iter = girara_list_iterator(history);
+  girara_list_iterator_t* iter = girara_list_iterator(plain_session->history);
   do {
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
     if (link == NULL) {
@@ -246,9 +244,8 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
       g_free(link->title);
       link->title   = title ? g_strdup(title) : NULL;
       link->visited = time(NULL);
-      db_plain_write_urls_to_file(plain_session->history_file_path, history, true);
+      db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, true);
       girara_list_iterator_free(iter);
-      girara_list_free(history);
       return;
     }
   } while (girara_list_iterator_next(iter) != NULL);
@@ -257,7 +254,6 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
   /* add url to list */
   db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
   if (link == NULL) {
-    girara_list_free(history);
     return;
   }
 
@@ -265,11 +261,10 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
   link->title   = g_strdup(title);
   link->visited = time(NULL);
 
-  girara_list_append(history, link);
+  girara_list_append(plain_session->history, link);
 
   /* write to file */
-  db_plain_write_urls_to_file(plain_session->history_file_path, history, true);
-  girara_list_free(history);
+  db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, true);
 }
 
 void
@@ -281,28 +276,25 @@ db_plain_history_clean(db_session_t* session, unsigned int age)
 
   db_plain_t* plain_session = (db_plain_t*) session->data;
 
-  girara_list_t* history = db_plain_read_urls_from_file(plain_session->history_file_path);
-  if (history == NULL) {
+  if (plain_session->history == NULL) {
     return;
   }
 
   /* remove url from list */
-  girara_list_iterator_t* iter = girara_list_iterator(history);
+  girara_list_iterator_t* iter = girara_list_iterator(plain_session->history);
 
   int visited = time(NULL) - age;
   do {
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
 
     if (link->visited >= visited) {
-      girara_list_remove(history, link);
+      girara_list_remove(plain_session->history, link);
     }
   } while (girara_list_iterator_next(iter) != NULL);
 
   girara_list_iterator_free(iter);
 
-  db_plain_write_urls_to_file(plain_session->bookmark_file_path, history, false);
-
-  girara_list_free(history);
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->history, false);
 }
 
 girara_list_t*
@@ -423,14 +415,18 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
 
     if (strstr(link->url, input) != NULL) {
-      girara_list_append(new_list, link);
-    } else {
-      db_free_result_link(link);
+      /* duplicate entry */
+      db_result_link_t* link_dup = malloc(sizeof(db_result_link_t));
+      if (link_dup != NULL) {
+        link_dup->url     = g_strdup(link->url);
+        link_dup->title   = g_strdup(link->title);
+        link_dup->visited = link->visited;
+        girara_list_append(new_list, link_dup);
+      }
     }
   } while (girara_list_iterator_next(iter) != NULL);
 
   girara_list_iterator_free(iter);
-  girara_list_free(list);
 
   return new_list;
 }

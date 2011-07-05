@@ -12,6 +12,9 @@ typedef struct db_plain_s
 {
   gchar* bookmark_file_path; /**> File path to the bookmark file */
   gchar* history_file_path; /**> File path to the history file */
+
+  girara_list_t* bookmarks; /**> Temporary bookmarks */
+  girara_list_t* history; /**>  Temporary history */
 } db_plain_t;
 
 /**
