@@ -8,8 +8,8 @@ OBJECTS  = $(patsubst %.c, %.o,  $(SOURCE))
 DOBJECTS = $(patsubst %.c, %.do, $(SOURCE))
 
 ifeq (${DATABASE},sqlite)
-CFLAGS += -DSQLITE
-LIBS   += -lsqlite3
+CFLAGS += -DSQLITE $(shell pkg-config --cflags sqlite3)
+LIBS   +=  $(shell pkg-cfonig --libs sqlite3)
 SOURCE += database-sqlite.c
 else
 SOURCE += database-plain.c
