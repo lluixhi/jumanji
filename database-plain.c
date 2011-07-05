@@ -220,7 +220,7 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
 void
 db_plain_history_clean(db_session_t* session, unsigned int age)
 {
-  if (session == NULL || session->data == NULL)
+  if (session == NULL || session->data == NULL) {
     return;
   }
 
