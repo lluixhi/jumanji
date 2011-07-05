@@ -339,7 +339,24 @@ db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visi
         continue;
       }
 
+      /* write url */
       fwrite(link->url, sizeof(char), strlen(link->url), file);
+
+      /* write title */
+      char* title_quoted = g_shell_quote(link->title);
+      char* text = g_strdup_printf(" %s", title_quoted);
+      fwrite(text, sizeof(char), strlen(text), file);
+      g_free(title_quoted);
+      g_free(text);
+
+      /* write last visit */
+      if (visited == true) {
+        char* text = g_strdup_printf(" %d", link->visited);
+        fwrite(text, sizeof(char), strlen(text), file);
+        g_free(text);
+      }
+
+      fwrite("\n", sizeof(char), 1, file);
     } while (girara_list_iterator_next(iter) != NULL);
     girara_list_iterator_free(iter);
   }
