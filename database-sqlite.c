@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef SQLITE
+
 #include "database-sqlite.h"
 
 bool
@@ -193,8 +195,9 @@ db_sqlite_bookmark_find(db_session_t* session, const char* input)
     char* url   = (char*) sqlite3_column_text(statement, 0);
     char* title = (char*) sqlite3_column_text(statement, 1);
 
-    link->url   = g_strdup(url);
-    link->title = g_strdup(title);
+    link->url     = g_strdup(url);
+    link->title   = g_strdup(title);
+    link->visited = 0;
 
     girara_list_append(results, link);
   }
@@ -328,10 +331,11 @@ db_sqlite_history_find(db_session_t* session, const char* input)
     }
 
     char* url   = (char*) sqlite3_column_text(statement, 0);
-    char* title = (char*) sqlite3_column_text(statement, 0);
+    char* title = (char*) sqlite3_column_text(statement, 1);
 
-    link->url   = g_strdup(url);
-    link->title = g_strdup(title);
+    link->url     = g_strdup(url);
+    link->title   = g_strdup(title);
+    link->visited = sqlite3_column_int(statement, 2);
 
     girara_list_append(results, link);
   }
@@ -413,3 +417,5 @@ db_sqlite_history_clean(db_session_t* session, unsigned int age)
   sqlite3_step(statement);
   sqlite3_finalize(statement);
 }
+
+#endif

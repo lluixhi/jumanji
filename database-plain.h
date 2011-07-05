@@ -8,6 +8,12 @@
 #include "database.h"
 #include "jumanji.h"
 
+typedef struct db_plain_s
+{
+  gchar* bookmark_file_path; /**> File path to the bookmark file */
+  gchar* history_file_path; /**> File path to the history file */
+} db_plain_t;
+
 /**
  * Initializes the database
  *
@@ -74,5 +80,23 @@ girara_list_t* db_plain_history_find(db_session_t* session, const char* input);
  * @param age The age of the entries in seconds
  */
 void db_plain_history_clean(db_session_t* session, unsigned int age);
+
+/**
+ * Read all bookmarks from file
+ *
+ * @param filename The filename
+ * @return Read bookmarks or NULL if an error occured
+ */
+girara_list_t* db_plain_read_urls_from_file(const char* filename);
+
+/**
+ * This function filters the given list for matching data and returns a new list
+ * containing that data and clears the old list.
+ *
+ * @param list The list that should be filtered
+ * @param input The input data
+ * @return A new list or NULL if an error occured
+ */
+girara_list_t* db_plain_filter_url_list(girara_list_t* list, const char* input);
 
 #endif // DATABASE_PLAIN_H
