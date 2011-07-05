@@ -13,10 +13,12 @@ typedef struct db_plain_s
   gchar* bookmark_file_path; /**> File path to the bookmark file */
   girara_list_t* bookmarks; /**> Temporary bookmarks */
   GFileMonitor* bookmark_monitor; /**> File monitor for the bookmark file */
+  unsigned int bookmark_signal; /**> Signal id */
 
   gchar* history_file_path; /**> File path to the history file */
   girara_list_t* history; /**>  Temporary history */
   GFileMonitor* history_monitor; /**> File monitor for the history file */
+  unsigned int history_signal; /**> Signal id */
 } db_plain_t;
 
 /**

@@ -90,9 +90,9 @@ db_plain_init(db_session_t* session)
     goto error_free;
   }
 
-  g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
+  plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
       G_CALLBACK(cb_db_plain_watch_file), session);
-  g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
+  plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
       G_CALLBACK(cb_db_plain_watch_file), session);
 
   return true;
@@ -192,7 +192,10 @@ db_plain_bookmark_remove(db_session_t* session, const char* url)
 
     girara_list_iterator_free(iter);
 
+    g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
     db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
+    plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
+        G_CALLBACK(cb_db_plain_watch_file), session);
   }
 }
 
@@ -221,7 +224,10 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
       if (strstr(link->url, url) != NULL) {
         g_free(link->title);
         link->title = title ? g_strdup(title) : NULL;
+        g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
         db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
+        plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
+            G_CALLBACK(cb_db_plain_watch_file), session);
         girara_list_iterator_free(iter);
         return;
       }
@@ -242,7 +248,10 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
   girara_list_append(plain_session->bookmarks, link);
 
   /* write to file */
+  g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
   db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
+  plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
+      G_CALLBACK(cb_db_plain_watch_file), session);
 }
 
 girara_list_t*
@@ -287,7 +296,10 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
         g_free(link->title);
         link->title   = title ? g_strdup(title) : NULL;
         link->visited = time(NULL);
-        db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, true);
+        g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
+        db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
+        plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
+            G_CALLBACK(cb_db_plain_watch_file), session);
         girara_list_iterator_free(iter);
         return;
       }
@@ -308,7 +320,10 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
   girara_list_append(plain_session->history, link);
 
   /* write to file */
-  db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, true);
+  g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
+  db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
+  plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
+      G_CALLBACK(cb_db_plain_watch_file), session);
 }
 
 void
@@ -339,7 +354,10 @@ db_plain_history_clean(db_session_t* session, unsigned int age)
 
     girara_list_iterator_free(iter);
 
-    db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->history, false);
+    g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
+    db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
+    plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
+        G_CALLBACK(cb_db_plain_watch_file), session);
   }
 }
 
