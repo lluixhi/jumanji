@@ -107,11 +107,65 @@ db_plain_bookmark_find(db_session_t* session, const char* input)
 void
 db_plain_bookmark_remove(db_session_t* session, const char* url)
 {
+  if (session == NULL || session->data == NULL || url == NULL) {
+    return;
+  }
+
+  db_plain_t* plain_session = (db_plain_t*) session->data;
+
+  girara_list_t* bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
+  if (bookmarks == NULL) {
+    return;
+  }
+
+  /* remove url from list */
+  girara_list_iterator_t* iter = girara_list_iterator(bookmarks);
+
+  do {
+    db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+
+    if (strcmp(link->url, url) == 0) {
+      girara_list_remove(bookmarks, link);
+    }
+  } while (girara_list_iterator_next(iter) != NULL);
+
+  girara_list_iterator_free(iter);
+
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, bookmarks, false);
+
+  girara_list_free(bookmarks);
 }
 
 void
 db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
 {
+  if (session == NULL || session->data == NULL || url == NULL) {
+    return;
+  }
+
+  db_plain_t* plain_session = (db_plain_t*) session->data;
+
+  girara_list_t* bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
+  if (bookmarks == NULL) {
+    return;
+  }
+
+  /* add url to list */
+  db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
+  if (link == NULL) {
+    girara_list_free(bookmarks);
+    return;
+  }
+
+  link->url     = g_strdup(url);
+  link->title   = g_strdup(title);
+  link->visited = 0;
+
+  girara_list_append(bookmarks, link);
+
+  /* write to file */
+  db_plain_write_urls_to_file(plain_session->bookmark_file_path, bookmarks, false);
+  girara_list_free(bookmarks);
 }
 
 girara_list_t*
@@ -193,9 +247,42 @@ db_plain_read_urls_from_file(const char* filename)
   return list;
 }
 
+void
+db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited)
+{
+  if (filename == NULL || urls == NULL) {
+    return;
+  }
+
+  /* open file */
+  FILE* file = girara_file_open(filename, "w");
+  if (file == NULL) {
+    return;
+  }
+
+  if (girara_list_size(urls) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(urls);
+    do {
+      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      if (link == NULL) {
+        continue;
+      }
+
+      fwrite(link->url, sizeof(char), strlen(link->url), file);
+    } while (girara_list_iterator_next(iter) != NULL);
+    girara_list_iterator_free(iter);
+  }
+
+  fclose(file);
+}
+
 girara_list_t*
 db_plain_filter_url_list(girara_list_t* list, const char* input)
 {
+  if (list == NULL || girara_list_size(list) == 0) {
+    return NULL;
+  }
+
   girara_list_t* new_list = girara_list_new();
   if (new_list == NULL) {
     girara_list_free(list);

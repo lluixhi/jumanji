@@ -90,6 +90,15 @@ void db_plain_history_clean(db_session_t* session, unsigned int age);
 girara_list_t* db_plain_read_urls_from_file(const char* filename);
 
 /**
+ * Write urls to file
+ *
+ * @param filename The filename
+ * @param urls The list of urls
+ * @param visited true if the last visited value should be written as well
+ */
+void db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited);
+
+/**
  * This function filters the given list for matching data and returns a new list
  * containing that data and clears the old list.
  *
