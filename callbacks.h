@@ -33,6 +33,15 @@ void cb_girara_buffer_changed(girara_session_t* session);
 void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
 /**
+ * Executed when the page loaded. Saves the page in the history
+ *
+ * @param web_view Webkit web view
+ * @param frame Webkit frame
+ * @param data Custom data
+ */
+void cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpointer data);
+
+/**
  * Update the title of the tab if status changes
  *
  * @param web_view Webkit web view
