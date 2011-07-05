@@ -203,8 +203,6 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
   }
 
   girara_list_set_free_function(new_list, db_free_result_link);
-
-  /* search matching bookmarks */
   girara_list_iterator_t* iter = girara_list_iterator(list);
 
   do {
@@ -217,6 +215,7 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
     }
   } while (girara_list_iterator_next(iter) != NULL);
 
+  girara_list_iterator_free(iter);
   girara_list_free(list);
 
   return new_list;

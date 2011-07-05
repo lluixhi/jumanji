@@ -131,6 +131,8 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
         return true;
       }
     } while (girara_list_iterator_next(iter));
+
+    girara_list_iterator_free(iter);
   }
 
   /* create new entry */
@@ -182,6 +184,8 @@ cmd_search_engine(girara_session_t* session, girara_list_t* argument_list)
         return true;
       }
     } while (girara_list_iterator_next(iter));
+
+    girara_list_iterator_free(iter);
   }
 
   /* create new entry */

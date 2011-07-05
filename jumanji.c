@@ -434,6 +434,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
           break;
         }
       } while (girara_list_iterator_next(iter));
+      girara_list_iterator_free(iter);
 
       /* if no search engine matches, we use the default one (first one) */
       if (search_url == NULL) {
