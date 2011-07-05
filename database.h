@@ -21,6 +21,7 @@ typedef struct db_result_link_s
 {
   char* url; /**> The url of the link */
   char* title; /**> The link title */
+  int visited; /**> Last time the link has been visited */
 } db_result_link_t;
 
 /**

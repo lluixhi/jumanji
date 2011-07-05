@@ -26,5 +26,5 @@ CC ?= gcc
 SFLAGS = -s
 
 # sqlite
-CFLAGS += -DSQLITE
-LIBS   += -lsqlite3
+#CFLAGS += -DSQLITE
+#LIBS   += -lsqlite3
