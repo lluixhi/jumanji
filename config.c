@@ -108,6 +108,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                0,                "G",  sc_scroll,                NORMAL, BOTTOM,          NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_0,        NULL, sc_scroll,                NORMAL, BEGIN,           NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_dollar,   NULL, sc_scroll,                NORMAL, END,             NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_A,        NULL, sc_toggle_bookmark,       NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_p,        NULL, sc_toggle_proxy,          NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                0,                "gf", sc_toggle_source_mode,    NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_y,        NULL, sc_yank,                  NORMAL, 0,               NULL);
@@ -117,9 +118,10 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_Z,        NULL, sc_zoom,                  NORMAL, ZOOM_SPECIFIC,   NULL);
 
   /* define default inputbar commands */
-  girara_inputbar_command_add(gsession, "bdelete", "bd",  cmd_buffer_delete, NULL,    "Delete current buffer");
-  girara_inputbar_command_add(gsession, "open",    "o",   cmd_open,          cc_open, "Open URL in the current tab");
-  girara_inputbar_command_add(gsession, "tabopen", "t",   cmd_tabopen,       cc_open, "Open URL in a new tab");
+  girara_inputbar_command_add(gsession, "bmark",     NULL,  cmd_bookmark_add,    NULL,    "Add a bookmark");
+  girara_inputbar_command_add(gsession, "delbmarks", NULL,  cmd_bookmark_delete, NULL,    "Delete a bookmark");
+  girara_inputbar_command_add(gsession, "open",      "o",   cmd_open,            cc_open, "Open URL in the cu  rrent tab");
+  girara_inputbar_command_add(gsession, "tabopen",   "t",   cmd_tabopen,         cc_open, "Open URL in a new tab");
 
   /* add shortcut mappings */
   girara_shortcut_mapping_add(gsession, "focus_inputbar", sc_focus_inputbar);

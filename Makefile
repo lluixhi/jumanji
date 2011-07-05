@@ -3,9 +3,17 @@
 include config.mk
 
 PROJECT  = jumanji
-SOURCE   = $(shell find . -iname "*.c")
+SOURCE   = $(shell find . -iname "*.c" -a ! -iname "database-*")
 OBJECTS  = $(patsubst %.c, %.o,  $(SOURCE))
 DOBJECTS = $(patsubst %.c, %.do, $(SOURCE))
+
+ifeq (${DATABASE},sqlite)
+CFLAGS += -DSQLITE $(shell pkg-config --cflags sqlite3)
+LIBS   +=  $(shell pkg-config --libs sqlite3)
+SOURCE += database-sqlite.c
+else
+SOURCE += database-plain.c
+endif
 
 all: options ${PROJECT}
 
@@ -20,6 +28,9 @@ options:
 	@echo CC $<
 	@mkdir -p .depend
 	@${CC} -c ${CFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
+
+# force recompilation of database.o if the DATABASE has changed
+database.o: database-${DATABASE}.o
 
 %.do: %.c
 	@echo CC $<

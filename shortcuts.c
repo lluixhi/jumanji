@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "callbacks.h"
+#include "database.h"
 #include "jumanji.h"
 #include "shortcuts.h"
 
@@ -293,6 +294,34 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
       webkit_web_view_reload(WEBKIT_WEB_VIEW(tab->web_view));
     }
   }
+
+  return false;
+}
+
+bool
+sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL || tab->web_view == NULL || jumanji->database.session == NULL) {
+    return false;
+  }
+
+  const char* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+  const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+
+  girara_list_t* results = db_bookmark_find(jumanji->database.session, url);
+  if (results && girara_list_size(results) > 0) {
+    db_bookmark_remove(jumanji->database.session, url);
+  } else {
+    db_bookmark_add(jumanji->database.session, url, title);
+  }
+  girara_list_free(results);
 
   return false;
 }

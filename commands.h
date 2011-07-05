@@ -7,6 +7,24 @@
 #include <girara.h>
 
 /**
+ * Add a bookmark
+ *
+ * @param session The used girara session
+ * @param argument_list List of passed arguments
+ * @return true if no error occured
+ */
+bool cmd_bookmark_add(girara_session_t* session, girara_list_t* argument_list);
+
+/**
+ * Delete a bookmark
+ *
+ * @param session The used girara session
+ * @param argument_list List of passed arguments
+ * @return true if no error occured
+ */
+bool cmd_bookmark_delete(girara_session_t* session, girara_list_t* argument_list);
+
+/**
  * Closes the current buffer
  *
  * @param session The used girara session

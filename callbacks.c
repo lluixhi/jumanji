@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "callbacks.h"
+#include "database.h"
 #include "shortcuts.h"
 #include "jumanji.h"
 
@@ -41,6 +42,21 @@ cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
   }
 
   jumanji_tab_free(tab);
+}
+
+void
+cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpointer data)
+{
+  jumanji_tab_t* tab = (jumanji_tab_t*) data;
+
+  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database.session == NULL) {
+    return;
+  }
+
+  const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+  const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+
+  db_history_add(tab->jumanji->database.session, url, title);
 }
 
 void
@@ -203,5 +219,5 @@ bool cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* se
 
   jumanji_proxy_set(jumanji, proxy);
 
-	return true;
+  return true;
 }

@@ -53,6 +53,11 @@ typedef struct jumanji_s
     girara_list_t* proxies; /**> Proxies */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
   } global;
+
+  struct
+  {
+    void* session; /**> Database connection */
+  } database;
 } jumanji_t;
 
 typedef struct jumanji_tab_s

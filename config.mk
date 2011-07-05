@@ -24,3 +24,6 @@ CC ?= gcc
 
 # strip
 SFLAGS = -s
+
+# possible values are: sqlite and plain
+DATABASE ?= plain

@@ -6,12 +6,15 @@
 
 #include "callbacks.h"
 #include "config.h"
+#include "database.h"
 #include "jumanji.h"
 #include "utils.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
 #define JUMANJI_COOKIE_FILE "cookies"
+#define JUMANJI_BOOKMARKS_FILE "bookmarks"
+#define JUMANJI_HISTORY_FILE "history"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -37,11 +40,13 @@ jumanji_init(int argc, char* argv[])
   g_option_context_free(context);
 
   /* jumanji */
-  jumanji_t* jumanji  = malloc(sizeof(jumanji_t));
+  jumanji_t* jumanji = malloc(sizeof(jumanji_t));
 
   if (jumanji == NULL) {
     goto error_out;
   }
+
+  jumanji->database.session = NULL;
 
   if (config_dir) {
     jumanji->config.config_dir = g_strdup(config_dir);
@@ -154,6 +159,34 @@ jumanji_init(int argc, char* argv[])
     }
   }
 
+  /* database */
+  jumanji->database.session = db_new(jumanji);
+  if (jumanji->database.session == NULL) {
+    girara_error("Could not create database object");
+    goto error_free;
+  }
+
+  char* bookmark_file = g_build_filename(jumanji->config.config_dir, JUMANJI_BOOKMARKS_FILE, NULL);
+  if (bookmark_file != NULL) {
+    db_set_bookmark_file(jumanji->database.session, bookmark_file);
+    g_free(bookmark_file);
+  } else {
+    goto error_free;
+  }
+
+  char* history_file = g_build_filename(jumanji->config.config_dir, JUMANJI_HISTORY_FILE, NULL);
+  if (history_file != NULL) {
+    db_set_history_file(jumanji->database.session, history_file);
+    g_free(history_file);
+  } else {
+    goto error_free;
+  }
+
+  if (db_init(jumanji->database.session) == false) {
+    girara_error("Could not initialize database");
+    goto error_free;
+  }
+
   /* load tabs */
   if(argc < 2) {
     char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
@@ -174,8 +207,14 @@ jumanji_init(int argc, char* argv[])
 
 error_free:
 
-  if (jumanji && jumanji->ui.session) {
-    girara_session_destroy(jumanji->ui.session);
+  if (jumanji) {
+    if (jumanji->ui.session) {
+      girara_session_destroy(jumanji->ui.session);
+    }
+
+    if (jumanji->database.session) {
+      db_close(jumanji->database.session);
+    }
   }
 
   free(jumanji);
@@ -198,32 +237,36 @@ jumanji_free(jumanji_t* jumanji)
   }
 
   /* free search engines */
-  if (jumanji->global.search_engines) {
-    girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.search_engines);
-    do {
-      jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_iterator_data(iter);
-      if (search_engine != NULL) {
-        g_free(search_engine->identifier);
-        g_free(search_engine->url);
-        g_free(search_engine);
-      }
-    } while (girara_list_iterator_next(iter));
-    girara_list_iterator_free(iter);
+  if (jumanji->global.search_engines != NULL) {
+    if (girara_list_size(jumanji->global.search_engines) > 0) {
+      girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.search_engines);
+      do {
+        jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_iterator_data(iter);
+        if (search_engine != NULL) {
+          g_free(search_engine->identifier);
+          g_free(search_engine->url);
+          g_free(search_engine);
+        }
+      } while (girara_list_iterator_next(iter));
+      girara_list_iterator_free(iter);
+    }
     girara_list_free(jumanji->global.search_engines);
   }
 
   /* free proxies */
-  if (jumanji->global.proxies) {
-    girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
-    do {
-      jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
-      if (proxy != NULL) {
-        g_free(proxy->description);
-        g_free(proxy->url);
-        g_free(proxy);
-      }
-    } while (girara_list_iterator_next(iter));
-    girara_list_iterator_free(iter);
+  if (jumanji->global.proxies != NULL) {
+    if (girara_list_size(jumanji->global.proxies) > 0) {
+      girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
+      do {
+        jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
+        if (proxy != NULL) {
+          g_free(proxy->description);
+          g_free(proxy->url);
+          g_free(proxy);
+        }
+      } while (girara_list_iterator_next(iter));
+      girara_list_iterator_free(iter);
+    }
     girara_list_free(jumanji->global.proxies);
   }
 
@@ -274,8 +317,9 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   tab->girara_tab = girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
 
   /* connect signals */
-  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),     tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status), tab);
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),       tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status),   tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "load-finished",       G_CALLBACK(cb_jumanji_tab_load_finished), tab);
 
   return tab;
 
@@ -395,6 +439,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
           break;
         }
       } while (girara_list_iterator_next(iter));
+      girara_list_iterator_free(iter);
 
       /* if no search engine matches, we use the default one (first one) */
       if (search_url == NULL) {
