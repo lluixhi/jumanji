@@ -25,6 +25,5 @@ CC ?= gcc
 # strip
 SFLAGS = -s
 
-# sqlite
-#CFLAGS += -DSQLITE
-#LIBS   += -lsqlite3
+# possible values are: sqlite and plain
+DATABASE ?= sqlite
