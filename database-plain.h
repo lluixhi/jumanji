@@ -11,10 +11,12 @@
 typedef struct db_plain_s
 {
   gchar* bookmark_file_path; /**> File path to the bookmark file */
-  gchar* history_file_path; /**> File path to the history file */
-
   girara_list_t* bookmarks; /**> Temporary bookmarks */
+  GFileMonitor* bookmark_monitor; /**> File monitor for the bookmark file */
+
+  gchar* history_file_path; /**> File path to the history file */
   girara_list_t* history; /**>  Temporary history */
+  GFileMonitor* history_monitor; /**> File monitor for the history file */
 } db_plain_t;
 
 /**
@@ -110,5 +112,17 @@ void db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool
  * @return A new list or NULL if an error occured
  */
 girara_list_t* db_plain_filter_url_list(girara_list_t* list, const char* input);
+
+/**
+ * Callback that gets executed when one file is changed
+ *
+ * @param monitor Monitor
+ * @param file The watched file
+ * @param other_file Other file or NULL
+ * @param event The occured event
+ * @param data User data
+ */
+void cb_db_plain_watch_file(GFileMonitor* monitor, GFile* file, GFile*
+    other_file, GFileMonitorEvent event, gpointer data);
 
 #endif // DATABASE_PLAIN_H
