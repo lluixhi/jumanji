@@ -52,6 +52,16 @@ bool cmd_open(girara_session_t* session, girara_list_t* argument_list);
 bool cmd_proxy(girara_session_t* session, girara_list_t* argument_list);
 
 /**
+ * Search the website for specific content
+ *
+ * @param session The used girara session
+ * @param input Input text
+ * @param argument User data
+ * @return true if no error occured
+ */
+bool cmd_search(girara_session_t* session, char* input, girara_argument_t* argument);
+
+/**
  * Adds a search engine
  *
  * @param session The used girara session
