@@ -37,8 +37,9 @@ user_script_load_dir(const char* path)
       user_script_t* user_script = user_script_load_file(filepath);
       if (user_script != NULL) {
         girara_list_append(list, user_script);
+        girara_info("loaded user script: %s", user_script->name ? user_script->name : filepath);
       } else {
-        fprintf(stderr, "could not parse user script: %s\n", filepath);
+        girara_error("could not parse user script: %s", filepath);
       }
     }
 
