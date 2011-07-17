@@ -1,9 +1,11 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
+#include <JavaScriptCore/JavaScript.h>
+
 #include "userscripts.h"
 
-#define USER_SCRIPT_HEADER "//.*==UserScript==.*//.*==/UserScript=="
+#define USER_SCRIPT_HEADER ".*//.*(==UserScript==.*//.*==/UserScript==).*"
 #define USER_SCRIPT_VAR_VAL_PAIR "//\\s+@(?<name>\\S+)(\\s+(?<value>.*))?"
 
 girara_list_t*
@@ -54,7 +56,6 @@ user_script_load_file(const char* path)
   /* init values */
   char* name                  = NULL;
   char* description           = NULL;
-  const char* filename        = path;
   girara_list_t* include      = girara_list_new();
   girara_list_t* exclude      = girara_list_new();
   bool load_on_document_start = false;
@@ -94,9 +95,19 @@ user_script_load_file(const char* path)
       } else if (g_strcmp0(header_name, "description") == 0) {
         description = header_value;
       } else if (g_strcmp0(header_name, "include") == 0) {
-        girara_list_append(include, header_value);
+        /* update url for further processing */
+        GRegex* regex = g_regex_new("\\*", 0, 0, NULL);
+        char* tmp = g_regex_replace(regex, header_value, -1, 0, ".*", 0, NULL);
+        girara_list_append(include, tmp);
+        g_regex_unref(regex);
+        g_free(header_value);
       } else if (g_strcmp0(header_name, "exclude") == 0) {
-        girara_list_append(exclude, header_value);
+        /* update url for further processing */
+        GRegex* regex = g_regex_new("\\*", 0, 0, NULL);
+        char* tmp = g_regex_replace(regex, header_value, -1, 0, ".*", 0, NULL);
+        girara_list_append(exclude, tmp);
+        g_regex_unref(regex);
+        g_free(header_value);
       } else if (g_strcmp0(header_name, "run-at") == 0) {
         if (g_strcmp0(header_value, "document-start") == 0) {
           load_on_document_start = true;
@@ -105,7 +116,7 @@ user_script_load_file(const char* path)
         g_free(header_value);
       }
 
-      g_free(name);
+      g_free(header_name);
       g_match_info_next(header_match_info, NULL);
     }
 
@@ -124,8 +135,6 @@ user_script_load_file(const char* path)
   g_regex_unref(regex);
   g_match_info_free(match_info);
 
-  free(content);
-
   /* create user script object */
   user_script_t* user_script = malloc(sizeof(user_script_t));
   if (user_script == NULL) {
@@ -134,7 +143,7 @@ user_script_load_file(const char* path)
 
   user_script->name                   = name;
   user_script->description            = description;
-  user_script->filename               = g_strdup(filename);
+  user_script->content                = content;
   user_script->include                = include;
   user_script->exclude                = exclude;
   user_script->load_on_document_start = load_on_document_start;
@@ -153,7 +162,7 @@ user_script_free(void* data)
 
   free(user_script->name);
   free(user_script->description);
-  free(user_script->filename);
+  free(user_script->content);
 
   /* free include list */
   if (girara_list_size(user_script->include) > 0) {
@@ -180,6 +189,41 @@ user_script_free(void* data)
 }
 
 void
+user_script_inject(WebKitWebView* web_view, user_script_t* user_script)
+{
+  if (web_view == NULL || user_script == NULL || user_script->content == NULL) {
+    return;
+  }
+
+  WebKitWebFrame* frame = webkit_web_view_get_main_frame(web_view);
+
+  if (frame == NULL) {
+    return;
+  }
+
+  JSContextRef context = webkit_web_frame_get_global_context(frame);
+
+  if (context == NULL) {
+    return;
+  }
+
+  JSObjectRef object = JSContextGetGlobalObject(context);
+
+  if (object == NULL) {
+    return;
+  }
+
+  JSStringRef script = JSStringCreateWithUTF8CString(user_script->content);
+
+  if (script == NULL) {
+    return;
+  }
+
+  JSEvaluateScript(context, script, object, NULL, 0, NULL);
+  JSStringRelease(script);
+}
+
+void
 user_script_init_tab(jumanji_tab_t* tab, girara_list_t* user_scripts)
 {
   if (tab == NULL || tab->web_view == NULL || user_scripts == NULL) {
@@ -194,4 +238,76 @@ void
 cb_user_script_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
     girara_list_t* user_scripts)
 {
+  if (web_view == NULL || user_scripts == NULL ||
+      girara_list_size(user_scripts) == 0) {
+    return;
+  }
+
+  /* check status */
+  WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
+
+  if (status != WEBKIT_LOAD_FIRST_VISUALLY_NON_EMPTY_LAYOUT &&
+      status != WEBKIT_LOAD_FINISHED) {
+    return;
+  }
+
+  /* get website uri */
+  const char* uri = webkit_web_view_get_uri(web_view);
+
+  /* check all user scripts */
+  girara_list_iterator_t* iter = girara_list_iterator(user_scripts);
+  do {
+    user_script_t* user_script = (user_script_t*) girara_list_iterator_data(iter);
+    if (user_script == NULL) {
+      continue;
+    }
+
+    /* do not load user script by default */
+    bool load_user_script = false;
+
+    /* do not accidentally load a script multiple times */
+    if ((status == WEBKIT_LOAD_FIRST_VISUALLY_NON_EMPTY_LAYOUT &&
+        user_script->load_on_document_start == false) ||
+        (status == WEBKIT_LOAD_FINISHED &&
+         user_script->load_on_document_start == true)) {
+      continue;
+    }
+
+    int n_included = girara_list_size(user_script->include);
+    int n_excluded = girara_list_size(user_script->exclude);
+
+    if (n_included == 0) {
+      load_user_script = true;
+    }
+
+    /* check if script is excluded on web site */
+    for (unsigned int i = 0; i < n_excluded; i++) {
+      char* exclude = girara_list_nth(user_script->exclude, i);
+
+      GRegex* regex = g_regex_new(exclude, 0, 0, NULL);
+      if (g_regex_match(regex, uri, 0, NULL) == TRUE) {
+        load_user_script = false;
+      }
+      g_regex_unref(regex);
+    }
+
+    /* check if script is included on web site */
+    if (load_user_script == false) {
+      for (unsigned int i = 0; i < n_included; i++) {
+        char* include = girara_list_nth(user_script->include, i);
+
+        GRegex* regex = g_regex_new(include, 0, 0, NULL);
+        if (g_regex_match(regex, uri, 0, NULL) == TRUE) {
+          load_user_script = true;
+        }
+        g_regex_unref(regex);
+      }
+    }
+
+    /* load user script */
+    if (load_user_script == true) {
+      user_script_inject(web_view, user_script);
+    }
+  } while (girara_list_iterator_next(iter));
+  girara_list_iterator_free(iter);
 }

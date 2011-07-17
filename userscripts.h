@@ -13,7 +13,7 @@ typedef struct user_script_s
 {
   char* name; /**> Name of the user script */
   char* description; /**> Description of the user script */
-  char* filename; /**> File name of the user script */
+  char* content; /**> User script code */
   girara_list_t* include; /**> List of included url patterns */
   girara_list_t* exclude; /**> List of excluded url patterns */
   bool load_on_document_start; /**> Load on document start */
@@ -42,6 +42,14 @@ user_script_t* user_script_load_file(const char* path);
  * @param data User script
  */
 void user_script_free(void* data);
+
+/**
+ * Load user script on webkit view
+ *
+ * @param web_view Webkit view
+ * @param user_script The user script
+ */
+void user_script_inject(WebKitWebView* web_view, user_script_t* user_script);
 
 /**
  * Sets up a webkit tab to use the user script implementation
