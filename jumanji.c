@@ -8,6 +8,7 @@
 #include "config.h"
 #include "database.h"
 #include "jumanji.h"
+#include "userscripts.h"
 #include "utils.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
@@ -79,6 +80,14 @@ jumanji_init(int argc, char* argv[])
       jumanji->global.proxies == NULL) {
     goto error_free;
   }
+
+  /* user scripts */
+  char* user_script_dir = g_build_filename(jumanji->config.config_dir, USER_SCRIPTS_DIR, NULL);
+  jumanji->global.user_scripts = user_script_load_dir(user_script_dir);
+  if (jumanji->global.user_scripts == NULL) {
+    goto error_free;
+  }
+  g_free(user_script_dir);
 
   /* webkit */
   jumanji->global.browser_settings = webkit_web_settings_new();
@@ -325,6 +334,9 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),       tab);
   g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status),   tab);
   g_signal_connect(G_OBJECT(tab->web_view),        "load-finished",       G_CALLBACK(cb_jumanji_tab_load_finished), tab);
+
+  /* setup userscripts */
+  user_script_init_tab(tab, jumanji->global.user_scripts);
 
   return tab;
 

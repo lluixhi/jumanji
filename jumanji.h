@@ -53,6 +53,7 @@ typedef struct jumanji_s
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
+    girara_list_t* user_scripts; /**> User scripts */
   } global;
 
   struct
