@@ -31,10 +31,10 @@ girara_list_t* user_script_load_dir(const char* path);
 /**
  * Loads a single file as a userscript
  *
- * @param filename File
+ * @param path Path to the file
  * @return User script object or NULL if an error occured
  */
-user_script_t* user_script_load_file(const char* filename);
+user_script_t* user_script_load_file(const char* path);
 
 /**
  * Frees an user script entry in the user script list
