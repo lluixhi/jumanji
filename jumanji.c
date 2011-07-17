@@ -158,6 +158,8 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.tabs, "[1/1]");
+
   jumanji->ui.statusbar.proxy = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, cb_statusbar_proxy);
   if (jumanji->ui.statusbar.proxy == NULL) {
     goto error_free;
