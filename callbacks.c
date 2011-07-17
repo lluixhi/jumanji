@@ -85,15 +85,26 @@ cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer 
 void
 cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji)
 {
-  if (tabs == NULL || page == NULL || jumanji == NULL || jumanji->ui.statusbar.url == NULL) {
+  if (tabs == NULL || page == NULL || jumanji == NULL || jumanji->ui.session == NULL) {
     return;
   }
 
   jumanji_tab_t* tab = jumanji_tab_get_nth(jumanji, page_num);
 
-  if (tab != NULL) {
+  if (tab == NULL) {
+    return;
+  }
+
+  if (jumanji->ui.statusbar.url != NULL) {
     const gchar* url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
     girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.url, url ? (char*) url : "Loading...");
+  }
+
+  if (jumanji->ui.statusbar.tabs != NULL) {
+    int number_of_tabs = girara_get_number_of_tabs(jumanji->ui.session);
+    char* text = g_strdup_printf("[%d/%d]", page_num + 1, number_of_tabs);
+    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.tabs, text);
+    g_free(text);
   }
 }
 
@@ -122,7 +133,7 @@ cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_v
   }
 
   GtkWidget* window       = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  GtkWidget* new_web_view = webkit_web_view_new();;
+  GtkWidget* new_web_view = webkit_web_view_new();
 
   if (window == NULL || new_web_view == NULL) {
     return NULL;

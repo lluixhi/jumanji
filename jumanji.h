@@ -28,8 +28,9 @@ typedef struct jumanji_s
 
     struct
     {
-      girara_statusbar_item_t* buffer; /**> buffer statusbar entry */
       girara_statusbar_item_t* url; /**> url statusbar entry */
+      girara_statusbar_item_t* buffer; /**> buffer statusbar entry */
+      girara_statusbar_item_t* tabs; /**> tabs statusbar entry */
       girara_statusbar_item_t* proxy; /**> proxy statusbar entry */
     } statusbar;
   } ui;

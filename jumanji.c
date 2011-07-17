@@ -144,6 +144,11 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  jumanji->ui.statusbar.tabs = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, NULL);
+  if (jumanji->ui.statusbar.tabs == NULL) {
+    goto error_free;
+  }
+
   jumanji->ui.statusbar.proxy = girara_statusbar_item_add(jumanji->ui.session, FALSE, FALSE, FALSE, cb_statusbar_proxy);
   if (jumanji->ui.statusbar.proxy == NULL) {
     goto error_free;
