@@ -93,6 +93,30 @@ cmd_open(girara_session_t* session, girara_list_t* argument_list)
 }
 
 bool
+cmd_print(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL) {
+    return false;
+  }
+
+  WebKitWebFrame* frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (frame == NULL) {
+    return false;
+  }
+
+  webkit_web_frame_print(frame);
+
+  return true;
+}
+
+bool
 cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
 {
   g_return_val_if_fail(session != NULL, false);

@@ -121,6 +121,7 @@ config_load_default(jumanji_t* jumanji)
   girara_inputbar_command_add(gsession, "bmark",     NULL,  cmd_bookmark_add,    NULL,    "Add a bookmark");
   girara_inputbar_command_add(gsession, "delbmarks", NULL,  cmd_bookmark_delete, NULL,    "Delete a bookmark");
   girara_inputbar_command_add(gsession, "open",      "o",   cmd_open,            cc_open, "Open URL in the cu  rrent tab");
+  girara_inputbar_command_add(gsession, "print",     NULL,  cmd_print,           NULL,    "Show print dialog");
   girara_inputbar_command_add(gsession, "tabopen",   "t",   cmd_tabopen,         cc_open, "Open URL in a new tab");
 
   /* special commands */
