@@ -87,6 +87,7 @@ cmd_open(girara_session_t* session, girara_list_t* argument_list)
 
   char* url = jumanji_build_url(jumanji, argument_list);
   jumanji_tab_load_url(jumanji_tab_get_current(jumanji), url);
+  free(url);
 
   return true;
 }
@@ -236,6 +237,7 @@ cmd_tabopen(girara_session_t* session, girara_list_t* argument_list)
 
   char* url = jumanji_build_url(jumanji, argument_list);
   jumanji_tab_new(jumanji, url, false);
+  free(url);
 
   return true;
 }
