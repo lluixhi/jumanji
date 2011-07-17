@@ -80,6 +80,16 @@ bool cmd_search(girara_session_t* session, char* input, girara_argument_t* argum
 bool cmd_search_engine(girara_session_t* session, girara_list_t* argument_list);
 
 /**
+ * Stops loading the current web page
+ *
+ * @param session The used girara session
+ * @param input Input text
+ * @param argument User data
+ * @return true if no error occured
+ */
+bool cmd_stop(girara_session_t* session, girara_list_t* argument_list);
+
+/**
  * Open URL in a new tab
  *
  * @param session The used girara session

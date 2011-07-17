@@ -253,6 +253,23 @@ cmd_search_engine(girara_session_t* session, girara_list_t* argument_list)
 }
 
 bool
+cmd_stop(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+  if (tab == NULL || tab->web_view == NULL) {
+    return false;
+  }
+
+  webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(tab->web_view));
+
+  return true;
+}
+
+bool
 cmd_tabopen(girara_session_t* session, girara_list_t* argument_list)
 {
   g_return_val_if_fail(session != NULL, false);
