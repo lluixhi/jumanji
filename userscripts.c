@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include "userscripts.h"
 
-#define USER_SCRIPT_HEADER ""
-#define USER_SCRIPT_VAR_VAL_PAIR ""
+#define USER_SCRIPT_HEADER "//.*==UserScript==.*//.*==/UserScript=="
+#define USER_SCRIPT_VAR_VAL_PAIR "//\\s+@(?<name>\\S+)(\\s+(?<value>.*))?"
 
 girara_list_t*
 user_script_load_dir(const char* path)
@@ -71,7 +71,7 @@ user_script_load_file(const char* path)
 
   /* parse header */
   GMatchInfo* match_info;
-  GRegex* regex = g_regex_new(USER_SCRIPT_HEADER, G_REGEX_MULTILINE, 0, NULL);
+  GRegex* regex = g_regex_new(USER_SCRIPT_HEADER, G_REGEX_MULTILINE | G_REGEX_DOTALL, 0, NULL);
 
   g_regex_match(regex, content, 0, &match_info);
 
@@ -86,8 +86,26 @@ user_script_load_file(const char* path)
     g_regex_match(header_regex, header, 0, &header_match_info);
 
     while (g_match_info_matches(header_match_info) == TRUE) {
-      char* pair = g_match_info_fetch(header_match_info, 0);
-      g_free(pair);
+      char* header_name  = g_match_info_fetch_named(header_match_info, "name");
+      char* header_value = g_match_info_fetch_named(header_match_info, "value");
+
+      if (g_strcmp0(header_name, "name") == 0) {
+        name = header_value;
+      } else if (g_strcmp0(header_name, "description") == 0) {
+        description = header_value;
+      } else if (g_strcmp0(header_name, "include") == 0) {
+        girara_list_append(include, header_value);
+      } else if (g_strcmp0(header_name, "exclude") == 0) {
+        girara_list_append(exclude, header_value);
+      } else if (g_strcmp0(header_name, "run-at") == 0) {
+        if (g_strcmp0(header_value, "document-start") == 0) {
+          load_on_document_start = true;
+        }
+      } else {
+        g_free(header_value);
+      }
+
+      g_free(name);
       g_match_info_next(header_match_info, NULL);
     }
 
