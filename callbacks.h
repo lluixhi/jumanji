@@ -96,8 +96,24 @@ WebKitWebView* cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKi
  * @param web_view The web view
  * @param download The download object
  * @param tab The jumanji tab
+ * @return true if download request is handled
  */
 bool cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab);
+
+/**
+ * Download the file if webkit is not able to display it
+ *
+ * @param web_view The web view
+ * @param frame The frame
+ * @param request Request
+ * @param mimetype Mime type
+ * @param decision Policy Decision
+ * @param tab Jumanji tab
+ * @return true if request is handled
+ */
+bool cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
+    WebKitWebFrame* frame, WebKitNetworkRequest* request, char* mimetype,
+    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab);
 
 /**
  * Called when a webkit settings has been changed

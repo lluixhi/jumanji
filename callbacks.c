@@ -237,6 +237,23 @@ cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* downl
   return true;
 }
 
+bool
+cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
+    WebKitWebFrame* frame, WebKitNetworkRequest* request, char* mimetype,
+    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab)
+{
+  if (web_view == NULL || mimetype == NULL) {
+    return false;
+  }
+
+  if (webkit_web_view_can_show_mime_type(web_view, mimetype) != TRUE) {
+    webkit_web_policy_decision_download(decision);
+    return true;
+  }
+
+  return false;
+}
+
 void
 cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
 {
