@@ -7,9 +7,15 @@ VERSION = 0.0.0
 PREFIX ?= /usr
 MANPREFIX ?= ${PREFIX}/share/man
 
-# libs
+# gtk3
 GTK_INC = $(shell pkg-config --cflags gtk+-3.0 webkitgtk-3.0 girara-gtk3)
 GTK_LIB = $(shell pkg-config --libs   gtk+-3.0 webkitgtk-3.0 girara-gtk3)
+
+# gtk2
+#GTK_INC = $(shell pkg-config --cflags gtk+-2.0 webkit-1.0 girara-gtk2)
+#GTK_LIB = $(shell pkg-config --libs   gtk+-2.0 webkit-1.0 girara-gtk2)
+
+# libs
 INCS = -I. -I/usr/include ${GTK_INC}
 LIBS = -lc ${GTK_LIB} -lpthread
 
