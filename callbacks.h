@@ -91,6 +91,15 @@ void cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, cha
 WebKitWebView* cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_view, gpointer data);
 
 /**
+ * Download request
+ *
+ * @param web_view The web view
+ * @param download The download object
+ * @param tab The jumanji tab
+ */
+bool cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab);
+
+/**
  * Called when a webkit settings has been changed
  *
  * @param session The girara session

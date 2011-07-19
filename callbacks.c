@@ -4,6 +4,7 @@
 #include <girara.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "callbacks.h"
 #include "database.h"
@@ -128,7 +129,7 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
 void
 cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, char* link, jumanji_tab_t* tab)
 {
-  if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.statusbar.url == NULL 
+  if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.statusbar.url == NULL
       || tab->jumanji->ui.session == NULL) {
     return;
   }
@@ -165,6 +166,75 @@ cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_v
   gtk_widget_show_all(window);
 
   return WEBKIT_WEB_VIEW(new_web_view);
+}
+
+bool
+cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab)
+{
+  if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.session == NULL || download == NULL) {
+    return false;
+  }
+
+  const char* uri  = webkit_download_get_uri(download);
+  const char* file = webkit_download_get_uri(download);
+
+  if (uri == NULL) {
+    return false;
+  }
+
+  /* get download dir */
+  char* download_dir_tmp = girara_setting_get(tab->jumanji->ui.session, "download-dir");
+  if (download_dir_tmp == NULL) {
+    return false;
+  }
+
+  char* download_dir = girara_fix_path(download_dir_tmp);
+  g_free(download_dir_tmp);
+
+  if (download_dir == NULL) {
+    return false;
+  }
+
+  /* build filename */
+  char* filename = g_build_filename(download_dir, file ? file : uri, NULL);
+
+  if (filename == NULL) {
+    g_free(download_dir);
+    return false;
+  }
+
+  /* check for custom download command */
+  char* download_command = girara_setting_get(tab->jumanji->ui.session, "download-command");
+  if (download_command != NULL) {
+    char* command = strstr(download_command, "%s");
+    if (command == NULL) {
+      girara_error("Invalid download command: %s", download_command);
+      g_free(download_command);
+      return false;
+    }
+
+    /* one argument (uri) */
+    if ((command = strstr(command, "%s")) == NULL) {
+      command = g_strdup_printf(download_command, uri);
+    /* two arguments (uri, filename) */
+    } else {
+      command = g_strdup_printf(download_command, uri, filename);
+    }
+
+    fprintf(stderr, "spawning: %s\n", command);
+    g_spawn_command_line_async(command, NULL);
+
+    free(download_command);
+    g_free(command);
+  /* internal download handler */
+  } else {
+    /* TODO: Implement webkit download handler */
+  }
+
+  g_free(filename);
+  g_free(download_dir);
+
+  return true;
 }
 
 void
@@ -216,7 +286,8 @@ cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
   }
 }
 
-bool cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* session)
+bool
+cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* session)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
