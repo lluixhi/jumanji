@@ -125,6 +125,22 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
   }
 }
 
+void
+cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, char* link, jumanji_tab_t* tab)
+{
+  if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.statusbar.url == NULL 
+      || tab->jumanji->ui.session == NULL) {
+    return;
+  }
+
+  if (link != NULL) {
+    girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, link);
+  } else {
+    const gchar* url = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    girara_statusbar_item_set_text(tab->jumanji->ui.session, tab->jumanji->ui.statusbar.url, url ? (char*) url : "Loading...");
+  }
+}
+
 WebKitWebView*
 cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_view, gpointer data)
 {

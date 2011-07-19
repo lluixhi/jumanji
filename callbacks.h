@@ -70,7 +70,15 @@ void cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, 
  */
 void cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji);
 
-void cb_jumanji_tab_hover_over_link(WebKitWebView* web_view, char* title, char* link, gpointer data);
+/**
+ * Update link in statusbar if link has been hovered
+ *
+ * @param web_view The web view
+ * @param title The links title
+ * @param link The uri the link points to
+ * @param tab The jumanji tab
+ */
+void cb_jumanji_tab_hovering_over_link(WebKitWebView* web_view, char* title, char* link, jumanji_tab_t* tab);
 
 /**
  * Inspect web view

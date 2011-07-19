@@ -333,9 +333,10 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   tab->girara_tab = girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
 
   /* connect signals */
-  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),       tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status),   tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "load-finished",       G_CALLBACK(cb_jumanji_tab_load_finished), tab);
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),            tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "hovering-over-link",  G_CALLBACK(cb_jumanji_tab_hovering_over_link), tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status),        tab);
+  g_signal_connect(G_OBJECT(tab->web_view),        "load-finished",       G_CALLBACK(cb_jumanji_tab_load_finished),      tab);
 
   /* setup userscripts */
   user_script_init_tab(tab, jumanji->global.user_scripts);
