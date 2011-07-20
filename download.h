@@ -9,9 +9,11 @@
 
 typedef struct jumanji_download_s
 {
+  char* file; /**> File name */
   const char* uri; /**> Download uri */
   int64_t size; /**> Size of the downloaded file */
   WebKitDownload* download; /**> Webkit download object */
+  GtkWidget* widget; /**> Webkit widget */
   jumanji_t* jumanji; /**> Jumanji session */
 } jumanji_download_t;
 

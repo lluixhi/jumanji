@@ -60,6 +60,11 @@ typedef struct jumanji_s
   {
     void* session; /**> Database connection */
   } database;
+
+  struct
+  {
+    GtkWidget* widget; /**> Download widget */
+  } downloads;
 } jumanji_t;
 
 typedef struct jumanji_tab_s

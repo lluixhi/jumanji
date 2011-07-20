@@ -34,6 +34,15 @@ bool cmd_bookmark_delete(girara_session_t* session, girara_list_t* argument_list
 bool cmd_buffer_delete(girara_session_t* session, girara_list_t* argument_list);
 
 /**
+ * Show the download widget
+ *
+ * @param session The used girara session
+ * @param argument_list List of passed arguments
+ * @return true if no error occured
+ */
+bool cmd_downloads(girara_session_t* session, girara_list_t* argument_list);
+
+/**
  * Opens URL in the current tab
  *
  * @param session The used girara session

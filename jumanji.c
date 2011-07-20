@@ -130,6 +130,12 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  /* initialize download widget */
+  jumanji->downloads.widget = gtk_vbox_new(FALSE, 0);
+  if (jumanji->downloads.widget == NULL) {
+    goto error_free;
+  }
+
   /* enable tabs */
   girara_tabs_enable(jumanji->ui.session);
 

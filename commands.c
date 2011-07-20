@@ -79,6 +79,25 @@ cmd_buffer_delete(girara_session_t* session, girara_list_t* argument_list)
 }
 
 bool
+cmd_downloads(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  if (gtk_widget_get_visible(GTK_WIDGET(session->gtk.tabs)) == TRUE) {
+    gtk_widget_hide(GTK_WIDGET(session->gtk.tabbar));
+    gtk_widget_hide(GTK_WIDGET(session->gtk.tabs));
+    girara_set_view(session, GTK_WIDGET(jumanji->downloads.widget));
+  } else {
+    gtk_widget_show(GTK_WIDGET(session->gtk.tabbar));
+    girara_set_view(session, GTK_WIDGET(session->gtk.tabs));
+  }
+
+  return true;
+}
+
+bool
 cmd_open(girara_session_t* session, girara_list_t* argument_list)
 {
   g_return_val_if_fail(session != NULL, false);

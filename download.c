@@ -45,7 +45,6 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
   }
 
   char* filename = g_build_filename(download_dir, file, NULL);
-  g_free(file);
 
   if (filename == NULL) {
     g_free(download_dir);
@@ -92,7 +91,18 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
     jumanji_download->size     = -1;
     jumanji_download->uri      = uri;
     jumanji_download->download = download;
+    jumanji_download->file     = file;
     jumanji_download->jumanji  = jumanji;
+    jumanji_download->widget   = gtk_label_new(NULL);
+
+    if (jumanji_download->widget == NULL) {
+      g_free(filename);
+      g_free(download_dir);
+      return false;
+    }
+
+    gtk_box_pack_end(GTK_BOX(jumanji->downloads.widget), jumanji_download->widget, FALSE, FALSE, 0);
+    gtk_widget_show(jumanji_download->widget);
 
     /* start download */
     webkit_download_start(download);
@@ -111,6 +121,11 @@ jumanji_download_free(jumanji_download_t* download)
     return;
   }
 
+  if (download->jumanji != NULL && download->widget != NULL) {
+    gtk_container_remove(GTK_CONTAINER(download->jumanji->downloads.widget), download->widget);
+  }
+
+  free(download->file);
   free(download);
 }
 
@@ -123,6 +138,7 @@ cb_jumanji_download_status(WebKitDownload* download, GParamSpec* pspec, jumanji_
 
   switch (webkit_download_get_status(download)) {
     case WEBKIT_DOWNLOAD_STATUS_STARTED:
+      gtk_label_set_markup(GTK_LABEL(jumanji_download->widget), "hello");
       jumanji_download->size = webkit_download_get_total_size(download);
       break;
     case WEBKIT_DOWNLOAD_STATUS_CANCELLED:
