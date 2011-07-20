@@ -8,6 +8,7 @@
 
 #include "callbacks.h"
 #include "database.h"
+#include "download.h"
 #include "shortcuts.h"
 #include "jumanji.h"
 
@@ -171,70 +172,11 @@ cb_jumanji_tab_web_inspector(WebKitWebInspector* inspector, WebKitWebView* web_v
 bool
 cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* download, jumanji_tab_t* tab)
 {
-  if (tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.session == NULL || download == NULL) {
+  if (tab == NULL || tab->jumanji == NULL || download == NULL) {
     return false;
   }
 
-  const char* uri  = webkit_download_get_uri(download);
-  const char* file = webkit_download_get_uri(download);
-
-  if (uri == NULL) {
-    return false;
-  }
-
-  /* get download dir */
-  char* download_dir_tmp = girara_setting_get(tab->jumanji->ui.session, "download-dir");
-  if (download_dir_tmp == NULL) {
-    return false;
-  }
-
-  char* download_dir = girara_fix_path(download_dir_tmp);
-  g_free(download_dir_tmp);
-
-  if (download_dir == NULL) {
-    return false;
-  }
-
-  /* build filename */
-  char* filename = g_build_filename(download_dir, file ? file : uri, NULL);
-
-  if (filename == NULL) {
-    g_free(download_dir);
-    return false;
-  }
-
-  /* check for custom download command */
-  char* download_command = girara_setting_get(tab->jumanji->ui.session, "download-command");
-  if (download_command != NULL) {
-    char* command = strstr(download_command, "%s");
-    if (command == NULL) {
-      girara_error("Invalid download command: %s", download_command);
-      g_free(download_command);
-      return false;
-    }
-
-    /* one argument (uri) */
-    if ((command = strstr(command, "%s")) == NULL) {
-      command = g_strdup_printf(download_command, uri);
-    /* two arguments (uri, filename) */
-    } else {
-      command = g_strdup_printf(download_command, uri, filename);
-    }
-
-    fprintf(stderr, "spawning: %s\n", command);
-    g_spawn_command_line_async(command, NULL);
-
-    free(download_command);
-    g_free(command);
-  /* internal download handler */
-  } else {
-    /* TODO: Implement webkit download handler */
-  }
-
-  g_free(filename);
-  g_free(download_dir);
-
-  return true;
+  return jumanji_download_file(tab->jumanji, download);
 }
 
 bool
