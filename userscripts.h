@@ -52,6 +52,14 @@ void user_script_free(void* data);
 void user_script_inject(WebKitWebView* web_view, user_script_t* user_script);
 
 /**
+ * Load user script by content
+ *
+ * @param web_view Webkit view
+ * @param text The javascript code
+ */
+void user_script_inject_text(WebKitWebView* web_view, const char* text);
+
+/**
  * Sets up a webkit tab to use the user script implementation
  *
  * @param tab The jumanji tab

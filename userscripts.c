@@ -192,7 +192,17 @@ user_script_free(void* data)
 void
 user_script_inject(WebKitWebView* web_view, user_script_t* user_script)
 {
-  if (web_view == NULL || user_script == NULL || user_script->content == NULL) {
+  if (user_script == NULL) {
+    return;
+  }
+
+  user_script_inject_text(web_view, user_script->content);
+}
+
+void
+user_script_inject_text(WebKitWebView* web_view, const char* text)
+{
+  if (web_view == NULL || text == NULL) {
     return;
   }
 
@@ -214,7 +224,7 @@ user_script_inject(WebKitWebView* web_view, user_script_t* user_script)
     return;
   }
 
-  JSStringRef script = JSStringCreateWithUTF8CString(user_script->content);
+  JSStringRef script = JSStringCreateWithUTF8CString(text);
 
   if (script == NULL) {
     return;
