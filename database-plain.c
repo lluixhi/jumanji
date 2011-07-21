@@ -478,7 +478,7 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
   do {
     db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
 
-    if (strstr(link->url, input) != NULL) {
+    if (strstr(link->url, input) != NULL || strstr(link->title, input)) {
       /* duplicate entry */
       db_result_link_t* link_dup = malloc(sizeof(db_result_link_t));
       if (link_dup != NULL) {
