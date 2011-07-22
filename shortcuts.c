@@ -112,13 +112,29 @@ bool
 sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
 
   if (!(gtk_widget_get_visible(GTK_WIDGET(session->gtk.inputbar)))) {
     gtk_widget_show(GTK_WIDGET(session->gtk.inputbar));
   }
 
   if (argument->data) {
-    gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
+    if (argument->n == APPEND_URL) {
+      jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+      if (tab != NULL && tab->web_view != NULL) {
+        const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+        char* data      = g_strdup_printf("%s%s", (char*) argument->data, uri);
+        gtk_entry_set_text(session->gtk.inputbar, data);
+        g_free(data);
+      } else {
+        gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
+      }
+    } else {
+      gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
+    }
+
     gtk_widget_grab_focus(GTK_WIDGET(session->gtk.inputbar));
     gtk_editable_set_position(GTK_EDITABLE(session->gtk.inputbar), -1);
   }
@@ -144,7 +160,7 @@ sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsi
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
 
-  if (tab->web_view) {
+  if (tab && tab->web_view) {
     if (argument->n == NEXT) {
       webkit_web_view_go_forward(WEBKIT_WEB_VIEW(tab->web_view));
     } else {
