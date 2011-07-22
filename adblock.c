@@ -152,28 +152,26 @@ adblock_filter_init_tab(jumanji_tab_t* tab, girara_list_t* adblock_filters)
 
   g_signal_connect(G_OBJECT(tab->web_view), "resource-request-starting",
       G_CALLBACK(cb_adblock_filter_resource_request_starting), adblock_filters);
-  g_signal_connect(G_OBJECT(tab->web_view), "notify::load-status",
-      G_CALLBACK(cb_adblock_tab_load_status), adblock_filters);
+  g_signal_connect(G_OBJECT(tab->web_view), "window-object-cleared",
+      G_CALLBACK(cb_adblock_tab_window_object_cleared), adblock_filters);
 }
 
 void
-cb_adblock_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
-    girara_list_t* adblock_filters)
+cb_adblock_tab_window_object_cleared(WebKitWebView* web_view, WebKitWebFrame* frame,
+    gpointer context, gpointer window_object, girara_list_t* adblock_filters)
 {
-  fflush(stderr);
   if (web_view == NULL || adblock_filters == NULL ||
       girara_list_size(adblock_filters) == 0) {
     return;
   }
 
-  /* check status */
-  WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
-  if (status != WEBKIT_LOAD_FIRST_VISUALLY_NON_EMPTY_LAYOUT) {
-    return;
-  }
-
   /* get web view uri */
   const char* uri = webkit_web_view_get_uri(web_view);
+
+  GString* css = g_string_new(NULL);
+  if (css == NULL) {
+    return;
+  }
 
   /* check all filter lists */
   girara_list_iterator_t* iter = girara_list_iterator(adblock_filters);
@@ -196,11 +194,47 @@ cb_adblock_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
         if (rule->pattern && (adblock_rule_evaluate(rule, uri) == false)) {
           continue;
         }
+
+        g_string_append(css, rule->css_rule);
       } while (girara_list_iterator_next(css_iter));
       girara_list_iterator_free(css_iter);
     }
   } while (girara_list_iterator_next(iter));
   girara_list_iterator_free(iter);
+
+  /* modify dom */
+  WebKitDOMDocument *dom_document = webkit_web_view_get_dom_document(web_view);
+
+  if (dom_document == NULL) {
+    goto error_free;
+  }
+
+  WebKitDOMElement *style = webkit_dom_document_create_element(dom_document, "style", NULL);
+
+  if (style == NULL) {
+    goto error_free;
+  }
+
+  webkit_dom_element_set_attribute(style, "type", "text/css", NULL);
+  webkit_dom_html_element_set_inner_html(WEBKIT_DOM_HTML_ELEMENT(style), css->str, NULL);
+
+  WebKitDOMNodeList *list = webkit_dom_document_get_elements_by_tag_name(dom_document, "head");
+
+  if (list == NULL) {
+    goto error_free;
+  }
+
+  WebKitDOMNode *head = webkit_dom_node_list_item(list, 0);
+
+  if (head == NULL) {
+    goto error_free;
+  }
+
+  webkit_dom_node_append_child(head, WEBKIT_DOM_NODE(style), NULL);
+
+error_free:
+
+  g_string_free(css, TRUE);
 }
 
 void
@@ -298,7 +332,8 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
   bool css       = false;
   char* css_rule = NULL;
   if ((tmp = strstr(line, "##")) != NULL) {
-    css_rule = g_strdup(tmp + 2);
+    /*css_rule = g_strdup_printf("%s { display: none; }; ", tmp + 2);*/
+    css_rule = g_strdup_printf("%s { background-color: red; }; ", tmp + 2);
     tmp      = g_strndup(line, tmp - line);
     css      = true;
   } else {

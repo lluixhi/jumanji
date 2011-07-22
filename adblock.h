@@ -82,21 +82,22 @@ void adblock_filter_init_tab(jumanji_tab_t* tab, girara_list_t*
  * @param response Network response
  * @param adblock_filters Filter list
  */
-void
-cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
+void cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
     WebKitWebFrame* web_frame, WebKitWebResource* web_resource,
     WebKitNetworkRequest* request, WebKitNetworkResponse* response,
     girara_list_t* adblock_filters);
 
 /**
- * Apply CSS filters
+ * Apply CSS rules
  *
  * @param web_view The web view
- * @param pspec -
+ * @param frame The frame
+ * @param context The context
+ * @param window_object Window object
  * @param adblock_filters Filter list
  */
-void cb_adblock_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
-    girara_list_t* adblock_filters);
+void cb_adblock_tab_window_object_cleared(WebKitWebView* web_view, WebKitWebFrame* frame,
+    gpointer context, gpointer window_object, girara_list_t* adblock_filters);
 
 /**
  * Evaluate filter rule
