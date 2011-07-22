@@ -19,6 +19,7 @@ enum {
 typedef struct adblock_rule_s
 {
   char* pattern; /**> Pattern to match */
+  char* css_rule; /**> CSS rule */
   int options; /**> Filter options */
   int position; /**> Position */
 } adblock_rule_t;
@@ -28,6 +29,7 @@ typedef struct adblock_filter_list_s
   char* name; /**> Name of the filter list*/
   girara_list_t* pattern; /**> List of included url patterns */
   girara_list_t* exceptions; /**> List of exceptions */
+  girara_list_t* css_rules; /**> List of css filters */
 } adblock_filter_t;
 
 /**
@@ -84,6 +86,16 @@ void
 cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
     WebKitWebFrame* web_frame, WebKitWebResource* web_resource,
     WebKitNetworkRequest* request, WebKitNetworkResponse* response,
+    girara_list_t* adblock_filters);
+
+/**
+ * Apply CSS filters
+ *
+ * @param web_view The web view
+ * @param pspec -
+ * @param adblock_filters Filter list
+ */
+void cb_adblock_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
     girara_list_t* adblock_filters);
 
 /**

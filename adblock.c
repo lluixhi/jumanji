@@ -69,8 +69,17 @@ adblock_filter_load(const char* path)
     return NULL;
   }
 
-  girara_list_set_free_function(pattern,    adblock_rule_free);
-  girara_list_set_free_function(exceptions, adblock_rule_free);
+  girara_list_t* css_rules = girara_list_new();
+
+  if (css_rules == NULL) {
+    girara_list_free(pattern);
+    girara_list_free(exceptions);
+    return NULL;
+  }
+
+  girara_list_set_free_function(pattern,     adblock_rule_free);
+  girara_list_set_free_function(exceptions,  adblock_rule_free);
+  girara_list_set_free_function(css_rules, adblock_rule_free);
 
   /* read file */
   FILE* file = girara_file_open(path, "r");
@@ -91,6 +100,7 @@ adblock_filter_load(const char* path)
   filter->name       = g_strdup(path);
   filter->pattern    = pattern;
   filter->exceptions = exceptions;
+  filter->css_rules  = css_rules;
 
   /* read lines */
   char* line = NULL;
@@ -130,6 +140,7 @@ adblock_rule_free(void* data)
 
   adblock_rule_t* rule = (adblock_rule_t*) data;
   free(rule->pattern);
+  free(rule->css_rule);
 }
 
 void
@@ -141,6 +152,55 @@ adblock_filter_init_tab(jumanji_tab_t* tab, girara_list_t* adblock_filters)
 
   g_signal_connect(G_OBJECT(tab->web_view), "resource-request-starting",
       G_CALLBACK(cb_adblock_filter_resource_request_starting), adblock_filters);
+  g_signal_connect(G_OBJECT(tab->web_view), "notify::load-status",
+      G_CALLBACK(cb_adblock_tab_load_status), adblock_filters);
+}
+
+void
+cb_adblock_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
+    girara_list_t* adblock_filters)
+{
+  fflush(stderr);
+  if (web_view == NULL || adblock_filters == NULL ||
+      girara_list_size(adblock_filters) == 0) {
+    return;
+  }
+
+  /* check status */
+  WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
+  if (status != WEBKIT_LOAD_FIRST_VISUALLY_NON_EMPTY_LAYOUT) {
+    return;
+  }
+
+  /* get web view uri */
+  const char* uri = webkit_web_view_get_uri(web_view);
+
+  /* check all filter lists */
+  girara_list_iterator_t* iter = girara_list_iterator(adblock_filters);
+  do {
+    adblock_filter_t* filter = (adblock_filter_t*) girara_list_iterator_data(iter);
+    if (filter == NULL) {
+      continue;
+    }
+
+    /* check css list */
+    if (girara_list_size(filter->css_rules) > 0) {
+      girara_list_iterator_t* css_iter = girara_list_iterator(filter->css_rules);
+      do {
+        adblock_rule_t* rule = girara_list_iterator_data(css_iter);
+        if (rule == NULL || rule->css_rule == NULL) {
+          continue;
+        }
+
+        /* if url pattern is given and does not match, continue */
+        if (rule->pattern && (adblock_rule_evaluate(rule, uri) == false)) {
+          continue;
+        }
+      } while (girara_list_iterator_next(css_iter));
+      girara_list_iterator_free(css_iter);
+    }
+  } while (girara_list_iterator_next(iter));
+  girara_list_iterator_free(iter);
 }
 
 void
@@ -150,14 +210,14 @@ cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
     girara_list_t* adblock_filters)
 {
   if (web_view == NULL || adblock_filters == NULL || web_resource == NULL ||
-      request == NULL) {
+      request == NULL || girara_list_size(adblock_filters) == 0) {
     return;
   }
 
   /* get resource uri */
   const char* uri = webkit_web_resource_get_uri(web_resource);
 
-  /* check all user scripts */
+  /* check all filter lists */
   girara_list_iterator_t* iter = girara_list_iterator(adblock_filters);
   do {
     adblock_filter_t* filter = (adblock_filter_t*) girara_list_iterator_data(iter);
@@ -214,12 +274,6 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
     return;
   }
 
-  /* check for element hiding */
-  /* TODO: Implement? */
-  if (strstr(line, "##") != NULL) {
-    return;
-  }
-
   /* create rule object */
   adblock_rule_t* rule = malloc(sizeof(adblock_rule_t));
   if (rule == NULL) {
@@ -240,13 +294,22 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
 
   char* tmp = NULL;
 
-  /* check for filter options */
-  char* options = strstr(line, "$");
-  if (options != NULL) {
-    tmp = g_strndup(line, options - line);
-    /* TODO: parse options */
+  /* check for element hiding */
+  bool css       = false;
+  char* css_rule = NULL;
+  if ((tmp = strstr(line, "##")) != NULL) {
+    css_rule = g_strdup(tmp + 2);
+    tmp      = g_strndup(line, tmp - line);
+    css      = true;
   } else {
-    tmp = g_strdup(line);
+    /* check for filter options */
+    char* options = strstr(line, "$");
+    if (options != NULL) {
+      tmp = g_strndup(line, options - line);
+      /* TODO: parse options */
+    } else {
+      tmp = g_strdup(line);
+    }
   }
 
   /* check for position markers */
@@ -306,12 +369,15 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
     g_string_prepend(pattern, ".*");
   }
 
-  rule->pattern = g_strdup(pattern->str);
+  rule->pattern  = g_strdup(pattern->str);
+  rule->css_rule = css_rule;
 
   g_string_free(pattern, TRUE);
   g_free(tmp);
 
-  if (exception == true) {
+  if (css == true) {
+    girara_list_append(filter->css_rules, rule);
+  } else if (exception == true) {
     girara_list_append(filter->exceptions, rule);
   } else {
     girara_list_append(filter->pattern, rule);
