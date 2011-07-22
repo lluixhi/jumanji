@@ -107,4 +107,13 @@ bool cmd_stop(girara_session_t* session, girara_list_t* argument_list);
  */
 bool cmd_tabopen(girara_session_t* session, girara_list_t* argument_list);
 
+/**
+ * Open URL in a new window
+ *
+ * @param session The used girara session
+ * @param argument_list List of passed arguments
+ * @return true if no error occured
+ */
+bool cmd_winopen(girara_session_t* session, girara_list_t* argument_list);
+
 #endif // COMMANDS_H

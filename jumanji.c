@@ -75,6 +75,7 @@ jumanji_init(int argc, char* argv[])
   jumanji->global.search_engines   = girara_list_new();
   jumanji->global.proxies          = girara_list_new();
   jumanji->global.current_proxy    = NULL;
+  jumanji->global.arguments        = argv;
 
   if (jumanji->global.search_engines == NULL ||
       jumanji->global.proxies == NULL) {
@@ -547,6 +548,22 @@ jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy)
 
     girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");
   }
+}
+
+void
+jumanji_window_new(jumanji_t* jumanji, char* uri)
+{
+  if (jumanji == NULL) {
+    return;
+  }
+
+  char* argv[] = {
+    *(jumanji->global.arguments),
+    uri,
+    NULL
+  };
+
+  g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
 }
 
 /* main function */

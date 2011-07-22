@@ -83,9 +83,11 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_o,        NULL, sc_focus_inputbar,        NORMAL, 0,               &(":open "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_O,        NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":open "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_t,        NULL, sc_focus_inputbar,        NORMAL, 0,               &(":tabopen "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_T,        NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":tabopen "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_w,        NULL, sc_focus_inputbar,        NORMAL, 0,               &(":winopen "));
+  girara_shortcut_add(gsession, 0,                GDK_KEY_W,        NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":winopen "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_f,        NULL, sc_follow_link,           NORMAL, DEFAULT,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_F,        NULL, sc_follow_link,           NORMAL, NEW_TAB,         NULL);
-  girara_shortcut_add(gsession, 0,                GDK_KEY_T,        NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":tabopen "));
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_i,        NULL, sc_navigate_history,      NORMAL, NEXT,            NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_o,        NULL, sc_navigate_history,      NORMAL, PREVIOUS,        NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_L,        NULL, sc_navigate_history,      NORMAL, NEXT,            NULL);
@@ -129,6 +131,7 @@ config_load_default(jumanji_t* jumanji)
   girara_inputbar_command_add(gsession, "print",     NULL,  cmd_print,           NULL,    "Show print dialog");
   girara_inputbar_command_add(gsession, "stop",      NULL,  cmd_stop,            NULL,    "Stop loading the current page");
   girara_inputbar_command_add(gsession, "tabopen",   "t",   cmd_tabopen,         cc_open, "Open URL in a new tab");
+  girara_inputbar_command_add(gsession, "winopen",   "w",   cmd_winopen,         cc_open, "Open URL in a new window");
 
   /* special commands */
   girara_special_command_add(gsession, '/', cmd_search, true, 0, NULL),

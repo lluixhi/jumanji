@@ -54,6 +54,7 @@ typedef struct jumanji_s
     girara_list_t* proxies; /**> Proxies */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
+    char** arguments; /**> Arguments that were passed at startup */
   } global;
 
   struct
@@ -166,5 +167,13 @@ char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
  * @param proxy The jumanji proxy
  */
 void jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy);
+
+/**
+ * Creates a new jumanji instance
+ *
+ * @param jumanji The jumanji session
+ * @param uri The uri that should be opened in the new window
+ */
+void jumanji_window_new(jumanji_t* jumanji, char* uri);
 
 #endif // JUMANJI_H
