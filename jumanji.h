@@ -54,6 +54,7 @@ typedef struct jumanji_s
     girara_list_t* proxies; /**> Proxies */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
+    girara_list_t* adblock_filters; /**> Adblock filters */
     char** arguments; /**> Arguments that were passed at startup */
   } global;
 
