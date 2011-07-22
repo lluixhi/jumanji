@@ -28,7 +28,7 @@ config_load_default(jumanji_t* jumanji)
 
   /* zathura settings */
   bool_value = true;
-  girara_setting_add(gsession, "adblock",          &bool_value,  BOOLEAN, true,  "Block ads", 									NULL, NULL);
+  girara_setting_add(gsession, "adblock",          &bool_value,  BOOLEAN, true,  "Block ads",                   NULL, NULL);
   bool_value = true;
   girara_setting_add(gsession, "auto-set-proxy",   &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
   string_value = "~/dl";
