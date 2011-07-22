@@ -76,6 +76,7 @@ jumanji_init(int argc, char* argv[])
   jumanji->global.proxies          = girara_list_new();
   jumanji->global.current_proxy    = NULL;
   jumanji->global.arguments        = argv;
+  jumanji->search.item             = NULL;
 
   if (jumanji->global.search_engines == NULL ||
       jumanji->global.proxies == NULL) {
@@ -410,6 +411,23 @@ jumanji_tab_load_url(jumanji_tab_t* tab, const char* url)
   }
 
   webkit_web_view_load_uri(WEBKIT_WEB_VIEW(tab->web_view), url);
+}
+
+void
+jumanji_tab_show_search_results(jumanji_tab_t* tab)
+{
+  if (tab == NULL || tab->web_view == NULL) {
+    return;
+  }
+
+  webkit_web_view_unmark_text_matches(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (tab->jumanji != NULL && tab->jumanji->search.item != NULL) {
+    webkit_web_view_mark_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
+        tab->jumanji->search.item, FALSE, 0);
+    webkit_web_view_set_highlight_text_matches(WEBKIT_WEB_VIEW(tab->web_view),
+        TRUE);
+  }
 }
 
 char*

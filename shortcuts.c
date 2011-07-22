@@ -294,6 +294,31 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
+sc_search(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(argument != NULL, false);
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+
+  if (tab == NULL || tab->web_view == NULL) {
+    return false;
+  }
+
+  if (jumanji->search.item == NULL) {
+    return false;
+  }
+
+  gboolean direction = (argument->n == BACKWARDS) ? FALSE : TRUE;
+  webkit_web_view_search_text(WEBKIT_WEB_VIEW(tab->web_view),
+      jumanji->search.item, FALSE, direction, TRUE);
+
+  return true;
+}
+
+bool
 sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
@@ -303,7 +328,7 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
 
-  if (tab && tab->web_view) {
+  if (tab != NULL && tab->web_view != NULL) {
     if (argument->n == BYPASS_CACHE) {
       webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(tab->web_view));
     } else {

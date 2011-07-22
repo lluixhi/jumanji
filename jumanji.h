@@ -12,7 +12,7 @@
 
 enum { LEFT, RIGHT, UP, DOWN, FULL_UP, FULL_DOWN, HALF_UP, HALF_DOWN, TOP,
   BOTTOM, BEGIN, END, ZOOM_IN, ZOOM_OUT, DEFAULT, ZOOM_SPECIFIC, APPEND_URL,
-  BYPASS_CACHE, NEW_TAB, NEXT, PREVIOUS };
+  BYPASS_CACHE, NEW_TAB, NEXT, PREVIOUS, BACKWARDS, FORWARDS };
 
 typedef struct jumanji_proxy_s
 {
@@ -61,6 +61,11 @@ typedef struct jumanji_s
   {
     void* session; /**> Database connection */
   } database;
+
+  struct
+  {
+    char* item; /**> Search item */
+  } search;
 
   struct
   {
@@ -139,6 +144,13 @@ jumanji_tab_t* jumanji_tab_get_nth(jumanji_t* jumanji, unsigned int index);
  * @param url The url that should be loaded
  */
 void jumanji_tab_load_url(jumanji_tab_t* tab, const char* url);
+
+/**
+ * Show search results based on the latest search item in the tab
+ *
+ * @param tab The tab
+ */
+void jumanji_tab_show_search_results(jumanji_tab_t* tab);
 
 /**
  * Builds an url based upon a string

@@ -114,6 +114,8 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                0,                "G",  sc_scroll,                NORMAL, BOTTOM,          NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_0,        NULL, sc_scroll,                NORMAL, BEGIN,           NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_dollar,   NULL, sc_scroll,                NORMAL, END,             NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_n,        NULL, sc_search,                NORMAL, FORWARDS,        NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_N,        NULL, sc_search,                NORMAL, BACKWARDS,       NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_A,        NULL, sc_toggle_bookmark,       NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_p,        NULL, sc_toggle_proxy,          NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                0,                "gf", sc_toggle_source_mode,    NORMAL, 0,               NULL);
