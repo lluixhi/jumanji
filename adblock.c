@@ -281,6 +281,8 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
       g_string_append(pattern, "[-,.,%,\\d,\\w]");
     } else if (tmp[i] == '*') {
       g_string_append(pattern, ".*");
+    } else if (tmp[i] == '.') {
+      g_string_append(pattern, "\\.");
     } else {
       g_string_append_c(pattern, tmp[i]);
     }
