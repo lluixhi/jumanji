@@ -206,6 +206,12 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
     return;
   }
 
+  /* check for element hiding */
+  /* TODO: Implement? */
+  if (strstr(line, "##") != NULL) {
+    return;
+  }
+
   /* create rule object */
   adblock_rule_t* rule = malloc(sizeof(adblock_rule_t));
   if (rule == NULL) {
