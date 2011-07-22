@@ -167,21 +167,23 @@ cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
 
     /* check exceptions */
     girara_list_iterator_t* exceptions_iter = girara_list_iterator(filter->exceptions);
-    do {
+    while (girara_list_iterator_next(exceptions_iter)) {
       adblock_rule_t* rule = girara_list_iterator_data(exceptions_iter);
       if (rule == NULL) {
         continue;
       }
 
       if (adblock_rule_evaluate(rule, uri) == true) {
+        girara_list_iterator_free(exceptions_iter);
+        girara_list_iterator_free(iter);
         return;
       }
-    } while (girara_list_iterator_next(exceptions_iter));
+    }
     girara_list_iterator_free(exceptions_iter);
 
     /* check rules */
     girara_list_iterator_t* rule_iter = girara_list_iterator(filter->pattern);
-    do {
+    while (girara_list_iterator_next(rule_iter)) {
       adblock_rule_t* rule = girara_list_iterator_data(rule_iter);
       if (rule == NULL) {
         continue;
@@ -189,8 +191,11 @@ cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
 
       if (adblock_rule_evaluate(rule, uri) == true) {
         webkit_network_request_set_uri(request, "about:blank");
+        girara_list_iterator_free(rule_iter);
+        girara_list_iterator_free(iter);
+        return;
       }
-    } while (girara_list_iterator_next(rule_iter));
+    }
     girara_list_iterator_free(rule_iter);
 
   } while (girara_list_iterator_next(iter));
