@@ -28,17 +28,19 @@ config_load_default(jumanji_t* jumanji)
 
   /* zathura settings */
   bool_value = true;
-  girara_setting_add(gsession, "auto-set-proxy",   &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
+  girara_setting_add(gsession, "auto-set-proxy",              &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
+  bool_value = true;
+  girara_setting_add(gsession, "close-window-with-last-tab",  &bool_value,  BOOLEAN, false,  "Close window with last tab", NULL, NULL);
   string_value = "~/dl";
-  girara_setting_add(gsession, "download-dir",     string_value, STRING,  false, "Download directory",          NULL, NULL);
+  girara_setting_add(gsession, "download-dir",                string_value, STRING,  false, "Download directory",          NULL, NULL);
   string_value = NULL;
-  girara_setting_add(gsession, "download-command", string_value, STRING,  false, "Download directory",          NULL, NULL);
+  girara_setting_add(gsession, "download-command",            string_value, STRING,  false, "Download directory",          NULL, NULL);
   string_value = "http://pwmt.org";
-  girara_setting_add(gsession, "homepage",         string_value, STRING,  false, "Home page",                   NULL, NULL);
+  girara_setting_add(gsession, "homepage",                    string_value, STRING,  false, "Home page",                   NULL, NULL);
   int_value = 40;
-  girara_setting_add(gsession, "scroll-step",      &int_value,   INT,     true,  "Scroll step",                 NULL, NULL);
+  girara_setting_add(gsession, "scroll-step",                 &int_value,   INT,     true,  "Scroll step",                 NULL, NULL);
   int_value = 10;
-  girara_setting_add(gsession, "zoom-step",        &int_value,   INT,     true,  "Zoom step",                   NULL, NULL);
+  girara_setting_add(gsession, "zoom-step",                   &int_value,   INT,     true,  "Zoom step",                   NULL, NULL);
 
   /* webkit settings */
   girara_setting_add(gsession, "auto-load-images",            &bool_value,   BOOLEAN, false, "Load images automatically",            cb_settings_webkit, NULL);

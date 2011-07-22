@@ -113,17 +113,24 @@ cb_jumanji_tab_changed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
 void
 cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, jumanji_t* jumanji)
 {
-  if (tabs == NULL || jumanji == NULL) {
+  if (tabs == NULL || jumanji == NULL || jumanji->ui.session == NULL) {
     return;
   }
 
   if (gtk_notebook_get_n_pages(tabs) == 0) {
-    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
-    if (homepage != NULL) {
-      char* url = jumanji_build_url_from_string(jumanji, homepage);
-      jumanji_tab_new(jumanji, url, false);
-      free(url);
+    bool* close_window_with_last_tab = girara_setting_get(jumanji->ui.session, "close-window-with-last-tab");
+    if (close_window_with_last_tab != NULL && *close_window_with_last_tab == true) {
+      cb_destroy(NULL, NULL);
+      gtk_main_quit();
+    } else {
+      char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+      if (homepage != NULL) {
+        char* url = jumanji_build_url_from_string(jumanji, homepage);
+        jumanji_tab_new(jumanji, url, false);
+        free(url);
+      }
     }
+    free(close_window_with_last_tab);
   }
 }
 
