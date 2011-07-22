@@ -166,38 +166,41 @@ cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
     }
 
     /* check exceptions */
-    girara_list_iterator_t* exceptions_iter = girara_list_iterator(filter->exceptions);
-    while (girara_list_iterator_next(exceptions_iter)) {
-      adblock_rule_t* rule = girara_list_iterator_data(exceptions_iter);
-      if (rule == NULL) {
-        continue;
-      }
+    if (girara_list_size(filter->exceptions) > 0) {
+      girara_list_iterator_t* exceptions_iter = girara_list_iterator(filter->exceptions);
+      do {
+        adblock_rule_t* rule = girara_list_iterator_data(exceptions_iter);
+        if (rule == NULL) {
+          continue;
+        }
 
-      if (adblock_rule_evaluate(rule, uri) == true) {
-        girara_list_iterator_free(exceptions_iter);
-        girara_list_iterator_free(iter);
-        return;
-      }
+        if (adblock_rule_evaluate(rule, uri) == true) {
+          girara_list_iterator_free(exceptions_iter);
+          girara_list_iterator_free(iter);
+          return;
+        }
+      } while (girara_list_iterator_next(exceptions_iter));
+      girara_list_iterator_free(exceptions_iter);
     }
-    girara_list_iterator_free(exceptions_iter);
 
     /* check rules */
-    girara_list_iterator_t* rule_iter = girara_list_iterator(filter->pattern);
-    while (girara_list_iterator_next(rule_iter)) {
-      adblock_rule_t* rule = girara_list_iterator_data(rule_iter);
-      if (rule == NULL) {
-        continue;
-      }
+    if (girara_list_size(filter->pattern) > 0) {
+      girara_list_iterator_t* rule_iter = girara_list_iterator(filter->pattern);
+      do {
+        adblock_rule_t* rule = girara_list_iterator_data(rule_iter);
+        if (rule == NULL) {
+          continue;
+        }
 
-      if (adblock_rule_evaluate(rule, uri) == true) {
-        webkit_network_request_set_uri(request, "about:blank");
-        girara_list_iterator_free(rule_iter);
-        girara_list_iterator_free(iter);
-        return;
-      }
+        if (adblock_rule_evaluate(rule, uri) == true) {
+          webkit_network_request_set_uri(request, "about:blank");
+          girara_list_iterator_free(rule_iter);
+          girara_list_iterator_free(iter);
+          return;
+        }
+      } while (girara_list_iterator_next(rule_iter));
+      girara_list_iterator_free(rule_iter);
     }
-    girara_list_iterator_free(rule_iter);
-
   } while (girara_list_iterator_next(iter));
   girara_list_iterator_free(iter);
 }
@@ -259,7 +262,9 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
     char* t = g_strdup(tmp + 1);
     g_free(tmp);
     tmp = t;
-  } else if (tmp[strlen(tmp) - 1] == '|') {
+  }
+
+  if (tmp[strlen(tmp) - 1] == '|') {
     rule->position |= ADBLOCK_ENDING;
 
     char* t = g_strndup(tmp, strlen(tmp) - 2);
@@ -283,6 +288,8 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
       g_string_append(pattern, ".*");
     } else if (tmp[i] == '.') {
       g_string_append(pattern, "\\.");
+    } else if (tmp[i] == '|') {
+      g_string_append(pattern, "\\|");
     } else {
       g_string_append_c(pattern, tmp[i]);
     }
@@ -299,9 +306,9 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
     g_string_prepend(pattern, ".*");
   }
 
-  rule->pattern = pattern->str;
+  rule->pattern = g_strdup(pattern->str);
 
-  g_string_free(pattern, FALSE);
+  g_string_free(pattern, TRUE);
   g_free(tmp);
 
   if (exception == true) {
@@ -331,7 +338,7 @@ adblock_rule_evaluate(adblock_rule_t* rule, const char* uri)
     match = true;
   }
 
-  g_match_info_free(match_info);
+  /*g_match_info_free(match_info);*/
   g_regex_unref(regex);
 
   return match;
