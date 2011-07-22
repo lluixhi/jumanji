@@ -294,6 +294,9 @@ jumanji_free(jumanji_t* jumanji)
     girara_list_free(jumanji->global.proxies);
   }
 
+  /* free user scipts */
+  girara_list_free(jumanji->global.user_scripts);
+
   free(jumanji);
 }
 
