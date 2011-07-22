@@ -282,9 +282,14 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
   }
 
   if (rule->position & ADBLOCK_BEGINNING) {
+    g_string_append(pattern,  ".*");
     g_string_prepend(pattern, "^");
   } else if (rule->position & ADBLOCK_ENDING) {
     g_string_append(pattern, "$");
+    g_string_prepend(pattern, ".*");
+  } else {
+    g_string_append(pattern,  ".*");
+    g_string_prepend(pattern, ".*");
   }
 
   rule->pattern = pattern->str;
