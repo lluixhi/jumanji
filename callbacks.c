@@ -51,14 +51,18 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
 {
   jumanji_tab_t* tab = (jumanji_tab_t*) data;
 
-  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database.session == NULL) {
+  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database.session == NULL
+      || tab->jumanji->ui.session == NULL) {
     return;
   }
 
-  const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
-  const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+  bool* enable_private_browsing = girara_setting_get(tab->jumanji->ui.session, "enable-private-browsing");
+  if (enable_private_browsing == NULL || *enable_private_browsing == false) {
+    const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
-  db_history_add(tab->jumanji->database.session, url, title);
+    db_history_add(tab->jumanji->database.session, url, title);
+  }
 }
 
 void
