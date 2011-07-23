@@ -13,6 +13,7 @@ typedef struct db_sqlite_s
 {
   sqlite3* bookmark_session; /**> sqlite3 session */
   sqlite3* history_session; /**> sqlite3 session */
+  sqlite3* quickmarks_session; /**> sqlite3 session */
 } db_sqlite_t;
 
 /**
@@ -81,6 +82,32 @@ girara_list_t* db_sqlite_history_find(db_session_t* session, const char* input);
  * @param age The age of the entries in seconds
  */
 void db_sqlite_history_clean(db_session_t* session, unsigned int age);
+
+/**
+ * Saves a new quickmark (or overwrites an existing one)
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @param url Url the quickmark points to
+ */
+void db_sqlite_quickmark_add(db_session_t* session, const char identifier, const char* url);
+
+/**
+ * Finds a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @return The url of the quickmark otherwise NULL
+ */
+char* db_sqlite_quickmark_find(db_session_t* session, const char identifier);
+
+/**
+ * Remove a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ */
+void db_sqlite_quickmark_remove(db_session_t* session, const char identifier);
 
 /**
  * Prepares a sql statement

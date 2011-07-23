@@ -16,6 +16,7 @@
 #define JUMANJI_COOKIE_FILE "cookies"
 #define JUMANJI_BOOKMARKS_FILE "bookmarks"
 #define JUMANJI_HISTORY_FILE "history"
+#define JUMANJI_QUICKMARKS_FILE "quickmarks"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -202,6 +203,14 @@ jumanji_init(int argc, char* argv[])
   if (history_file != NULL) {
     db_set_history_file(jumanji->database.session, history_file);
     g_free(history_file);
+  } else {
+    goto error_free;
+  }
+
+  char* quickmarks_file = g_build_filename(jumanji->config.config_dir, JUMANJI_QUICKMARKS_FILE, NULL);
+  if (quickmarks_file != NULL) {
+    db_set_quickmarks_file(jumanji->database.session, quickmarks_file);
+    g_free(quickmarks_file);
   } else {
     goto error_free;
   }

@@ -65,6 +65,25 @@ db_sqlite_init(db_session_t* session)
     }
   }
 
+  static const char SQL_QUICKMARKS_INIT[] =
+    /* quickmarks table */
+    "CREATE TABLE IF NOT EXISTS quickmarks ("
+      "identifier CHAR PRIMARY KEY,"
+      "url TEXT"
+      ");";
+
+  if (session->quickmarks_file) {
+    if (sqlite3_open(session->quickmarks_file, &(sqlite_session->quickmarks_session)) != SQLITE_OK) {
+      goto error_free;
+    }
+
+    /* initialize database scheme */
+    if (sqlite3_exec(sqlite_session->quickmarks_session, SQL_QUICKMARKS_INIT, NULL, 0, NULL) != SQLITE_OK) {
+      girara_error("Could not initialize database: %s\n", session->quickmarks_file);
+      goto error_free;
+    }
+  }
+
   return true;
 
 error_free:
@@ -75,6 +94,10 @@ error_free:
 
   if (sqlite_session->history_session) {
     sqlite3_close(sqlite_session->history_session);
+  }
+
+  if (sqlite_session->quickmarks_session) {
+    sqlite3_close(sqlite_session->quickmarks_session);
   }
 
   return false;
@@ -93,6 +116,10 @@ db_sqlite_close(db_session_t* session)
 
   if (session->history_file) {
     g_free(session->history_file);
+  }
+
+  if (session->quickmarks_file) {
+    g_free(session->quickmarks_file);
   }
 
   free(session->data);
@@ -409,6 +436,119 @@ db_sqlite_history_clean(db_session_t* session, unsigned int age)
   /* bind values */
   int visited = time(NULL) - age;
   if (sqlite3_bind_int(statement, 1, visited) != SQLITE_OK) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return;
+  }
+
+  sqlite3_step(statement);
+  sqlite3_finalize(statement);
+}
+
+void
+db_sqlite_quickmark_add(db_session_t* session, const char identifier, const char* url)
+{
+  if (session == NULL || url == NULL || session->data == NULL) {
+    return;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->quickmarks_session == NULL) {
+    return;
+  }
+
+  /* add to database */
+  static const char SQL_QUICKMARK_ADD[] =
+    "REPLACE INTO quickmarks (identifier, url) VALUES (?, ?)";
+
+  sqlite3_stmt* statement =
+    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARK_ADD);
+
+  if (statement == NULL) {
+    return;
+  }
+
+  if (sqlite3_bind_blob(statement, 1, &identifier, 1, NULL) != SQLITE_OK ||
+      sqlite3_bind_text(statement, 2, url,        -1, NULL) != SQLITE_OK
+      ) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return;
+  }
+
+  sqlite3_step(statement);
+  sqlite3_finalize(statement);
+}
+
+char*
+db_sqlite_quickmark_find(db_session_t* session, const char identifier)
+{
+  if (session == NULL) {
+    return NULL;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->quickmarks_session == NULL) {
+    return NULL;
+  }
+
+  /* prepare statement */
+  static const char SQL_QUICKMARKS_FIND[] =
+    "SELECT url FROM quickmarks WHERE identifier = ?;";
+
+  sqlite3_stmt* statement =
+    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARKS_FIND);
+
+  if (statement == NULL) {
+    return NULL;
+  }
+
+  /* bind values */
+  if (sqlite3_bind_blob(statement, 1, &identifier, 1, NULL) != SQLITE_OK) {
+    girara_error("Could not bind query parameters");
+    sqlite3_finalize(statement);
+    return NULL;
+  }
+
+  char* url = NULL;
+  while(sqlite3_step(statement) == SQLITE_ROW) {
+    url = (char*) sqlite3_column_text(statement, 1);
+    break;
+  }
+
+  sqlite3_finalize(statement);
+
+  return url;
+}
+
+void
+db_sqlite_quickmark_remove(db_session_t* session, const char identifier)
+{
+  if (session == NULL) {
+    return;
+  }
+
+  /* get database connection */
+  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
+  if (sqlite_session->quickmarks_session == NULL) {
+    return;
+  }
+
+  /* prepare statement */
+  static const char SQL_QUICKMARK_ADD[] =
+    "DELETE FROM quickmarks WHERE identifier = ?;";
+
+  sqlite3_stmt* statement =
+    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARK_ADD);
+
+  if (statement == NULL) {
+    return;
+  }
+
+  /* bind values */
+  if (sqlite3_bind_blob(statement, 1, &identifier, 1, NULL) != SQLITE_OK) {
     girara_error("Could not bind query parameters");
     sqlite3_finalize(statement);
     return;

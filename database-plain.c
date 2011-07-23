@@ -361,6 +361,22 @@ db_plain_history_clean(db_session_t* session, unsigned int age)
   }
 }
 
+void
+db_plain_quickmark_add(db_session_t* session, const char identifier, const char* url)
+{
+}
+
+char*
+db_plain_quickmark_find(db_session_t* session, const char identifier)
+{
+  return NULL;
+}
+
+void
+db_plain_quickmark_remove(db_session_t* session, const char identifier)
+{
+}
+
 girara_list_t*
 db_plain_read_urls_from_file(const char* filename)
 {

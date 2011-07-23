@@ -13,6 +13,7 @@ typedef struct db_session_s
 
   char* bookmark_file; /**> Database file of the bookmarks */
   char* history_file; /**> Database file of the history */
+  char* quickmarks_file; /**> Database file of the quickmarks */
 
   void* data; /**> Implementation based data */
 } db_session_t;
@@ -55,6 +56,14 @@ void db_set_bookmark_file(db_session_t* session, const char* bookmark_file);
  * @param history_file Path to the history file
  */
 void db_set_history_file(db_session_t* session, const char* history_file);
+
+/**
+ * Sets the path to the quickmark database file
+ *
+ * @param session The database session
+ * @param history_file Path to the history file
+ */
+void db_set_quickmarks_file(db_session_t* session, const char* quickmarks_file);
 
 /**
  * Closes a database connection
@@ -114,6 +123,32 @@ girara_list_t* db_history_find(db_session_t* session, const char* input);
  * @param age The age of the entries in seconds
  */
 void db_history_clean(db_session_t* session, unsigned int age);
+
+/**
+ * Saves a new quickmark (or overwrites an existing one)
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @param url Url the quickmark points to
+ */
+void db_quickmark_add(db_session_t* session, const char identifier, const char* url);
+
+/**
+ * Finds a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @return The url of the quickmark otherwise NULL
+ */
+char* db_quickmark_find(db_session_t* session, const char identifier);
+
+/**
+ * Remove a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ */
+void db_quickmark_remove(db_session_t* session, const char identifier);
 
 /**
  * Frees a result link

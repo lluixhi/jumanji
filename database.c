@@ -21,6 +21,9 @@ typedef struct db_functions_s
   void (*history_add)(db_session_t*, const char*, const char*);
   girara_list_t* (*history_find)(db_session_t*, const char*);
   void (*history_clean)(db_session_t*, unsigned int);
+  void (*quickmark_add)(db_session_t*, const char, const char*);
+  char* (*quickmark_find)(db_session_t*, const char);
+  void (*quickmark_remove)(db_session_t*, const char);
 } db_functions_t;
 
 static const db_functions_t db_function = {
@@ -32,7 +35,10 @@ static const db_functions_t db_function = {
   db_sqlite_bookmark_remove,
   db_sqlite_history_add,
   db_sqlite_history_find,
-  db_sqlite_history_clean
+  db_sqlite_history_clean,
+  db_sqlite_quickmark_add,
+  db_sqlite_quickmark_find,
+  db_sqlite_quickmark_remove
 #else
   db_plain_init,
   db_plain_close,
@@ -41,7 +47,10 @@ static const db_functions_t db_function = {
   db_plain_bookmark_remove,
   db_plain_history_add,
   db_plain_history_find,
-  db_plain_history_clean
+  db_plain_history_clean,
+  db_plain_quickmark_add,
+  db_plain_quickmark_find,
+  db_plain_quickmark_remove
 #endif
 };
 
@@ -58,10 +67,11 @@ db_new(jumanji_t* jumanji)
     return NULL;
   }
 
-  session->bookmark_file = NULL;
-  session->history_file  = NULL;
-  session->jumanji       = jumanji;
-  session->data          = NULL;
+  session->bookmark_file   = NULL;
+  session->history_file    = NULL;
+  session->quickmarks_file = NULL;
+  session->jumanji         = jumanji;
+  session->data            = NULL;
 
   return session;
 }
@@ -94,6 +104,16 @@ db_set_history_file(db_session_t* session, const char* history_file)
   }
 
   session->history_file = g_strdup(history_file);
+}
+
+void
+db_set_quickmarks_file(db_session_t* session, const char* quickmarks_file)
+{
+  if (session == NULL || quickmarks_file == NULL) {
+    return;
+  }
+
+  session->quickmarks_file = g_strdup(quickmarks_file);
 }
 
 void
@@ -153,6 +173,32 @@ db_history_clean(db_session_t* session, unsigned int age)
 {
   if (db_function.history_clean) {
     db_function.history_clean(session, age);
+  }
+}
+
+void
+db_quickmark_add(db_session_t* session, const char identifier, const char* url)
+{
+  if (db_function.quickmark_add) {
+    db_function.quickmark_add(session, identifier, url);
+  }
+}
+
+char*
+db_quickmark_find(db_session_t* session, const char identifier)
+{
+  if (db_function.quickmark_find) {
+    return db_function.quickmark_find(session, identifier);
+  } else {
+    return NULL;
+  }
+}
+
+void
+db_quickmark_remove(db_session_t* session, const char identifier)
+{
+  if (db_function.quickmark_remove) {
+    db_function.quickmark_remove(session, identifier);
   }
 }
 

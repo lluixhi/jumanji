@@ -89,6 +89,32 @@ girara_list_t* db_plain_history_find(db_session_t* session, const char* input);
 void db_plain_history_clean(db_session_t* session, unsigned int age);
 
 /**
+ * Saves a new quickmark (or overwrites an existing one)
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @param url Url the quickmark points to
+ */
+void db_plain_quickmark_add(db_session_t* session, const char identifier, const char* url);
+
+/**
+ * Finds a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ * @return The url of the quickmark otherwise NULL
+ */
+char* db_plain_quickmark_find(db_session_t* session, const char identifier);
+
+/**
+ * Remove a quickmark
+ *
+ * @param session The database session
+ * @param identifier The quickmark identifier
+ */
+void db_plain_quickmark_remove(db_session_t* session, const char identifier);
+
+/**
  * Read all bookmarks from file
  *
  * @param filename The filename
