@@ -514,7 +514,7 @@ db_sqlite_quickmark_find(db_session_t* session, const char identifier)
 
   char* url = NULL;
   while(sqlite3_step(statement) == SQLITE_ROW) {
-    url = (char*) sqlite3_column_text(statement, 1);
+    url = (char*) sqlite3_column_text(statement, 0);
     break;
   }
 
