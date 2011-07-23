@@ -5,6 +5,7 @@
 #include "commands.h"
 #include "completion.h"
 #include "jumanji.h"
+#include "quickmarks.h"
 #include "shortcuts.h"
 
 void
@@ -123,6 +124,9 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_H,        NULL, sc_navigate_history,      NORMAL, PREVIOUS,        NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_p,        NULL, sc_put,                   NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_P,        "gP", sc_put,                   NORMAL, NEW_TAB,         NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_M,        NULL, sc_quickmark_add,         NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                0,                "go", sc_quickmark_evaluate,    NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                0,                "gn", sc_quickmark_evaluate,    NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_r,        NULL, sc_reload,                NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_R,        NULL, sc_reload,                NORMAL, BYPASS_CACHE,    NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_h,        NULL, sc_scroll,                NORMAL, LEFT,            NULL);
