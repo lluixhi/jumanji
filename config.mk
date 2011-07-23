@@ -33,4 +33,3 @@ SFLAGS = -s
 
 # possible values are: sqlite and plain
 DATABASE ?= plain
-#DATABASE ?= sqlite

@@ -55,6 +55,7 @@ typedef struct jumanji_s
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
     char** arguments; /**> Arguments that were passed at startup */
+    int quickmark_open_mode; /**> How to open a quickmark */
   } global;
 
   struct
