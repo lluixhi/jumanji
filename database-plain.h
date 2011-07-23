@@ -19,7 +19,18 @@ typedef struct db_plain_s
   girara_list_t* history; /**>  Temporary history */
   GFileMonitor* history_monitor; /**> File monitor for the history file */
   unsigned int history_signal; /**> Signal id */
+
+  gchar* quickmarks_file_path; /**> File path to the quickmarks file */
+  girara_list_t* quickmarks; /**>  Temporary quickmarks */
+  GFileMonitor* quickmarks_monitor; /**> File monitor for the quickmarks file */
+  unsigned int quickmarks_signal; /**> Signal id */
 } db_plain_t;
+
+typedef struct db_plain_quickmark_s
+{
+  char identifier; /**> Quickmark identifier */
+  char* url; /**> Url */
+} db_plain_quickmark_t;
 
 /**
  * Initializes the database
@@ -115,12 +126,27 @@ char* db_plain_quickmark_find(db_session_t* session, const char identifier);
 void db_plain_quickmark_remove(db_session_t* session, const char identifier);
 
 /**
+ * Free function for the quickmark list
+ *
+ * @param data Quickmark
+ */
+void db_plain_free_quickmark(void* data);
+
+/**
  * Read all bookmarks from file
  *
  * @param filename The filename
  * @return Read bookmarks or NULL if an error occured
  */
 girara_list_t* db_plain_read_urls_from_file(const char* filename);
+
+/**
+ * Read all quickmarks from a file
+ *
+ * @param filename The filename
+ * @return Read quickmarks or NULL if an error occured
+ */
+girara_list_t* db_plain_read_quickmarks_from_file(const char* filename);
 
 /**
  * Write urls to file
@@ -130,6 +156,14 @@ girara_list_t* db_plain_read_urls_from_file(const char* filename);
  * @param visited true if the last visited value should be written as well
  */
 void db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited);
+
+/**
+ * Write quickmarks to file
+ *
+ * @param filename The filename
+ * @param quickmarks The list of quickmarks
+ */
+void db_plain_write_quickmarks_to_file(const char* filename, girara_list_t* quickmarks);
 
 /**
  * This function filters the given list for matching data and returns a new list
