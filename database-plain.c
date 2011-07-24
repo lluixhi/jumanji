@@ -582,6 +582,7 @@ db_plain_read_urls_from_file(const char* filename)
   while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
+      free(line);
       continue;
     }
 
@@ -592,6 +593,8 @@ db_plain_read_urls_from_file(const char* filename)
     if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
       db_result_link_t* link = malloc(sizeof(link));
       if (link == NULL) {
+        g_strfreev(argv);
+        free(line);
         continue;
       }
 
