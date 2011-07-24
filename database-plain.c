@@ -635,6 +635,7 @@ db_plain_read_quickmarks_from_file(const char* filename)
   while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
+      free(line);
       continue;
     }
 
@@ -644,11 +645,13 @@ db_plain_read_quickmarks_from_file(const char* filename)
 
     if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
       if (argc < 2) {
+        free(line);
         continue;
       }
 
       db_plain_quickmark_t* quickmark = malloc(sizeof(db_plain_quickmark_t));
       if (quickmark == NULL) {
+        free(line);
         continue;
       }
 
@@ -659,6 +662,7 @@ db_plain_read_quickmarks_from_file(const char* filename)
     }
 
     g_strfreev(argv);
+    free(line);
   }
 
   fclose(file);
