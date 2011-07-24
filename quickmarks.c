@@ -166,20 +166,24 @@ cmd_quickmarks_delete(girara_session_t* session, girara_list_t* argument_list)
     return false;
   }
 
-  char* identifier_string = girara_list_nth(argument_list, 0);
+  girara_list_iterator_t* iter = girara_list_iterator(argument_list);
+  do {
+    char* identifier_string = girara_list_iterator_data(iter);
+    if (identifier_string == NULL) {
+      continue;
+    }
 
-  if (identifier_string == NULL || strlen(identifier_string) < 1 || strlen(identifier_string) > 1) {
-    return false;
-  }
+    for (unsigned int i = 0; i < strlen(identifier_string); i++) {
+      char identifier = identifier_string[i];
+      if (((identifier >= 0x30 && identifier <= 0x39) || (identifier >= 0x41 && identifier <= 0x5A) ||
+          (identifier >= 0x61 && identifier <= 0x7A)) == false) {
+        return true;
+      }
 
-  char identifier = identifier_string[0];
-
-  if (((identifier >= 0x30 && identifier <= 0x39) || (identifier >= 0x41 && identifier <= 0x5A) ||
-      (identifier >= 0x61 && identifier <= 0x7A)) == false) {
-    return false;
-  }
-
-  db_quickmark_remove(jumanji->database.session, identifier);
+      db_quickmark_remove(jumanji->database.session, identifier);
+    }
+  } while (girara_list_iterator_next(iter) != NULL);
+  girara_list_iterator_free(iter);
 
   return false;
 }
