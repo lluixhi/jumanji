@@ -4,6 +4,7 @@
 #include "config.h"
 #include "commands.h"
 #include "completion.h"
+#include "hints.h"
 #include "jumanji.h"
 #include "marks.h"
 #include "quickmarks.h"
@@ -109,6 +110,8 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                0,                  "gH", sc_goto_homepage,         NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                0,                  "gu", sc_goto_parent_directory, NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                0,                  "gU", sc_goto_parent_directory, NORMAL, DEFAULT,         NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_f,          NULL, sc_hints,                 NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_F,          NULL, sc_hints,                 NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_slash,      NULL, sc_focus_inputbar,        NORMAL, 0,               &("/"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_question,   NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &("?"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_colon,      NULL, sc_focus_inputbar,        NORMAL, 0,               &(":"));
