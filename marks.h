@@ -61,6 +61,24 @@ bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
     event, girara_session_t* session);
 
 /**
+ * Mark current location within the web page
+ *
+ * @param session The girara session
+ * @param argument_list Argument list
+ * @return true if no error occured otherwise false
+ */
+bool cmd_marks_add(girara_session_t* session, girara_list_t* argument_list);
+
+/**
+ * Delete the specified marks
+ *
+ * @param session The girara session
+ * @param argument_list Argument list
+ * @return true if no error occured otherwise false
+ */
+bool cmd_marks_delete(girara_session_t* session, girara_list_t* argument_list);
+
+/**
  * Adds a mark
  *
  * @param jumanji Jumanji session

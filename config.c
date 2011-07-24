@@ -164,8 +164,10 @@ config_load_default(jumanji_t* jumanji)
   /* define default inputbar commands */
   girara_inputbar_command_add(gsession, "bmark",     NULL,    cmd_bookmark_add,      NULL,    "Add a bookmark");
   girara_inputbar_command_add(gsession, "delbmarks", NULL,    cmd_bookmark_delete,   NULL,    "Delete a bookmark");
+  girara_inputbar_command_add(gsession, "delmarks",  "delm",  cmd_marks_delete,      NULL,    "Delete the specified marks");
   girara_inputbar_command_add(gsession, "delqmarks", "delqm", cmd_quickmarks_delete, NULL,    "Add quickmark");
   girara_inputbar_command_add(gsession, "downloads", NULL,    cmd_downloads,         NULL,    "Show downloads");
+  girara_inputbar_command_add(gsession, "mark",      NULL,    cmd_marks_add,         NULL,    "Mark current location within the web page");
   girara_inputbar_command_add(gsession, "open",      "o",     cmd_open,              cc_open, "Open URL in the current tab");
   girara_inputbar_command_add(gsession, "print",     NULL,    cmd_print,             NULL,    "Show print dialog");
   girara_inputbar_command_add(gsession, "qmark",     NULL,    cmd_quickmarks_add,    NULL,    "Add quickmark");

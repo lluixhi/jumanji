@@ -92,6 +92,101 @@ bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
   return true;
 }
 
+bool
+cmd_marks_add(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+  if (tab == NULL || tab->web_view == NULL) {
+    return false;
+  }
+
+  if (girara_list_size(argument_list) < 1) {
+    return false;
+  }
+
+  char* key_string = girara_list_nth(argument_list, 0);
+
+  if (key_string == NULL) {
+    return false;
+  }
+
+  if (strlen(key_string) < 1 || strlen(key_string) > 1) {
+    return false;
+  }
+
+  char key = key_string[0];
+
+  if (((key >= 0x41 && key <= 0x5A) || (key >=
+          0x61 && key <= 0x7A)) == false) {
+    return false;
+  }
+
+  mark_add(jumanji, tab, key);
+
+  return false;
+}
+
+bool
+cmd_marks_delete(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
+  if (tab == NULL || tab->web_view == NULL || jumanji->global.marks == NULL) {
+    return false;
+  }
+
+  if (girara_list_size(argument_list) < 1) {
+    return false;
+  }
+
+  if (girara_list_size(jumanji->global.marks) == 0) {
+    return false;
+  }
+
+  const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+
+  girara_list_iterator_t* iter = girara_list_iterator(argument_list);
+  do {
+    char* key_string = girara_list_iterator_data(iter);
+    if (key_string == NULL) {
+      continue;
+    }
+
+    for (unsigned int i = 0; i < strlen(key_string); i++) {
+      char key = key_string[i];
+      if (((key >= 0x41 && key <= 0x5A) || (key >=
+              0x61 && key <= 0x7A)) == false) {
+        continue;
+      }
+
+      /* search for existing mark */
+      girara_list_iterator_t* mark_iter = girara_list_iterator(jumanji->global.marks);
+      do {
+        jumanji_mark_t* mark = (jumanji_mark_t*) girara_list_iterator_data(mark_iter);
+        if (mark == NULL) {
+          continue;
+        }
+
+        if (mark->key == key && strcmp(mark->uri, uri) == 0) {
+          girara_list_remove(jumanji->global.marks, mark);
+          continue;
+        }
+      } while (girara_list_iterator_next(mark_iter) != NULL);
+      girara_list_iterator_free(mark_iter);
+    }
+  } while (girara_list_iterator_next(iter) != NULL);
+  girara_list_iterator_free(iter);
+
+  return true;
+}
+
 void
 mark_add(jumanji_t* jumanji, jumanji_tab_t* tab, int key)
 {
