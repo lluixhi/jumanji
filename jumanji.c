@@ -314,6 +314,10 @@ jumanji_free(jumanji_t* jumanji)
   g_free(jumanji->config.config_dir);
   g_free(jumanji->config.data_dir);
 
+  if (jumanji->global.browser_settings == NULL) {
+    g_object_unref(jumanji->global.browser_settings);
+  }
+
   /* free search engines */
   if (jumanji->global.search_engines != NULL) {
     if (girara_list_size(jumanji->global.search_engines) > 0) {
