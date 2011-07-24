@@ -53,6 +53,7 @@ typedef struct jumanji_s
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
     girara_list_t* marks; /**> Marker */
+    girara_list_t* last_closed; /**> Last closed tabs */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
     char** arguments; /**> Arguments that were passed at startup */
@@ -189,5 +190,12 @@ void jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy);
  * @param uri The uri that should be opened in the new window
  */
 void jumanji_window_new(jumanji_t* jumanji, char* uri);
+
+/**
+ * Frees last closed urls
+ *
+ * @param data Last closed url
+ */
+void jumanji_last_closed_free(void* data);
 
 #endif // JUMANJI_H

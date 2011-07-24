@@ -39,8 +39,16 @@ cb_girara_buffer_changed(girara_session_t* session)
 void
 cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
 {
-  if (object == NULL || tab == NULL) {
+  if (object == NULL || tab == NULL || tab->jumanji == NULL) {
     return;
+  }
+
+  if (tab->web_view != NULL && tab->jumanji->global.last_closed != NULL) {
+    const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+    if (uri != NULL) {
+      char* tmp = g_strdup(uri);
+      girara_list_prepend(tab->jumanji->global.last_closed, tmp);
+    }
   }
 
   jumanji_tab_free(tab);

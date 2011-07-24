@@ -340,6 +340,30 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
+sc_restore(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = session->global.data;
+
+  if (jumanji->global.last_closed == NULL ||
+      girara_list_size(jumanji->global.last_closed) == 0) {
+    return false;
+  }
+
+  char* uri = girara_list_nth(jumanji->global.last_closed, 0);
+
+  if (uri == NULL) {
+    return false;
+  }
+
+  jumanji_tab_new(jumanji, uri, false);
+  girara_list_remove(jumanji->global.last_closed, uri);
+
+  return true;
+}
+
+bool
 sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);

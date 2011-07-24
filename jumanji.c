@@ -74,20 +74,33 @@ jumanji_init(int argc, char* argv[])
 
   jumanji->ui.session->global.data = jumanji;
   jumanji->ui.statusbar.buffer     = NULL;
-  jumanji->global.search_engines   = girara_list_new();
-  jumanji->global.proxies          = girara_list_new();
-  jumanji->global.marks             = girara_list_new();
   jumanji->global.current_proxy    = NULL;
   jumanji->global.arguments        = argv;
   jumanji->search.item             = NULL;
 
-  if (jumanji->global.search_engines == NULL ||
-      jumanji->global.proxies == NULL ||
-      jumanji->global.marks == NULL) {
+  jumanji->global.search_engines = girara_list_new();
+  if (jumanji->global.search_engines == NULL) {
+    goto error_free;
+  }
+
+  jumanji->global.proxies = girara_list_new();
+  if (jumanji->global.proxies == NULL) {
+    goto error_free;
+  }
+
+  jumanji->global.marks = girara_list_new();
+  if (jumanji->global.marks == NULL) {
     goto error_free;
   }
 
   girara_list_set_free_function(jumanji->global.marks, mark_free);
+
+  jumanji->global.last_closed = girara_list_new();
+  if (jumanji->global.last_closed == NULL) {
+    goto error_free;
+  }
+
+  girara_list_set_free_function(jumanji->global.last_closed, jumanji_last_closed_free);
 
   /* user scripts */
   char* user_script_dir = g_build_filename(jumanji->config.config_dir, USER_SCRIPTS_DIR, NULL);
@@ -313,6 +326,9 @@ jumanji_free(jumanji_t* jumanji)
 
   /* free user scipts */
   girara_list_free(jumanji->global.user_scripts);
+
+  /* free last closed */
+  girara_list_free(jumanji->global.last_closed);
 
   free(jumanji);
 }
@@ -602,6 +618,12 @@ jumanji_window_new(jumanji_t* jumanji, char* uri)
   };
 
   g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
+}
+
+void
+jumanji_last_closed_free(void* data)
+{
+  free(data);
 }
 
 /* main function */
