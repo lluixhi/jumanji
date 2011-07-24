@@ -361,6 +361,11 @@ jumanji_free(jumanji_t* jumanji)
   /* free last closed */
   girara_list_free(jumanji->global.last_closed);
 
+  /* free database */
+  if (jumanji->database.session) {
+    db_close(jumanji->database.session);
+  }
+
   free(jumanji);
 }
 
