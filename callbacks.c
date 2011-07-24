@@ -71,6 +71,7 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
 
     db_history_add(tab->jumanji->database.session, url, title);
   }
+  free(enable_private_browsing);
 }
 
 void

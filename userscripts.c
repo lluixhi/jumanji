@@ -153,6 +153,7 @@ user_script_load_dir(const char* path)
     if (g_file_test(filepath, G_FILE_TEST_IS_REGULAR) == TRUE) {
       user_script_t* user_script = user_script_load_file(filepath);
       if (user_script != NULL) {
+        girara_list_set_free_function(list, user_script_free);
         girara_list_append(list, user_script);
         girara_info("loaded user script: %s", user_script->name ? user_script->name : filepath);
       } else {
@@ -179,6 +180,14 @@ user_script_load_file(const char* path)
   bool load_on_document_start = false;
 
   if (include == NULL || exclude == NULL) {
+    if (include != NULL) {
+      girara_list_free(include);
+    }
+
+    if (exclude != NULL) {
+      girara_list_free(exclude);
+    }
+
     return NULL;
   }
 
@@ -209,9 +218,9 @@ user_script_load_file(const char* path)
       char* header_value = g_match_info_fetch_named(header_match_info, "value");
 
       if (g_strcmp0(header_name, "name") == 0) {
-        name = header_value;
+        name = g_strdup(header_value);
       } else if (g_strcmp0(header_name, "description") == 0) {
-        description = header_value;
+        description = g_strdup(header_value);
       } else if (g_strcmp0(header_name, "include") == 0) {
         /* update url for further processing */
         GRegex* regex = g_regex_new("\\*", 0, 0, NULL);
@@ -234,6 +243,7 @@ user_script_load_file(const char* path)
         g_free(header_value);
       }
 
+      g_free(header_value);
       g_free(header_name);
       g_match_info_next(header_match_info, NULL);
     }

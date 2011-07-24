@@ -246,6 +246,7 @@ jumanji_init(int argc, char* argv[])
       jumanji_tab_new(jumanji, url, false);
       free(url);
     }
+    free(homepage);
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       char* url = jumanji_build_url_from_string(jumanji, argv[i]);

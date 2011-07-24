@@ -572,6 +572,8 @@ db_plain_read_urls_from_file(const char* filename)
     return NULL;
   }
 
+  girara_list_set_free_function(list, db_free_result_link);
+
   /* read lines */
   char* line = NULL;
   while ((line = girara_file_read_line(file)) != NULL) {
