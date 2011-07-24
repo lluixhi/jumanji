@@ -600,6 +600,7 @@ db_plain_read_urls_from_file(const char* filename)
     }
 
     g_strfreev(argv);
+    free(line);
   }
 
   fclose(file);
