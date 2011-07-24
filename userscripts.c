@@ -153,8 +153,8 @@ user_script_load_dir(const char* path)
     if (g_file_test(filepath, G_FILE_TEST_IS_REGULAR) == TRUE) {
       user_script_t* user_script = user_script_load_file(filepath);
       if (user_script != NULL) {
-        girara_list_set_free_function(list, user_script_free);
         girara_list_append(list, user_script);
+        girara_list_set_free_function(list, user_script_free);
         girara_info("loaded user script: %s", user_script->name ? user_script->name : filepath);
       } else {
         girara_error("could not parse user script: %s", filepath);
@@ -194,6 +194,8 @@ user_script_load_file(const char* path)
   /* read file */
   char* content = girara_file_read(path);
   if (content == NULL) {
+    girara_list_free(include);
+    girara_list_free(exclude);
     return NULL;
   }
 
@@ -227,20 +229,16 @@ user_script_load_file(const char* path)
         char* tmp = g_regex_replace(regex, header_value, -1, 0, ".*", 0, NULL);
         girara_list_append(include, tmp);
         g_regex_unref(regex);
-        g_free(header_value);
       } else if (g_strcmp0(header_name, "exclude") == 0) {
         /* update url for further processing */
         GRegex* regex = g_regex_new("\\*", 0, 0, NULL);
         char* tmp = g_regex_replace(regex, header_value, -1, 0, ".*", 0, NULL);
         girara_list_append(exclude, tmp);
         g_regex_unref(regex);
-        g_free(header_value);
       } else if (g_strcmp0(header_name, "run-at") == 0) {
         if (g_strcmp0(header_value, "document-start") == 0) {
           load_on_document_start = true;
         }
-      } else {
-        g_free(header_value);
       }
 
       g_free(header_value);
@@ -257,6 +255,8 @@ user_script_load_file(const char* path)
     g_match_info_free(match_info);
     g_regex_unref(regex);
     free(content);
+    girara_list_free(include);
+    girara_list_free(exclude);
     return NULL;
   }
 
@@ -266,6 +266,9 @@ user_script_load_file(const char* path)
   /* create user script object */
   user_script_t* user_script = malloc(sizeof(user_script_t));
   if (user_script == NULL) {
+    girara_list_free(include);
+    girara_list_free(exclude);
+    free(content);
     return NULL;
   }
 

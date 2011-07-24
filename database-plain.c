@@ -104,6 +104,7 @@ db_plain_init(db_session_t* session)
   } else {
     goto error_free;
   }
+  g_object_unref(bookmark_file);
 
   GFile* history_file = g_file_new_for_path(plain_session->history_file_path);
   if (history_file != NULL) {
@@ -112,6 +113,7 @@ db_plain_init(db_session_t* session)
   } else {
     goto error_free;
   }
+  g_object_unref(history_file);
 
   GFile* quickmarks_file = g_file_new_for_path(plain_session->quickmarks_file_path);
   if (quickmarks_file != NULL) {
@@ -120,6 +122,7 @@ db_plain_init(db_session_t* session)
   } else {
     goto error_free;
   }
+  g_object_unref(quickmarks_file);
 
   if (plain_session->bookmark_monitor == NULL || plain_session->history_monitor == NULL ||
       plain_session->quickmarks_monitor == NULL) {

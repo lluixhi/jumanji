@@ -49,8 +49,35 @@ jumanji_init(int argc, char* argv[])
     goto error_out;
   }
 
+  /* set default values */
+  jumanji->ui.session          = NULL;
+  jumanji->ui.statusbar.url    = NULL;
+  jumanji->ui.statusbar.buffer = NULL;
+  jumanji->ui.statusbar.tabs   = NULL;
+  jumanji->ui.statusbar.proxy  = NULL;
+
+  jumanji->config.config_dir = NULL;
+  jumanji->config.data_dir   = NULL;
+
+  jumanji->modes.normal = 0;
+
+  jumanji->global.browser_settings = NULL;
+  jumanji->global.soup_session     = NULL;
+  jumanji->global.search_engines   = NULL;
+  jumanji->global.proxies          = NULL;
+  jumanji->global.marks            = NULL;
+  jumanji->global.last_closed      = NULL;
+  jumanji->global.current_proxy    = NULL;
+  jumanji->global.user_scripts     = NULL;
+  jumanji->global.arguments        = argv;
+
   jumanji->database.session = NULL;
 
+  jumanji->search.item = NULL;
+
+  jumanji->downloads.widget = NULL;
+
+  /* begin initialization */
   if (config_dir) {
     jumanji->config.config_dir = g_strdup(config_dir);
   } else {
@@ -73,10 +100,6 @@ jumanji_init(int argc, char* argv[])
   }
 
   jumanji->ui.session->global.data = jumanji;
-  jumanji->ui.statusbar.buffer     = NULL;
-  jumanji->global.current_proxy    = NULL;
-  jumanji->global.arguments        = argv;
-  jumanji->search.item             = NULL;
 
   jumanji->global.search_engines = girara_list_new();
   if (jumanji->global.search_engines == NULL) {
@@ -287,6 +310,9 @@ jumanji_free(jumanji_t* jumanji)
   if (jumanji->ui.session != NULL) {
     girara_session_destroy(jumanji->ui.session);
   }
+
+  g_free(jumanji->config.config_dir);
+  g_free(jumanji->config.data_dir);
 
   /* free search engines */
   if (jumanji->global.search_engines != NULL) {
