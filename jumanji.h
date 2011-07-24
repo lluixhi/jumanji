@@ -52,6 +52,7 @@ typedef struct jumanji_s
     SoupSession* soup_session; /*>> Soup session */
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
+    girara_list_t* marks; /**> Marker */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
     char** arguments; /**> Arguments that were passed at startup */

@@ -1,2 +1,6 @@
 *.o
 *.do
+*.swp
+.depend
+jumanji
+jumanji-debug

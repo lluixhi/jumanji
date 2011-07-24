@@ -9,6 +9,7 @@
 #include "database.h"
 #include "jumanji.h"
 #include "userscripts.h"
+#include "marks.h"
 #include "utils.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
@@ -75,14 +76,18 @@ jumanji_init(int argc, char* argv[])
   jumanji->ui.statusbar.buffer     = NULL;
   jumanji->global.search_engines   = girara_list_new();
   jumanji->global.proxies          = girara_list_new();
+  jumanji->global.marks             = girara_list_new();
   jumanji->global.current_proxy    = NULL;
   jumanji->global.arguments        = argv;
   jumanji->search.item             = NULL;
 
   if (jumanji->global.search_engines == NULL ||
-      jumanji->global.proxies == NULL) {
+      jumanji->global.proxies == NULL ||
+      jumanji->global.marks == NULL) {
     goto error_free;
   }
+
+  girara_list_set_free_function(jumanji->global.marks, mark_free);
 
   /* user scripts */
   char* user_script_dir = g_build_filename(jumanji->config.config_dir, USER_SCRIPTS_DIR, NULL);
@@ -302,6 +307,9 @@ jumanji_free(jumanji_t* jumanji)
     }
     girara_list_free(jumanji->global.proxies);
   }
+
+  /* free marks */
+  girara_list_free(jumanji->global.marks);
 
   /* free user scipts */
   girara_list_free(jumanji->global.user_scripts);
