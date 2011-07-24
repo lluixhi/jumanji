@@ -203,12 +203,13 @@ db_sqlite_bookmark_find(db_session_t* session, const char* input)
     return NULL;
   }
 
+  girara_list_t* results = girara_list_new();
+
   if (results == NULL) {
     sqlite3_finalize(statement);
     return NULL;
   }
 
-  girara_list_t* results = girara_list_new();
   girara_list_set_free_function(results, db_sqlite_free_result_link);
 
   while(sqlite3_step(statement) == SQLITE_ROW) {
@@ -340,12 +341,13 @@ db_sqlite_history_find(db_session_t* session, const char* input)
     return NULL;
   }
 
+  girara_list_t* results = girara_list_new();
+
   if (results == NULL) {
     sqlite3_finalize(statement);
     return NULL;
   }
 
-  girara_list_t* results = girara_list_new();
   girara_list_set_free_function(results, db_sqlite_free_result_link);
 
   while(sqlite3_step(statement) == SQLITE_ROW) {
