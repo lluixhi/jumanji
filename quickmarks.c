@@ -1,5 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
+#include <string.h>
+
 #include "database.h"
 #include "quickmarks.h"
 
@@ -110,3 +112,75 @@ bool cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
 
   return true;
 }
+
+bool
+cmd_quickmarks_add(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  if (jumanji->database.session == NULL) {
+    return false;
+  }
+
+  if (girara_list_size(argument_list) < 2) {
+    return false;
+  }
+
+  char* identifier_string = girara_list_nth(argument_list, 0);
+  char* url               = girara_list_nth(argument_list, 1);
+
+  if (identifier_string == NULL || url == NULL) {
+    return false;
+  }
+
+  if (strlen(identifier_string) < 1 || strlen(identifier_string) > 1) {
+    return false;
+  }
+
+  char identifier = identifier_string[0];
+
+  if (((identifier >= 0x30 && identifier <= 0x39) || (identifier >= 0x41 && identifier <= 0x5A) ||
+      (identifier >= 0x61 && identifier <= 0x7A)) == false) {
+    return false;
+  }
+
+  db_quickmark_add(jumanji->database.session, identifier, url);
+
+  return false;
+}
+
+bool
+cmd_quickmarks_delete(girara_session_t* session, girara_list_t* argument_list)
+{
+  g_return_val_if_fail(session != NULL, false);
+  g_return_val_if_fail(session->global.data != NULL, false);
+  jumanji_t* jumanji = (jumanji_t*) session->global.data;
+
+  if (jumanji->database.session == NULL) {
+    return false;
+  }
+
+  if (girara_list_size(argument_list) < 1) {
+    return false;
+  }
+
+  char* identifier_string = girara_list_nth(argument_list, 0);
+
+  if (identifier_string == NULL || strlen(identifier_string) < 1 || strlen(identifier_string) > 1) {
+    return false;
+  }
+
+  char identifier = identifier_string[0];
+
+  if (((identifier >= 0x30 && identifier <= 0x39) || (identifier >= 0x41 && identifier <= 0x5A) ||
+      (identifier >= 0x61 && identifier <= 0x7A)) == false) {
+    return false;
+  }
+
+  db_quickmark_remove(jumanji->database.session, identifier);
+
+  return false;
+}
+

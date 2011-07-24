@@ -70,24 +70,6 @@ bool cmd_print(girara_session_t* session, girara_list_t* argument_list);
 bool cmd_proxy(girara_session_t* session, girara_list_t* argument_list);
 
 /**
- * Add a quickmark
- *
- * @param session The used girara session
- * @param argument_list List of passed arguments
- * @return true if no error occured
- */
-bool cmd_quickmarks_add(girara_session_t* session, girara_list_t* argument_list);
-
-/**
- * Delete quickmark(s)
- *
- * @param session The used girara session
- * @param argument_list List of passed arguments
- * @return true if no error occured
- */
-bool cmd_quickmarks_delete(girara_session_t* session, girara_list_t* argument_list);
-
-/**
  * Search the website for specific content
  *
  * @param session The used girara session
