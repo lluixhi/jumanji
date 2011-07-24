@@ -385,6 +385,8 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
     goto error_free;
   }
 
+  g_object_ref_sink(tab->web_view);
+
   /* save reference to tab */
   g_object_set_data(G_OBJECT(tab->scrolled_window), "jumanji-tab", tab);
 
@@ -435,6 +437,7 @@ jumanji_tab_free(jumanji_tab_t* tab)
     return;
   }
 
+  g_object_unref(tab->web_view);
   free(tab);
 }
 
