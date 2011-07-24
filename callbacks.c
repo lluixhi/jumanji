@@ -70,7 +70,8 @@ cb_jumanji_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec, gpointer 
 {
   jumanji_tab_t* tab = (jumanji_tab_t*) data;
 
-  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.session == NULL) {
+  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->ui.session == NULL
+      || tab->girara_tab) {
     return;
   }
 
