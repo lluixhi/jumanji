@@ -106,10 +106,14 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  girara_list_set_free_function(jumanji->global.search_engines, jumanji_search_engine_free);
+
   jumanji->global.proxies = girara_list_new();
   if (jumanji->global.proxies == NULL) {
     goto error_free;
   }
+
+  girara_list_set_free_function(jumanji->global.proxies, jumanji_proxy_free);
 
   jumanji->global.marks = girara_list_new();
   if (jumanji->global.marks == NULL) {
@@ -319,38 +323,10 @@ jumanji_free(jumanji_t* jumanji)
   }
 
   /* free search engines */
-  if (jumanji->global.search_engines != NULL) {
-    if (girara_list_size(jumanji->global.search_engines) > 0) {
-      girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.search_engines);
-      do {
-        jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_iterator_data(iter);
-        if (search_engine != NULL) {
-          g_free(search_engine->identifier);
-          g_free(search_engine->url);
-          g_free(search_engine);
-        }
-      } while (girara_list_iterator_next(iter));
-      girara_list_iterator_free(iter);
-    }
-    girara_list_free(jumanji->global.search_engines);
-  }
+  girara_list_free(jumanji->global.search_engines);
 
   /* free proxies */
-  if (jumanji->global.proxies != NULL) {
-    if (girara_list_size(jumanji->global.proxies) > 0) {
-      girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
-      do {
-        jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_iterator_data(iter);
-        if (proxy != NULL) {
-          g_free(proxy->description);
-          g_free(proxy->url);
-          g_free(proxy);
-        }
-      } while (girara_list_iterator_next(iter));
-      girara_list_iterator_free(iter);
-    }
-    girara_list_free(jumanji->global.proxies);
-  }
+  girara_list_free(jumanji->global.proxies);
 
   /* free marks */
   girara_list_free(jumanji->global.marks);
@@ -663,6 +639,34 @@ void
 jumanji_last_closed_free(void* data)
 {
   free(data);
+}
+
+void
+jumanji_search_engine_free(void* data)
+{
+  if (data == NULL) {
+    return;
+  }
+
+  jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) data;
+
+  g_free(search_engine->identifier);
+  g_free(search_engine->url);
+  g_free(search_engine);
+}
+
+void
+jumanji_proxy_free(void* data)
+{
+  if (data == NULL) {
+    return;
+  }
+
+  jumanji_proxy_t* proxy = (jumanji_proxy_t*) data;
+
+  g_free(proxy->description);
+  g_free(proxy->url);
+  g_free(proxy);
 }
 
 /* main function */

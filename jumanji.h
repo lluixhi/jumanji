@@ -198,4 +198,18 @@ void jumanji_window_new(jumanji_t* jumanji, char* uri);
  */
 void jumanji_last_closed_free(void* data);
 
+/**
+ * Free a search engine
+ *
+ * @param data Search engine
+ */
+void jumanji_search_engine_free(void* data);
+
+/**
+ * Free a proxy
+ *
+ * @param data Proxy
+ */
+void jumanji_proxy_free(void* data);
+
 #endif // JUMANJI_H
