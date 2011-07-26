@@ -56,6 +56,7 @@ typedef struct jumanji_s
     girara_list_t* last_closed; /**> Last closed tabs */
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
+    girara_list_t* adblock_filters; /**> Adblock filters */
     char** arguments; /**> Arguments that were passed at startup */
     int quickmark_open_mode; /**> How to open a quickmark */
   } global;

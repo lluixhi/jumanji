@@ -4,6 +4,7 @@
 #include <girara.h>
 #include <string.h>
 
+#include "adblock.h"
 #include "callbacks.h"
 #include "config.h"
 #include "database.h"
@@ -136,6 +137,14 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
   g_free(user_script_dir);
+
+  /* adblock filters */
+  char* adblock_filter_dir = g_build_filename(jumanji->config.config_dir, ADBLOCK_FILTER_LIST_DIR, NULL);
+  jumanji->global.adblock_filters = adblock_filter_load_dir(adblock_filter_dir);
+  if (jumanji->global.adblock_filters == NULL) {
+    goto error_free;
+  }
+  g_free(adblock_filter_dir);
 
   /* webkit */
   jumanji->global.browser_settings = webkit_web_settings_new();
@@ -342,6 +351,9 @@ jumanji_free(jumanji_t* jumanji)
     db_close(jumanji->database.session);
   }
 
+  /* free adblock filters */
+  girara_list_free(jumanji->global.adblock_filters);
+
   free(jumanji);
 }
 
@@ -399,6 +411,13 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
 
   /* setup userscripts */
   user_script_init_tab(tab, jumanji->global.user_scripts);
+
+  /* setup adblock */
+  bool* block_ads = girara_setting_get(jumanji->ui.session, "adblock");
+  if (block_ads && *block_ads == true) {
+    adblock_filter_init_tab(tab, jumanji->global.adblock_filters);
+  }
+  free(block_ads);
 
   return tab;
 
