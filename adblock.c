@@ -332,8 +332,7 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
   bool css       = false;
   char* css_rule = NULL;
   if ((tmp = strstr(line, "##")) != NULL) {
-    /*css_rule = g_strdup_printf("%s { display: none; }; ", tmp + 2);*/
-    css_rule = g_strdup_printf("%s { display: none; }; ", tmp + 2);
+    css_rule = g_strdup_printf("%s { display: none; }\n", tmp + 2);
     tmp      = g_strndup(line, tmp - line);
     css      = true;
   } else {
