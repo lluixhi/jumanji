@@ -116,6 +116,22 @@ bool cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
     WebKitWebPolicyDecision* decision, jumanji_tab_t* tab);
 
 /**
+ * Navigation policy requested
+ *
+ * @param web_view The web view
+ * @param frame The frame
+ * @param request Request
+ * @param action Action
+ * @param decision Decision
+ * @param tab Jumanji tab
+ * @return true if request is handled
+ */
+bool cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView*
+    web_view, WebKitWebFrame* frame, WebKitNetworkRequest* request,
+    WebKitWebNavigationAction* action, WebKitWebPolicyDecision* decision,
+    jumanji_tab_t* tab);
+
+/**
  * Called when a webkit settings has been changed
  *
  * @param session The girara session

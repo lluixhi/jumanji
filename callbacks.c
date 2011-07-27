@@ -217,6 +217,34 @@ cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
   return false;
 }
 
+bool
+cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView* web_view,
+    WebKitWebFrame* frame, WebKitNetworkRequest* request,
+    WebKitWebNavigationAction* action, WebKitWebPolicyDecision* decision,
+    jumanji_tab_t* tab)
+{
+  if (tab == NULL || tab->jumanji == NULL || action == NULL) {
+    return false;
+  }
+
+  int button      = webkit_web_navigation_action_get_button(action);
+  const char* uri = NULL;
+
+  switch(button) {
+    case 2: /* middle mouse button */
+      uri = webkit_network_request_get_uri(request);
+      if (uri == NULL) {
+        return false;
+      }
+
+      jumanji_tab_new(tab->jumanji, uri, TRUE);
+      webkit_web_policy_decision_ignore(decision);
+      return true;
+    default:
+      return false;
+  }
+}
+
 void
 cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
 {

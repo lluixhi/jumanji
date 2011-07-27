@@ -4,6 +4,7 @@
 #include "config.h"
 #include "commands.h"
 #include "completion.h"
+#include "hints.h"
 #include "jumanji.h"
 #include "marks.h"
 #include "quickmarks.h"
@@ -28,7 +29,7 @@ config_load_default(jumanji_t* jumanji)
 
   girara_mode_set(gsession, NORMAL);
 
-  /* zathura settings */
+  /* jumanji settings */
   bool_value = true;
   girara_setting_add(gsession, "adblock",          &bool_value,  BOOLEAN, true,  "Block ads",                   NULL, NULL);
   bool_value = true;
@@ -45,6 +46,20 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "scroll-step",                 &int_value,   INT,     true,  "Scroll step",                 NULL, NULL);
   int_value = 10;
   girara_setting_add(gsession, "zoom-step",                   &int_value,   INT,     true,  "Zoom step",                   NULL, NULL);
+
+  /* hint settings */
+  string_value =
+    "padding: 0px 2px;"
+    "-webkit-border-radius: 4px;"
+    "font-family: monospace;"
+    "font-size: 12px;"
+    "font-weight: normal;"
+    "color: #ffffff;"
+    "border: 1px solid #3D3D3D;"
+    "opacity: 0.85;"
+    "background-color: #1F7DA0;";
+
+  girara_setting_add(gsession, "hint-css", string_value, STRING,  false, "CSS of one hint node",          NULL, NULL);
 
   /* webkit settings */
   bool_value = true;
@@ -111,6 +126,8 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                0,                  "gH", sc_goto_homepage,         NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                0,                  "gu", sc_goto_parent_directory, NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, 0,                0,                  "gU", sc_goto_parent_directory, NORMAL, DEFAULT,         NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_f,          NULL, sc_hints,                 NORMAL, 0,               NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_F,          NULL, sc_hints,                 NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_slash,      NULL, sc_focus_inputbar,        NORMAL, 0,               &("/"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_question,   NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &("?"));
   girara_shortcut_add(gsession, 0,                GDK_KEY_colon,      NULL, sc_focus_inputbar,        NORMAL, 0,               &(":"));
@@ -120,8 +137,6 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_T,          NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":tabopen "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_w,          NULL, sc_focus_inputbar,        NORMAL, 0,               &(":winopen "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_W,          NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":winopen "));
-  girara_shortcut_add(gsession, 0,                GDK_KEY_f,          NULL, sc_follow_link,           NORMAL, DEFAULT,         NULL);
-  girara_shortcut_add(gsession, 0,                GDK_KEY_F,          NULL, sc_follow_link,           NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_m,          NULL, sc_mark_add,              NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_i,          NULL, sc_navigate_history,      NORMAL, NEXT,            NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_o,          NULL, sc_navigate_history,      NORMAL, PREVIOUS,        NULL);

@@ -143,14 +143,6 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsign
 }
 
 bool
-sc_follow_link(girara_session_t* session, girara_argument_t* argument, unsigned int t)
-{
-  g_return_val_if_fail(session != NULL, false);
-
-  return false;
-}
-
-bool
 sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);

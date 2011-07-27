@@ -76,6 +76,16 @@ typedef struct jumanji_s
     girara_list_t* list; /**> List of downloads */
     GtkWidget* widget; /**> Download widget */
   } downloads;
+
+  struct
+  {
+    GPtrArray *links; /**> List of links */
+    GPtrArray *hints; /**> List of hint dom elements */
+    int        open_mode; /**> Open mode */
+    WebKitDOMNode *hint_style; /**> Dom style node */
+    WebKitDOMNode *hint_box; /**> Dom element node */
+    GString* input; /**> Input buffer */
+  } hints;
 } jumanji_t;
 
 typedef struct jumanji_tab_s
