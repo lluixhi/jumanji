@@ -50,11 +50,12 @@ config_load_default(jumanji_t* jumanji)
     "padding: 0px 2px;"
     "-webkit-border-radius: 4px;"
     "font-family: monospace;"
-    "font-size:10px;"
-    "font-weight:bold;"
-    "color:#000;"
-    "border:1px solid #cccc00;"
-    "background-color:#ffff00;";
+    "font-size: 12px;"
+    "font-weight: normal;"
+    "color: #ffffff;"
+    "border: 1px solid #3D3D3D;"
+    "opacity: 0.85;"
+    "background-color: #1F7DA0;";
 
   girara_setting_add(gsession, "hint-css", string_value, STRING,  false, "CSS of one hint node",          NULL, NULL);
 

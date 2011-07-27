@@ -77,12 +77,11 @@ cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
   if (((event->keyval >= 0x30 && event->keyval <= 0x39) || (event->keyval >= 0x41 && event->keyval <= 0x5A) ||
       (event->keyval >= 0x61 && event->keyval <= 0x7A)) == true) {
     g_string_append_c(jumanji->hints.input, (char) event->keyval);
+    hints_update(jumanji, jumanji->hints.input->str);
   } else if (event->keyval == GDK_KEY_Escape || event->keyval == GDK_KEY_Return) {
     hints_reset(jumanji);
     return true;
   }
-
-  hints_update(jumanji, jumanji->hints.input->str);
 
   return true;
 }
