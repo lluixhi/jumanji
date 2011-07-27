@@ -80,6 +80,9 @@ typedef struct jumanji_s
     GPtrArray *links; /**> List of links */
     GPtrArray *hints; /**> List of hint dom elements */
     int        open_mode; /**> Open mode */
+    WebKitDOMNode *hint_style; /**> Dom style node */
+    WebKitDOMNode *hint_box; /**> Dom element node */
+    GString* input; /**> Input buffer */
   } hints;
 } jumanji_t;
 
