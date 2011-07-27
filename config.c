@@ -29,7 +29,7 @@ config_load_default(jumanji_t* jumanji)
 
   girara_mode_set(gsession, NORMAL);
 
-  /* zathura settings */
+  /* jumanji settings */
   bool_value = true;
   girara_setting_add(gsession, "auto-set-proxy",              &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
   bool_value = true;
@@ -44,6 +44,19 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "scroll-step",                 &int_value,   INT,     true,  "Scroll step",                 NULL, NULL);
   int_value = 10;
   girara_setting_add(gsession, "zoom-step",                   &int_value,   INT,     true,  "Zoom step",                   NULL, NULL);
+
+  /* hint settings */
+  string_value =
+    "padding: 0px 2px;"
+    "-webkit-border-radius: 4px;"
+    "font-family: monospace;"
+    "font-size:10px;"
+    "font-weight:bold;"
+    "color:#000;"
+    "border:1px solid #cccc00;"
+    "background-color:#ffff00;";
+
+  girara_setting_add(gsession, "hint-css", string_value, STRING,  false, "CSS of one hint node",          NULL, NULL);
 
   /* webkit settings */
   bool_value = true;
@@ -121,8 +134,6 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_T,          NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":tabopen "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_w,          NULL, sc_focus_inputbar,        NORMAL, 0,               &(":winopen "));
   girara_shortcut_add(gsession, 0,                GDK_KEY_W,          NULL, sc_focus_inputbar,        NORMAL, APPEND_URL,      &(":winopen "));
-  girara_shortcut_add(gsession, 0,                GDK_KEY_f,          NULL, sc_follow_link,           NORMAL, DEFAULT,         NULL);
-  girara_shortcut_add(gsession, 0,                GDK_KEY_F,          NULL, sc_follow_link,           NORMAL, NEW_TAB,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_m,          NULL, sc_mark_add,              NORMAL, 0,               NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_i,          NULL, sc_navigate_history,      NORMAL, NEXT,            NULL);
   girara_shortcut_add(gsession, GDK_CONTROL_MASK, GDK_KEY_o,          NULL, sc_navigate_history,      NORMAL, PREVIOUS,        NULL);

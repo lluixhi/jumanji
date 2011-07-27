@@ -77,6 +77,10 @@ jumanji_init(int argc, char* argv[])
 
   jumanji->downloads.widget = NULL;
 
+  jumanji->hints.links     = NULL;
+  jumanji->hints.hints     = NULL;
+  jumanji->hints.open_mode = DEFAULT;
+
   /* begin initialization */
   if (config_dir) {
     jumanji->config.config_dir = g_strdup(config_dir);

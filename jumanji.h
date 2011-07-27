@@ -74,6 +74,13 @@ typedef struct jumanji_s
   {
     GtkWidget* widget; /**> Download widget */
   } downloads;
+
+  struct
+  {
+    GPtrArray *links; /**> List of links */
+    GPtrArray *hints; /**> List of hint dom elements */
+    int        open_mode; /**> Open mode */
+  } hints;
 } jumanji_t;
 
 typedef struct jumanji_tab_s
