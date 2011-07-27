@@ -73,6 +73,7 @@ typedef struct jumanji_s
 
   struct
   {
+    girara_list_t* list; /**> List of downloads */
     GtkWidget* widget; /**> Download widget */
   } downloads;
 } jumanji_t;

@@ -8,6 +8,7 @@
 #include "callbacks.h"
 #include "config.h"
 #include "database.h"
+#include "download.h"
 #include "jumanji.h"
 #include "userscripts.h"
 #include "marks.h"
@@ -76,6 +77,7 @@ jumanji_init(int argc, char* argv[])
 
   jumanji->search.item = NULL;
 
+  jumanji->downloads.list   = NULL;
   jumanji->downloads.widget = NULL;
 
   /* begin initialization */
@@ -192,6 +194,15 @@ jumanji_init(int argc, char* argv[])
   if (jumanji->downloads.widget == NULL) {
     goto error_free;
   }
+
+  gtk_widget_show(jumanji->downloads.widget);
+
+  jumanji->downloads.list = girara_list_new();
+  if (jumanji->downloads.list == NULL) {
+    goto error_free;
+  }
+
+  girara_list_set_free_function(jumanji->downloads.list, jumanji_download_free);
 
   /* enable tabs */
   girara_tabs_enable(jumanji->ui.session);
@@ -345,6 +356,9 @@ jumanji_free(jumanji_t* jumanji)
 
   /* free last closed */
   girara_list_free(jumanji->global.last_closed);
+
+  /* free downloads */
+  girara_list_free(jumanji->downloads.list);
 
   /* free database */
   if (jumanji->database.session) {
