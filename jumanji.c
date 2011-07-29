@@ -6,6 +6,7 @@
 
 #include "adblock.h"
 #include "callbacks.h"
+#include "soup.h"
 #include "config.h"
 #include "database.h"
 #include "download.h"
@@ -13,10 +14,10 @@
 #include "userscripts.h"
 #include "marks.h"
 #include "utils.h"
+#include "soup.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
-#define JUMANJI_COOKIE_FILE "cookies"
 #define JUMANJI_BOOKMARKS_FILE "bookmarks"
 #define JUMANJI_HISTORY_FILE "history"
 #define JUMANJI_QUICKMARKS_FILE "quickmarks"
@@ -64,13 +65,13 @@ jumanji_init(int argc, char* argv[])
   jumanji->modes.normal = 0;
 
   jumanji->global.browser_settings = NULL;
-  jumanji->global.soup_session     = NULL;
   jumanji->global.search_engines   = NULL;
   jumanji->global.proxies          = NULL;
   jumanji->global.marks            = NULL;
   jumanji->global.last_closed      = NULL;
   jumanji->global.current_proxy    = NULL;
   jumanji->global.user_scripts     = NULL;
+  jumanji->global.soup             = NULL;
   jumanji->global.arguments        = argv;
 
   jumanji->database.session = NULL;
@@ -161,24 +162,12 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
-  /* libsoup */
-  jumanji->global.soup_session = webkit_get_default_session();
-  if (jumanji->global.soup_session == NULL) {
+  /* init cookies */
+  jumanji->global.soup = jumanji_soup_init(jumanji);
+  if (jumanji->global.soup == NULL) {
+    girara_error("Could not initialize soup.");
     goto error_free;
   }
-
-  char* cookie_file = g_build_filename(jumanji->config.config_dir, JUMANJI_COOKIE_FILE, NULL);
-  if (cookie_file == NULL) {
-    goto error_free;
-  }
-
-  SoupCookieJar* cookie_jar = soup_cookie_jar_text_new(cookie_file, FALSE);
-  if (cookie_jar != NULL) {
-    soup_session_add_feature(jumanji->global.soup_session, (SoupSessionFeature*) cookie_jar);
-  } else {
-    girara_error("Could not initialize cookie jar");
-  }
-  g_free(cookie_file);
 
   /* configuration */
   config_load_default(jumanji);
@@ -371,6 +360,9 @@ jumanji_free(jumanji_t* jumanji)
   if (jumanji->database.session) {
     db_close(jumanji->database.session);
   }
+
+  /* free soup */
+  jumanji_soup_free(jumanji->global.soup);
 
   /* free adblock filters */
   girara_list_free(jumanji->global.adblock_filters);
@@ -640,29 +632,6 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
   }
 
   return url;
-}
-
-void
-jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy)
-{
-  if (jumanji == NULL || jumanji->global.soup_session == NULL) {
-    return;
-  }
-
-  if (proxy != NULL && proxy->url != NULL) {
-    SoupURI* soup_uri = soup_uri_new(proxy->url);
-    g_object_set(jumanji->global.soup_session, "proxy-uri", soup_uri, NULL);
-    soup_uri_free(soup_uri);
-    jumanji->global.current_proxy = proxy;
-
-    char* text = (proxy->description != NULL) ? proxy->description : proxy->url;
-    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, text);
-  } else {
-    g_object_set(jumanji->global.soup_session, "proxy-uri", NULL, NULL);
-    jumanji->global.current_proxy = NULL;
-
-    girara_statusbar_item_set_text(jumanji->ui.session, jumanji->ui.statusbar.proxy, "Proxy disabled");
-  }
 }
 
 void

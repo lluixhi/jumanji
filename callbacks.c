@@ -1,6 +1,5 @@
 /* See LICENSE file for license and copyright information */
 
-
 #include <girara.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -10,6 +9,7 @@
 #include "database.h"
 #include "download.h"
 #include "shortcuts.h"
+#include "soup.h"
 #include "jumanji.h"
 
 gboolean
@@ -301,7 +301,7 @@ cb_statusbar_proxy(GtkWidget* widget, GdkEvent* event, girara_session_t* session
   g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
-  if (jumanji->global.soup_session == NULL || jumanji->global.proxies == NULL) {
+  if (jumanji->global.soup == NULL || jumanji->global.proxies == NULL) {
     return false;
   }
 

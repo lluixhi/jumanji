@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <girara.h>
 #include <gtk/gtk.h>
-#include <libsoup/soup.h>
 
 #include <webkit/webkit.h>
 
@@ -49,7 +48,6 @@ typedef struct jumanji_s
   struct
   {
     WebKitWebSettings* browser_settings; /*>> Browser settings */
-    SoupSession* soup_session; /*>> Soup session */
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
     girara_list_t* marks; /**> Marker */
@@ -59,7 +57,9 @@ typedef struct jumanji_s
     girara_list_t* adblock_filters; /**> Adblock filters */
     char** arguments; /**> Arguments that were passed at startup */
     int quickmark_open_mode; /**> How to open a quickmark */
+    void* soup; /**> Soup session */
   } global;
+
 
   struct
   {
@@ -186,14 +186,6 @@ char* jumanji_build_url_from_string(jumanji_t* jumanji, const char* string);
  * occured
  */
 char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
-
-/**
- * Activates a jumanji proxy
- *
- * @param jumanji The jumanji session
- * @param proxy The jumanji proxy
- */
-void jumanji_proxy_set(jumanji_t* jumanji, jumanji_proxy_t* proxy);
 
 /**
  * Creates a new jumanji instance
