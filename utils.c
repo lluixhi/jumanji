@@ -24,7 +24,7 @@ build_girara_list(const char* string)
     return NULL;
   }
 
-  girara_list_set_free_function(list, girara_list_free_data);
+  girara_list_set_free_function(list, g_free);
 
   for(int i = 0; i < argc; i++) {
     girara_list_append(list, (void*) g_strdup(argv[i]));
