@@ -35,6 +35,7 @@ cmd_bookmark_add(girara_session_t* session, girara_list_t* argument_list)
   }
 
   db_bookmark_add(jumanji->database.session, url, title);
+  girara_notify(session, GIRARA_INFO, "Added bookmark: %s", url);
 
   return true;
 }
@@ -62,6 +63,7 @@ cmd_bookmark_delete(girara_session_t* session, girara_list_t* argument_list)
   }
 
   db_bookmark_remove(jumanji->database.session, url);
+  girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", url);
 
   return true;
 }
