@@ -116,8 +116,12 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsign
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(argument != NULL, false);
 
-  if (!(gtk_widget_get_visible(GTK_WIDGET(session->gtk.inputbar)))) {
+  if (gtk_widget_get_visible(GTK_WIDGET(session->gtk.inputbar)) == FALSE) {
     gtk_widget_show(GTK_WIDGET(session->gtk.inputbar));
+  }
+
+  if (gtk_widget_get_visible(GTK_WIDGET(session->gtk.notification_area)) == TRUE) {
+    gtk_widget_hide(GTK_WIDGET(session->gtk.notification_area));
   }
 
   if (argument->data) {
@@ -135,8 +139,17 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsign
       gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
     }
 
+    /* save the X clipboard that will be cleared by "grab focus" */
+    gchar* x_clipboard_text = gtk_clipboard_wait_for_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY));
+
     gtk_widget_grab_focus(GTK_WIDGET(session->gtk.inputbar));
     gtk_editable_set_position(GTK_EDITABLE(session->gtk.inputbar), -1);
+
+    if (x_clipboard_text != NULL) {
+      /* reset x clipboard */
+      gtk_clipboard_set_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY), x_clipboard_text, -1);
+      g_free(x_clipboard_text);
+    }
   }
 
   return false;
