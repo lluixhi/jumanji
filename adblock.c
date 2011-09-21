@@ -373,6 +373,7 @@ adblock_rule_parse(adblock_filter_t* filter, const char* line)
   GString* pattern = g_string_new(NULL);
 
   if (pattern == NULL) {
+    g_free(css_rule);
     free(rule);
     return;
   }
