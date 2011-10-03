@@ -105,6 +105,10 @@ jumanji_init(int argc, char* argv[])
     g_free(path);
   }
 
+  /* create zathura (config/data) directory */
+  g_mkdir_with_parents(jumanji->config.config_dir, 0771);
+  g_mkdir_with_parents(jumanji->config.data_dir,   0771);
+
   /* UI */
   if ((jumanji->ui.session = girara_session_create()) == NULL) {
     goto error_free;
