@@ -12,6 +12,6 @@
  * @param input The current input
  * @return The completion object or NULL if an error occured
  */
-girara_completion_t* cc_open(girara_session_t* session, char* input);
+girara_completion_t* cc_open(girara_session_t* session, const char* input);
 
 #endif // COMPLETION_H

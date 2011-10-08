@@ -1,8 +1,5 @@
 /* See LICENSE file for license and copyright information */
 
-#ifndef COMPLETION_H
-#define COMPLETION_H
-
 #include <girara.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,7 +11,7 @@
 #include "utils.h"
 
 girara_completion_t*
-cc_open(girara_session_t* session, char* input)
+cc_open(girara_session_t* session, const char* input)
 {
   g_return_val_if_fail(session != NULL, NULL);
   g_return_val_if_fail(session->global.data != NULL, NULL);
@@ -95,5 +92,3 @@ error_free:
 
   return NULL;
 }
-
-#endif // COMPLETION_H
