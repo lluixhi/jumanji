@@ -4,287 +4,263 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "database-plain.h"
+#include "database.h"
 
-bool
-db_plain_init(db_session_t* session)
+#define BOOKMARKS "bookmarks"
+#define HISTORY "history"
+#define QUICKMARKS "quickmarks"
+
+/* forward declaration */
+static void jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickmarks);
+static void cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file, GFileMonitorEvent event, jumanji_database_t* database);
+static bool jumanji_db_check_file(const char* path);
+static girara_list_t* jumanji_db_read_urls_from_file(const char* filename);
+static girara_list_t* jumanji_db_read_quickmarks_from_file(const char* filename);
+static void jumanji_db_free_quickmark(void* data);
+static girara_list_t* jumanji_db_filter_url_list(girara_list_t* list, const char* input);
+static void jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited);
+
+struct jumanji_database_s
 {
-  if (session == NULL) {
+  gchar* bookmark_file; /**> File path to the bookmark file */
+  girara_list_t* bookmarks; /**> Temporary bookmarks */
+  GFileMonitor* bookmark_monitor; /**> File monitor for the bookmark file */
+  unsigned int bookmark_signal; /**> Signal id */
+
+  gchar* history_file; /**> File path to the history file */
+  girara_list_t* history; /**>  Temporary history */
+  GFileMonitor* history_monitor; /**> File monitor for the history file */
+  unsigned int history_signal; /**> Signal id */
+
+  gchar* quickmarks_file; /**> File path to the quickmarks file */
+  girara_list_t* quickmarks; /**>  Temporary quickmarks */
+  GFileMonitor* quickmarks_monitor; /**> File monitor for the quickmarks file */
+  unsigned int quickmarks_signal; /**> Signal id */
+};
+
+typedef struct jumanji_db_quickmark_s
+{
+  char identifier; /**> Quickmark identifier */
+  char* url; /**> Url */
+} jumanji_db_quickmark_t;
+
+static bool
+jumanji_db_check_file(const char* path)
+{
+  if (path == NULL) {
     return false;
   }
 
-  db_plain_t* plain_session = malloc(sizeof(db_plain_t));
-  if (plain_session == NULL) {
+  if (g_file_test(path, G_FILE_TEST_EXISTS) == false) {
+    FILE* file = fopen(path, "w");
+    if (file != NULL) {
+      fclose(file);
+    } else {
+      return false;
+    }
+  } else if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == false) {
     return false;
   }
 
-  plain_session->bookmark_file_path   = NULL;
-  plain_session->history_file_path    = NULL;
-  plain_session->quickmarks_file_path = NULL;
-  plain_session->history              = NULL;
-  plain_session->bookmarks            = NULL;
-  plain_session->quickmarks           = NULL;
+  return true;
+}
 
-  session->data = plain_session;
+jumanji_database_t*
+jumanji_db_init(const char* dir)
+{
+  if (dir == NULL) {
+    goto error_ret;
+  }
+
+  jumanji_database_t* database = g_malloc0(sizeof(jumanji_database_t));
+  if (database == NULL) {
+    goto error_ret;
+  }
 
   /* get bookmark file path */
-  if (session->bookmark_file != NULL) {
-    plain_session->bookmark_file_path = g_build_filename(session->bookmark_file, NULL);
-
-    if (plain_session->bookmark_file_path == NULL) {
-      goto error_free;
-    }
-
-    if (g_file_test(plain_session->bookmark_file_path, G_FILE_TEST_EXISTS) == false) {
-      FILE* file = fopen(plain_session->bookmark_file_path, "w");
-      if (file != NULL) {
-        fclose(file);
-      } else {
-        goto error_free;
-      }
-    } else if (g_file_test(plain_session->bookmark_file_path, G_FILE_TEST_IS_REGULAR) == false) {
-      goto error_free;
-    }
+  database->bookmark_file = g_build_filename(dir, BOOKMARKS, NULL);
+  if (database->bookmark_file == NULL ||
+      jumanji_db_check_file(database->bookmark_file) == false) {
+    goto error_free;
   }
 
   /* get history file path */
-  if (session->history_file != NULL) {
-    plain_session->history_file_path = g_build_filename(session->history_file, NULL);
-
-    if (plain_session->history_file_path == NULL) {
-      goto error_free;
-    }
-
-    if (g_file_test(plain_session->history_file_path, G_FILE_TEST_EXISTS) == false) {
-      FILE* file = fopen(plain_session->history_file_path, "w");
-      if (file != NULL) {
-        fclose(file);
-      } else {
-        goto error_free;
-      }
-    } else if (g_file_test(plain_session->history_file_path, G_FILE_TEST_IS_REGULAR) == false) {
-      goto error_free;
-    }
+  database->history_file = g_build_filename(dir, HISTORY, NULL);
+  if (database->history_file == NULL ||
+      jumanji_db_check_file(database->history_file) == false) {
+    goto error_free;
   }
 
   /* get quickmarks file path */
-  if (session->quickmarks_file != NULL) {
-    plain_session->quickmarks_file_path = g_build_filename(session->quickmarks_file, NULL);
-
-    if (plain_session->quickmarks_file_path == NULL) {
-      goto error_free;
-    }
-
-    if (g_file_test(plain_session->quickmarks_file_path, G_FILE_TEST_EXISTS) == false) {
-      FILE* file = fopen(plain_session->quickmarks_file_path, "w");
-      if (file != NULL) {
-        fclose(file);
-      } else {
-        goto error_free;
-      }
-    } else if (g_file_test(plain_session->quickmarks_file_path, G_FILE_TEST_IS_REGULAR) == false) {
-      goto error_free;
-    }
+  database->quickmarks_file = g_build_filename(dir, QUICKMARKS, NULL);
+  if (database->quickmarks_file == NULL ||
+      jumanji_db_check_file(database->quickmarks_file) == false) {
+    goto error_free;
   }
 
   /* read files */
-  plain_session->bookmarks  = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
-  plain_session->history    = db_plain_read_urls_from_file(plain_session->history_file_path);
-  plain_session->quickmarks = db_plain_read_quickmarks_from_file(plain_session->quickmarks_file_path);
+  database->bookmarks  = jumanji_db_read_urls_from_file(database->bookmark_file);
+  database->history    = jumanji_db_read_urls_from_file(database->history_file);
+  database->quickmarks = jumanji_db_read_quickmarks_from_file(database->quickmarks_file);
 
-  girara_list_set_free_function(plain_session->bookmarks,  db_free_result_link);
-  girara_list_set_free_function(plain_session->history,    db_free_result_link);
-  girara_list_set_free_function(plain_session->quickmarks, db_plain_free_quickmark);
+  girara_list_set_free_function(database->bookmarks,  jumanji_db_free_result_link);
+  girara_list_set_free_function(database->history,    jumanji_db_free_result_link);
+  girara_list_set_free_function(database->quickmarks, jumanji_db_free_quickmark);
 
   /* setup file monitors */
-  GFile* bookmark_file = g_file_new_for_path(plain_session->bookmark_file_path);
+  GFile* bookmark_file = g_file_new_for_path(database->bookmark_file);
   if (bookmark_file != NULL) {
-    plain_session->bookmark_monitor = g_file_monitor(bookmark_file,
+    database->bookmark_monitor = g_file_monitor(bookmark_file,
         G_FILE_MONITOR_NONE, NULL, NULL);
   } else {
     goto error_free;
   }
   g_object_unref(bookmark_file);
 
-  GFile* history_file = g_file_new_for_path(plain_session->history_file_path);
+  GFile* history_file = g_file_new_for_path(database->history_file);
   if (history_file != NULL) {
-    plain_session->history_monitor = g_file_monitor(history_file,
+    database->history_monitor = g_file_monitor(history_file,
         G_FILE_MONITOR_NONE, NULL, NULL);
   } else {
     goto error_free;
   }
   g_object_unref(history_file);
 
-  GFile* quickmarks_file = g_file_new_for_path(plain_session->quickmarks_file_path);
+  GFile* quickmarks_file = g_file_new_for_path(database->quickmarks_file);
   if (quickmarks_file != NULL) {
-    plain_session->quickmarks_monitor = g_file_monitor(quickmarks_file,
+    database->quickmarks_monitor = g_file_monitor(quickmarks_file,
         G_FILE_MONITOR_NONE, NULL, NULL);
   } else {
     goto error_free;
   }
   g_object_unref(quickmarks_file);
 
-  if (plain_session->bookmark_monitor == NULL || plain_session->history_monitor == NULL ||
-      plain_session->quickmarks_monitor == NULL) {
+  if (database->bookmark_monitor == NULL || database->history_monitor == NULL ||
+      database->quickmarks_monitor == NULL) {
     goto error_free;
   }
 
-  plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
-  plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
-  plain_session->quickmarks_signal = g_signal_connect(G_OBJECT(plain_session->quickmarks_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
+  database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
+  database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
+  database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
 
-  return true;
+  return database;
 
 error_free:
 
-  if (plain_session != NULL) {
-    g_free(plain_session->bookmark_file_path);
-    g_free(plain_session->history_file_path);
-    g_free(plain_session->quickmarks_file_path);
+  if (database != NULL) {
+    g_free(database->bookmark_file);
+    g_free(database->history_file);
+    g_free(database->quickmarks_file);
 
-    if (plain_session->bookmark_monitor != NULL) {
-      g_object_unref(plain_session->bookmark_monitor);
+    if (database->bookmark_monitor != NULL) {
+      g_object_unref(database->bookmark_monitor);
     }
 
-    if (plain_session->history_monitor != NULL) {
-      g_object_unref(plain_session->history_monitor);
+    if (database->history_monitor != NULL) {
+      g_object_unref(database->history_monitor);
     }
 
-    if (plain_session->quickmarks_monitor != NULL) {
-      g_object_unref(plain_session->quickmarks_monitor);
+    if (database->quickmarks_monitor != NULL) {
+      g_object_unref(database->quickmarks_monitor);
     }
 
-    girara_list_free(plain_session->bookmarks);
-    girara_list_free(plain_session->history);
-    girara_list_free(plain_session->quickmarks);
+    girara_list_free(database->bookmarks);
+    girara_list_free(database->history);
+    girara_list_free(database->quickmarks);
 
-    free(plain_session);
   }
 
-  session->data = NULL;
+  g_free(database);
 
-  return false;
+error_ret:
+
+  return NULL;
 }
 
 void
-db_plain_close(db_session_t* session)
+jumanji_db_free(jumanji_database_t* database)
 {
-  if (session == NULL) {
+  if (database == NULL) {
     return;
   }
 
-  if (session->bookmark_file) {
-    g_free(session->bookmark_file);
+  g_free(database->bookmark_file);
+  g_free(database->history_file);
+  g_free(database->quickmarks_file);
+
+  girara_list_free(database->bookmarks);
+  girara_list_free(database->history);
+  girara_list_free(database->quickmarks);
+
+  if (database->bookmark_monitor != NULL) {
+    g_object_unref(database->bookmark_monitor);
   }
 
-  if (session->history_file) {
-    g_free(session->history_file);
+  if (database->history_monitor != NULL) {
+    g_object_unref(database->history_monitor);
   }
 
-  if (session->quickmarks_file) {
-    g_free(session->quickmarks_file);
+  if (database->quickmarks_monitor != NULL) {
+    g_object_unref(database->quickmarks_monitor);
   }
 
-  if (session->data != NULL) {
-    db_plain_t* plain_session = (db_plain_t*) session->data;
-
-    g_free(plain_session->bookmark_file_path);
-    g_free(plain_session->history_file_path);
-    g_free(plain_session->quickmarks_file_path);
-
-    girara_list_free(plain_session->bookmarks);
-    girara_list_free(plain_session->history);
-    girara_list_free(plain_session->quickmarks);
-
-    if (plain_session->bookmark_monitor != NULL) {
-      g_object_unref(plain_session->bookmark_monitor);
-    }
-
-    if (plain_session->history_monitor != NULL) {
-      g_object_unref(plain_session->history_monitor);
-    }
-
-    if (plain_session->quickmarks_monitor != NULL) {
-      g_object_unref(plain_session->quickmarks_monitor);
-    }
-
-    free(session->data);
-  }
-
-  free(session);
+  g_free(database);
 }
 
 girara_list_t*
-db_plain_bookmark_find(db_session_t* session, const char* input)
+jumanji_db_bookmark_find(jumanji_database_t* database, const char* input)
 {
-  if (session == NULL || session->data == NULL || input == NULL) {
+  if (database == NULL || database->bookmarks == NULL || input == NULL) {
     return NULL;
   }
 
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->bookmarks == NULL) {
-    return NULL;
-  }
-
-  return db_plain_filter_url_list(plain_session->bookmarks, input);
+  return jumanji_db_filter_url_list(database->bookmarks, input);
 }
 
 void
-db_plain_bookmark_remove(db_session_t* session, const char* url)
+jumanji_db_bookmark_remove(jumanji_database_t* database, const char* url)
 {
-  if (session == NULL || session->data == NULL || url == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->bookmarks == NULL) {
+  if (database == NULL || database->bookmarks == NULL || url == NULL) {
     return;
   }
 
   /* remove url from list */
-  if (girara_list_size(plain_session->bookmarks) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->bookmarks);
+  if (girara_list_size(database->bookmarks) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->bookmarks);
 
     do {
-      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
 
       if (strcmp(link->url, url) == 0) {
-        girara_list_remove(plain_session->bookmarks, link);
+        girara_list_remove(database->bookmarks, link);
       }
     } while (girara_list_iterator_next(iter) != NULL);
 
     girara_list_iterator_free(iter);
 
-    g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
-    db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
-    plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
-        G_CALLBACK(cb_db_plain_watch_file), session);
+    g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
+    jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
+    database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+        G_CALLBACK(cb_jumanji_db_watch_file), database);
   }
 }
 
 void
-db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
+jumanji_db_bookmark_add(jumanji_database_t* database, const char* url, const char* title)
 {
-  if (session == NULL || session->data == NULL || url == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->bookmarks == NULL) {
+  if (database == NULL || database->bookmarks == NULL || url == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  if (girara_list_size(plain_session->bookmarks) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->bookmarks);
+  if (girara_list_size(database->bookmarks) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->bookmarks);
     do {
-      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
       if (link == NULL) {
         continue;
       }
@@ -292,10 +268,10 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
       if (strstr(link->url, url) != NULL) {
         g_free(link->title);
         link->title = title ? g_strdup(title) : NULL;
-        g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
-        db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
-        plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
-            G_CALLBACK(cb_db_plain_watch_file), session);
+        g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
+        jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
+        database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+            G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
       }
@@ -304,7 +280,7 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
   }
 
   /* add url to list */
-  db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
+  jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) malloc(sizeof(jumanji_db_result_link_t));
   if (link == NULL) {
     return;
   }
@@ -313,49 +289,37 @@ db_plain_bookmark_add(db_session_t* session, const char* url, const char* title)
   link->title   = g_strdup(title);
   link->visited = 0;
 
-  girara_list_append(plain_session->bookmarks, link);
+  girara_list_append(database->bookmarks, link);
 
   /* write to file */
-  g_signal_handler_disconnect(plain_session->bookmark_monitor, plain_session->bookmark_signal);
-  db_plain_write_urls_to_file(plain_session->bookmark_file_path, plain_session->bookmarks, false);
-  plain_session->bookmark_signal = g_signal_connect(G_OBJECT(plain_session->bookmark_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
+  g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
+  jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
+  database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
 girara_list_t*
-db_plain_history_find(db_session_t* session, const char* input)
+jumanji_db_history_find(jumanji_database_t* database, const char* input)
 {
-  if (session == NULL || session->data == NULL || input == NULL) {
+  if (database == NULL || database->history == NULL || input == NULL) {
     return NULL;
   }
 
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->history == NULL) {
-    return NULL;
-  }
-
-  return db_plain_filter_url_list(plain_session->history, input);
+  return jumanji_db_filter_url_list(database->history, input);
 }
 
 void
-db_plain_history_add(db_session_t* session, const char* url, const char* title)
+jumanji_db_history_add(jumanji_database_t* database, const char* url, const char* title)
 {
-  if (session == NULL || session->data == NULL || url == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->history == NULL) {
+  if (database == NULL || database->history == NULL || url == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  if (girara_list_size(plain_session->history) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->history);
+  if (girara_list_size(database->history) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->history);
     do {
-      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
       if (link == NULL) {
         continue;
       }
@@ -364,10 +328,10 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
         g_free(link->title);
         link->title   = title ? g_strdup(title) : NULL;
         link->visited = time(NULL);
-        g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
-        db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
-        plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
-            G_CALLBACK(cb_db_plain_watch_file), session);
+        g_signal_handler_disconnect(database->history_monitor, database->history_signal);
+        jumanji_db_write_urls_to_file(database->history_file, database->history, false);
+        database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+            G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
       }
@@ -376,7 +340,7 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
   }
 
   /* add url to list */
-  db_result_link_t* link = (db_result_link_t*) malloc(sizeof(db_result_link_t));
+  jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) malloc(sizeof(jumanji_db_result_link_t));
   if (link == NULL) {
     return;
   }
@@ -385,68 +349,56 @@ db_plain_history_add(db_session_t* session, const char* url, const char* title)
   link->title   = g_strdup(title);
   link->visited = time(NULL);
 
-  girara_list_append(plain_session->history, link);
+  girara_list_append(database->history, link);
 
   /* write to file */
-  g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
-  db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
-  plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
+  g_signal_handler_disconnect(database->history_monitor, database->history_signal);
+  jumanji_db_write_urls_to_file(database->history_file, database->history, false);
+  database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
 void
-db_plain_history_clean(db_session_t* session, unsigned int age)
+jumanji_db_history_clean(jumanji_database_t* database, unsigned int age)
 {
-  if (session == NULL || session->data == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->history == NULL) {
+  if (database == NULL || database->history == NULL) {
     return;
   }
 
   /* remove url from list */
-  if (girara_list_size(plain_session->history) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->history);
+  if (girara_list_size(database->history) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->history);
 
     int visited = time(NULL) - age;
     do {
-      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
 
       if (link->visited >= visited) {
-        girara_list_remove(plain_session->history, link);
+        girara_list_remove(database->history, link);
       }
     } while (girara_list_iterator_next(iter) != NULL);
 
     girara_list_iterator_free(iter);
 
-    g_signal_handler_disconnect(plain_session->history_monitor, plain_session->history_signal);
-    db_plain_write_urls_to_file(plain_session->history_file_path, plain_session->history, false);
-    plain_session->history_signal = g_signal_connect(G_OBJECT(plain_session->history_monitor), "changed",
-        G_CALLBACK(cb_db_plain_watch_file), session);
+    g_signal_handler_disconnect(database->history_monitor, database->history_signal);
+    jumanji_db_write_urls_to_file(database->history_file, database->history, false);
+    database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+        G_CALLBACK(cb_jumanji_db_watch_file), database);
   }
 }
 
 void
-db_plain_quickmark_add(db_session_t* session, const char identifier, const char* url)
+jumanji_db_quickmark_add(jumanji_database_t* database, const char identifier, const char* url)
 {
-  if (session == NULL || session->data == NULL || url == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->quickmarks == NULL) {
+  if (database == NULL || database->quickmarks == NULL || url == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  if (girara_list_size(plain_session->quickmarks) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->quickmarks);
+  if (girara_list_size(database->quickmarks) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
     do {
-      db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) girara_list_iterator_data(iter);
+      jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) girara_list_iterator_data(iter);
       if (quickmark == NULL) {
         continue;
       }
@@ -455,10 +407,10 @@ db_plain_quickmark_add(db_session_t* session, const char identifier, const char*
         g_free(quickmark->url);
         quickmark->url = g_strdup(url);
 
-        g_signal_handler_disconnect(plain_session->quickmarks_monitor, plain_session->quickmarks_signal);
-        db_plain_write_quickmarks_to_file(plain_session->quickmarks_file_path, plain_session->quickmarks);
-        plain_session->quickmarks_signal = g_signal_connect(G_OBJECT(plain_session->quickmarks_monitor), "changed",
-            G_CALLBACK(cb_db_plain_watch_file), session);
+        g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
+        jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
+        database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+            G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
       }
@@ -467,7 +419,7 @@ db_plain_quickmark_add(db_session_t* session, const char identifier, const char*
   }
 
   /* add url to list */
-  db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) malloc(sizeof(db_plain_quickmark_t));
+  jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) malloc(sizeof(jumanji_db_quickmark_t));
   if (quickmark == NULL) {
     return;
   }
@@ -475,34 +427,28 @@ db_plain_quickmark_add(db_session_t* session, const char identifier, const char*
   quickmark->url        = g_strdup(url);
   quickmark->identifier = identifier;
 
-  girara_list_append(plain_session->quickmarks, quickmark);
+  girara_list_append(database->quickmarks, quickmark);
 
   /* write to file */
-  g_signal_handler_disconnect(plain_session->quickmarks_monitor, plain_session->quickmarks_signal);
-  db_plain_write_quickmarks_to_file(plain_session->quickmarks_file_path, plain_session->quickmarks);
-  plain_session->quickmarks_signal = g_signal_connect(G_OBJECT(plain_session->quickmarks_monitor), "changed",
-      G_CALLBACK(cb_db_plain_watch_file), session);
+  g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
+  jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
+  database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+      G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
 char*
-db_plain_quickmark_find(db_session_t* session, const char identifier)
+jumanji_db_quickmark_find(jumanji_database_t* database, const char identifier)
 {
-  if (session == NULL || session->data == NULL) {
-    return NULL;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->quickmarks == NULL) {
+  if (database == NULL || database->quickmarks == NULL) {
     return NULL;
   }
 
   /* search for existing entry and update it */
-  if (girara_list_size(plain_session->quickmarks) > 0) {
+  if (girara_list_size(database->quickmarks) > 0) {
     char* url = NULL;
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->quickmarks);
+    girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
     do {
-      db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) girara_list_iterator_data(iter);
+      jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) girara_list_iterator_data(iter);
       if (quickmark == NULL) {
         continue;
       }
@@ -521,43 +467,37 @@ db_plain_quickmark_find(db_session_t* session, const char identifier)
 }
 
 void
-db_plain_quickmark_remove(db_session_t* session, const char identifier)
+jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
 {
-  if (session == NULL || session->data == NULL) {
-    return;
-  }
-
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->quickmarks == NULL) {
+  if (database == NULL || database->quickmarks == NULL) {
     return;
   }
 
   /* search for existing entry and update it */
-  if (girara_list_size(plain_session->quickmarks) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(plain_session->quickmarks);
+  if (girara_list_size(database->quickmarks) > 0) {
+    girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
     do {
-      db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) girara_list_iterator_data(iter);
+      jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) girara_list_iterator_data(iter);
       if (quickmark == NULL) {
         continue;
       }
 
       if (quickmark->identifier == identifier) {
-        girara_list_remove(plain_session->quickmarks, quickmark);
+        girara_list_remove(database->quickmarks, quickmark);
         break;
       }
     } while (girara_list_iterator_next(iter) != NULL);
 
-    g_signal_handler_disconnect(plain_session->quickmarks_monitor, plain_session->quickmarks_signal);
-    db_plain_write_quickmarks_to_file(plain_session->quickmarks_file_path, plain_session->quickmarks);
-    plain_session->quickmarks_signal = g_signal_connect(G_OBJECT(plain_session->quickmarks_monitor), "changed",
-        G_CALLBACK(cb_db_plain_watch_file), session);
+    g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
+    jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
+    database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+        G_CALLBACK(cb_jumanji_db_watch_file), database);
     girara_list_iterator_free(iter);
   }
 }
 
-girara_list_t*
-db_plain_read_urls_from_file(const char* filename)
+static girara_list_t*
+jumanji_db_read_urls_from_file(const char* filename)
 {
   if (filename == NULL) {
     return NULL;
@@ -575,7 +515,7 @@ db_plain_read_urls_from_file(const char* filename)
     return NULL;
   }
 
-  girara_list_set_free_function(list, db_free_result_link);
+  girara_list_set_free_function(list, jumanji_db_free_result_link);
 
   /* read lines */
   char* line = NULL;
@@ -591,7 +531,7 @@ db_plain_read_urls_from_file(const char* filename)
     gint    argc = 0;
 
     if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
-      db_result_link_t* link = malloc(sizeof(link));
+      jumanji_db_result_link_t* link = malloc(sizeof(link));
       if (link == NULL) {
         g_strfreev(argv);
         free(line);
@@ -614,8 +554,8 @@ db_plain_read_urls_from_file(const char* filename)
   return list;
 }
 
-girara_list_t*
-db_plain_read_quickmarks_from_file(const char* filename)
+static girara_list_t*
+jumanji_db_read_quickmarks_from_file(const char* filename)
 {
   if (filename == NULL) {
     return NULL;
@@ -652,7 +592,7 @@ db_plain_read_quickmarks_from_file(const char* filename)
         continue;
       }
 
-      db_plain_quickmark_t* quickmark = malloc(sizeof(db_plain_quickmark_t));
+      jumanji_db_quickmark_t* quickmark = malloc(sizeof(jumanji_db_quickmark_t));
       if (quickmark == NULL) {
         free(line);
         continue;
@@ -673,8 +613,8 @@ db_plain_read_quickmarks_from_file(const char* filename)
   return list;
 }
 
-void
-db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited)
+static void
+jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool visited)
 {
   if (filename == NULL || urls == NULL) {
     return;
@@ -689,7 +629,7 @@ db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visi
   if (girara_list_size(urls) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(urls);
     do {
-      db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+      jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
       if (link == NULL) {
         continue;
       }
@@ -719,8 +659,8 @@ db_plain_write_urls_to_file(const char* filename, girara_list_t* urls, bool visi
   fclose(file);
 }
 
-void
-db_plain_write_quickmarks_to_file(const char* filename, girara_list_t* quickmarks)
+static void
+jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickmarks)
 {
   if (filename == NULL || quickmarks == NULL) {
     return;
@@ -735,7 +675,7 @@ db_plain_write_quickmarks_to_file(const char* filename, girara_list_t* quickmark
   if (girara_list_size(quickmarks) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(quickmarks);
     do {
-      db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) girara_list_iterator_data(iter);
+      jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) girara_list_iterator_data(iter);
       if (quickmark == NULL) {
         continue;
       }
@@ -752,8 +692,8 @@ db_plain_write_quickmarks_to_file(const char* filename, girara_list_t* quickmark
   fclose(file);
 }
 
-girara_list_t*
-db_plain_filter_url_list(girara_list_t* list, const char* input)
+static girara_list_t*
+jumanji_db_filter_url_list(girara_list_t* list, const char* input)
 {
   if (list == NULL || girara_list_size(list) == 0) {
     return NULL;
@@ -765,15 +705,15 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
     return NULL;
   }
 
-  girara_list_set_free_function(new_list, db_free_result_link);
+  girara_list_set_free_function(new_list, jumanji_db_free_result_link);
   girara_list_iterator_t* iter = girara_list_iterator(list);
 
   do {
-    db_result_link_t* link = (db_result_link_t*) girara_list_iterator_data(iter);
+    jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
 
     if (strstr(link->url, input) != NULL || strstr(link->title, input)) {
       /* duplicate entry */
-      db_result_link_t* link_dup = malloc(sizeof(db_result_link_t));
+      jumanji_db_result_link_t* link_dup = malloc(sizeof(jumanji_db_result_link_t));
       if (link_dup != NULL) {
         link_dup->url     = g_strdup(link->url);
         link_dup->title   = g_strdup(link->title);
@@ -788,17 +728,11 @@ db_plain_filter_url_list(girara_list_t* list, const char* input)
   return new_list;
 }
 
-void
-cb_db_plain_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file,
-    GFileMonitorEvent event, gpointer data)
+static void
+cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file,
+    GFileMonitorEvent event, jumanji_database_t* database)
 {
-  if (event != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT || data == NULL) {
-    return;
-  }
-
-  db_session_t* session = (db_session_t*) data;
-
-  if (session->data == NULL) {
+  if (event != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT || database == NULL) {
     return;
   }
 
@@ -808,33 +742,31 @@ cb_db_plain_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file,
     return;
   }
 
-  db_plain_t* plain_session = (db_plain_t*) session->data;
-
-  if (plain_session->bookmark_file_path && strcmp(plain_session->bookmark_file_path, path) == 0) {
-    girara_list_free(plain_session->bookmarks);
-    plain_session->bookmarks = db_plain_read_urls_from_file(plain_session->bookmark_file_path);
-    girara_list_set_free_function(plain_session->bookmarks,  db_free_result_link);
-  } else if (plain_session->history_file_path && strcmp(plain_session->history_file_path, path) == 0) {
-    girara_list_free(plain_session->history);
-    plain_session->history = db_plain_read_urls_from_file(plain_session->history_file_path);
-    girara_list_set_free_function(plain_session->history,    db_free_result_link);
-  } else if (plain_session->quickmarks_file_path && strcmp(plain_session->quickmarks_file_path, path) == 0) {
-    girara_list_free(plain_session->quickmarks);
-    plain_session->quickmarks = db_plain_read_quickmarks_from_file(plain_session->quickmarks_file_path);
-    girara_list_set_free_function(plain_session->quickmarks, db_plain_free_quickmark);
+  if (database->bookmark_file && strcmp(database->bookmark_file, path) == 0) {
+    girara_list_free(database->bookmarks);
+    database->bookmarks = jumanji_db_read_urls_from_file(database->bookmark_file);
+    girara_list_set_free_function(database->bookmarks,  jumanji_db_free_result_link);
+  } else if (database->history_file && strcmp(database->history_file, path) == 0) {
+    girara_list_free(database->history);
+    database->history = jumanji_db_read_urls_from_file(database->history_file);
+    girara_list_set_free_function(database->history,    jumanji_db_free_result_link);
+  } else if (database->quickmarks_file && strcmp(database->quickmarks_file, path) == 0) {
+    girara_list_free(database->quickmarks);
+    database->quickmarks = jumanji_db_read_quickmarks_from_file(database->quickmarks_file);
+    girara_list_set_free_function(database->quickmarks, jumanji_db_free_quickmark);
   }
 
   g_free(path);
 }
 
-void
-db_plain_free_quickmark(void* data)
+static void
+jumanji_db_free_quickmark(void* data)
 {
   if (data == NULL) {
     return;
   }
 
-  db_plain_quickmark_t* quickmark = (db_plain_quickmark_t*) data;
+  jumanji_db_quickmark_t* quickmark = (jumanji_db_quickmark_t*) data;
   g_free(quickmark->url);
   free(quickmark);
 }
