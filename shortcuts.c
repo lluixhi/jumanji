@@ -378,19 +378,19 @@ sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsig
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
 
-  if (tab == NULL || tab->web_view == NULL || jumanji->database.session == NULL) {
+  if (tab == NULL || tab->web_view == NULL || jumanji->database== NULL) {
     return false;
   }
 
   const char* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
   const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
-  girara_list_t* results = db_bookmark_find(jumanji->database.session, url);
+  girara_list_t* results = jumanji_db_bookmark_find(jumanji->database, url);
   if (results && girara_list_size(results) > 0) {
-    db_bookmark_remove(jumanji->database.session, url);
+    jumanji_db_bookmark_remove(jumanji->database, url);
     girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", url);
   } else {
-    db_bookmark_add(jumanji->database.session, url, title);
+    jumanji_db_bookmark_add(jumanji->database, url, title);
     girara_notify(session, GIRARA_INFO, "Added bookmark: %s", url);
   }
   girara_list_free(results);

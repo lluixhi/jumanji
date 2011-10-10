@@ -19,6 +19,8 @@ typedef struct jumanji_proxy_s
   char* description; /**> Description (optional) */
 } jumanji_proxy_t;
 
+typedef struct jumanji_database_s jumanji_database_t;
+
 typedef struct jumanji_s
 {
   struct
@@ -63,11 +65,6 @@ typedef struct jumanji_s
 
   struct
   {
-    void* session; /**> Database connection */
-  } database;
-
-  struct
-  {
     char* item; /**> Search item */
   } search;
 
@@ -86,6 +83,8 @@ typedef struct jumanji_s
     WebKitDOMNode *hint_box; /**> Dom element node */
     GString* input; /**> Input buffer */
   } hints;
+
+  jumanji_database_t* database; /**> The database */
 } jumanji_t;
 
 typedef struct jumanji_tab_s

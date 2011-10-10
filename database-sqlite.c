@@ -3,27 +3,33 @@
 #include <girara.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sqlite3.h>
 
-#ifdef SQLITE
+#include "database.h"
 
-#include "database-sqlite.h"
+#define DATABASE "jumanji.sqlite"
 
-bool
-db_sqlite_init(db_session_t* session)
+struct jumanji_database_s
 {
-  if (session == NULL) {
-    return false;
+  sqlite3* session;
+};
+
+jumanji_database_t*
+jumanji_db_init(const char* dir)
+{
+  if (dir == NULL) {
+    goto error_ret;
   }
 
-  db_sqlite_t* sqlite_session = malloc(sizeof(db_sqlite_t));
-  if (sqlite_session == NULL) {
-    return false;
+  char* path = g_build_filename(dir, DATABASE, NULL);
+  if (path == NULL) {
+    goto error_ret;
   }
 
-  sqlite_session->bookmark_session = NULL;
-  sqlite_session->history_session  = NULL;
-
-  session->data = sqlite_session;
+  jumanji_database_t* database = g_malloc0(sizeof(jumanji_database_t));
+  if (database == NULL) {
+    goto error_free;
+  }
 
   /* connect/create to bookmark database */
   static const char SQL_BOOKMARK_INIT[] =
@@ -33,18 +39,6 @@ db_sqlite_init(db_session_t* session)
       "title TEXT"
       ");";
 
-  if (session->bookmark_file) {
-    if (sqlite3_open(session->bookmark_file, &(sqlite_session->bookmark_session)) != SQLITE_OK) {
-      goto error_free;
-    }
-
-    /* initialize database scheme */
-    if (sqlite3_exec(sqlite_session->bookmark_session, SQL_BOOKMARK_INIT, NULL, 0, NULL) != SQLITE_OK) {
-      girara_error("Could not initialize database: %s\n", session->bookmark_file);
-      goto error_free;
-    }
-  }
-
   static const char SQL_HISTORY_INIT[] =
     /* history table */
     "CREATE TABLE IF NOT EXISTS history ("
@@ -53,18 +47,6 @@ db_sqlite_init(db_session_t* session)
       "visited INT"
       ");";
 
-  if (session->history_file) {
-    if (sqlite3_open(session->history_file, &(sqlite_session->history_session)) != SQLITE_OK) {
-      goto error_free;
-    }
-
-    /* initialize database scheme */
-    if (sqlite3_exec(sqlite_session->history_session, SQL_HISTORY_INIT, NULL, 0, NULL) != SQLITE_OK) {
-      girara_error("Could not initialize database: %s\n", session->history_file);
-      goto error_free;
-    }
-  }
-
   static const char SQL_QUICKMARKS_INIT[] =
     /* quickmarks table */
     "CREATE TABLE IF NOT EXISTS quickmarks ("
@@ -72,62 +54,59 @@ db_sqlite_init(db_session_t* session)
       "url TEXT"
       ");";
 
-  if (session->quickmarks_file) {
-    if (sqlite3_open(session->quickmarks_file, &(sqlite_session->quickmarks_session)) != SQLITE_OK) {
-      goto error_free;
-    }
-
-    /* initialize database scheme */
-    if (sqlite3_exec(sqlite_session->quickmarks_session, SQL_QUICKMARKS_INIT, NULL, 0, NULL) != SQLITE_OK) {
-      girara_error("Could not initialize database: %s\n", session->quickmarks_file);
-      goto error_free;
-    }
+  if (sqlite3_open(path, &(database->session)) != SQLITE_OK) {
+    goto error_free;
   }
 
-  return true;
+  /* initialize database scheme */
+  if (sqlite3_exec(database->session, SQL_BOOKMARK_INIT, NULL, 0, NULL) != SQLITE_OK) {
+    girara_error("Could not initialize database: %s\n", path);
+    goto error_free;
+  }
+
+  if (sqlite3_exec(database->session, SQL_HISTORY_INIT, NULL, 0, NULL) != SQLITE_OK) {
+    girara_error("Could not initialize database: %s\n", path);
+    goto error_free;
+  }
+
+  if (sqlite3_exec(database->session, SQL_QUICKMARKS_INIT, NULL, 0, NULL) != SQLITE_OK) {
+    girara_error("Could not initialize database: %s\n", path);
+    goto error_free;
+  }
+
+  return database;
 
 error_free:
 
-  if (sqlite_session->bookmark_session) {
-    sqlite3_close(sqlite_session->bookmark_session);
+  if (database->session != NULL) {
+    sqlite3_close(database->session);
   }
 
-  if (sqlite_session->history_session) {
-    sqlite3_close(sqlite_session->history_session);
-  }
+  g_free(database);
 
-  if (sqlite_session->quickmarks_session) {
-    sqlite3_close(sqlite_session->quickmarks_session);
-  }
+error_ret:
+
+  g_free(path);
 
   return false;
 }
 
 void
-db_sqlite_close(db_session_t* session)
+jumanji_db_free(jumanji_database_t* database)
 {
-  if (session == NULL) {
+  if (database == NULL) {
     return;
   }
 
-  if (session->bookmark_file) {
-    g_free(session->bookmark_file);
+  if (database->session != NULL) {
+    sqlite3_close(database->session);
   }
 
-  if (session->history_file) {
-    g_free(session->history_file);
-  }
-
-  if (session->quickmarks_file) {
-    g_free(session->quickmarks_file);
-  }
-
-  free(session->data);
-  free(session);
+  g_free(database);
 }
 
 sqlite3_stmt*
-db_sqlite_prepare_statement(sqlite3* session, const char* statement)
+jumanji_db_prepare_statement(sqlite3* session, const char* statement)
 {
   if (session == NULL || statement == NULL) {
     return false;
@@ -155,29 +134,10 @@ error_free:
   return NULL;
 }
 
-void
-db_sqlite_free_result_link(void* data)
-{
-  if (data == NULL) {
-    return;
-  }
-
-  db_result_link_t* link = (db_result_link_t*) data;
-  g_free(link->url);
-  g_free(link->title);
-  free(link);
-}
-
 girara_list_t*
-db_sqlite_bookmark_find(db_session_t* session, const char* input)
+jumanji_db_bookmark_find(jumanji_database_t* database, const char* input)
 {
-  if (session == NULL || input == NULL) {
-    return NULL;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->history_session == NULL) {
+  if (database == NULL || database->session == NULL || input == NULL) {
     return NULL;
   }
 
@@ -188,7 +148,7 @@ db_sqlite_bookmark_find(db_session_t* session, const char* input)
     "title LIKE (SELECT '%' || ? || '%');";
 
   sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->bookmark_session, SQL_HISTORY_FIND);
+    jumanji_db_prepare_statement(database->session, SQL_HISTORY_FIND);
 
   if (statement == NULL) {
     return NULL;
@@ -210,10 +170,10 @@ db_sqlite_bookmark_find(db_session_t* session, const char* input)
     return NULL;
   }
 
-  girara_list_set_free_function(results, db_sqlite_free_result_link);
+  girara_list_set_free_function(results, jumanji_db_free_result_link);
 
   while(sqlite3_step(statement) == SQLITE_ROW) {
-    db_result_link_t* link = malloc(sizeof(db_result_link_t));
+    jumanji_db_result_link_t* link = malloc(sizeof(jumanji_db_result_link_t));
     if (link == NULL) {
       sqlite3_finalize(statement);
       return NULL;
@@ -235,15 +195,9 @@ db_sqlite_bookmark_find(db_session_t* session, const char* input)
 }
 
 void
-db_sqlite_bookmark_remove(db_session_t* session, const char* url)
+jumanji_db_bookmark_remove(jumanji_database_t* database, const char* url)
 {
-  if (session == NULL || url == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->bookmark_session == NULL) {
+  if (database == NULL || database->session == NULL || url == NULL) {
     return;
   }
 
@@ -252,7 +206,7 @@ db_sqlite_bookmark_remove(db_session_t* session, const char* url)
     "DELETE FROM bookmarks WHERE url = ?;";
 
   sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->bookmark_session, SQL_BOOKMARK_ADD);
+    jumanji_db_prepare_statement(database->session, SQL_BOOKMARK_ADD);
 
   if (statement == NULL) {
     return;
@@ -270,15 +224,10 @@ db_sqlite_bookmark_remove(db_session_t* session, const char* url)
 }
 
 void
-db_sqlite_bookmark_add(db_session_t* session, const char* url, const char* title)
+jumanji_db_bookmark_add(jumanji_database_t* database, const char* url, const char* title)
 {
-  if (session == NULL || url == NULL || title == NULL || session->data == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->bookmark_session == NULL) {
+  if (database == NULL || database->session == NULL || url == NULL || title ==
+      NULL) {
     return;
   }
 
@@ -286,8 +235,8 @@ db_sqlite_bookmark_add(db_session_t* session, const char* url, const char* title
   static const char SQL_BOOKMARK_ADD[] =
     "REPLACE INTO bookmarks (url, title) VALUES (?, ?);";
 
-  sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->bookmark_session, SQL_BOOKMARK_ADD);
+  sqlite3_stmt* statement = jumanji_db_prepare_statement(database->session,
+      SQL_BOOKMARK_ADD);
 
   if (statement == NULL) {
     return;
@@ -307,15 +256,9 @@ db_sqlite_bookmark_add(db_session_t* session, const char* url, const char* title
 }
 
 girara_list_t*
-db_sqlite_history_find(db_session_t* session, const char* input)
+jumanji_db_history_find(jumanji_database_t* database, const char* input)
 {
-  if (session == NULL || input == NULL) {
-    return NULL;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->history_session == NULL) {
+  if (database == NULL || database->session == NULL || input == NULL) {
     return NULL;
   }
 
@@ -325,8 +268,8 @@ db_sqlite_history_find(db_session_t* session, const char* input)
     "url LIKE (SELECT '%' || ? || '%') OR "
     "title LIKE (SELECT '%' || ? || '%');";
 
-  sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->history_session, SQL_HISTORY_FIND);
+  sqlite3_stmt* statement = jumanji_db_prepare_statement(database->session,
+      SQL_HISTORY_FIND);
 
   if (statement == NULL) {
     return NULL;
@@ -348,10 +291,10 @@ db_sqlite_history_find(db_session_t* session, const char* input)
     return NULL;
   }
 
-  girara_list_set_free_function(results, db_sqlite_free_result_link);
+  girara_list_set_free_function(results, jumanji_db_free_result_link);
 
   while(sqlite3_step(statement) == SQLITE_ROW) {
-    db_result_link_t* link = malloc(sizeof(db_result_link_t));
+    jumanji_db_result_link_t* link = malloc(sizeof(jumanji_db_result_link_t));
     if (link == NULL) {
       sqlite3_finalize(statement);
       return NULL;
@@ -373,15 +316,9 @@ db_sqlite_history_find(db_session_t* session, const char* input)
 }
 
 void
-db_sqlite_history_add(db_session_t* session, const char* url, const char* title)
+jumanji_db_history_add(jumanji_database_t* database, const char* url, const char* title)
 {
-  if (session == NULL || url == NULL || title == NULL || session->data == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->history_session == NULL) {
+  if (database == NULL || database->session == NULL || url == NULL || title == NULL) {
     return;
   }
 
@@ -390,7 +327,7 @@ db_sqlite_history_add(db_session_t* session, const char* url, const char* title)
     "REPLACE INTO history (url, title, visited) VALUES (?, ?, ?)";
 
   sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->history_session, SQL_HISTORY_ADD);
+    jumanji_db_prepare_statement(database->session, SQL_HISTORY_ADD);
 
   if (statement == NULL) {
     return;
@@ -410,15 +347,9 @@ db_sqlite_history_add(db_session_t* session, const char* url, const char* title)
 }
 
 void
-db_sqlite_history_clean(db_session_t* session, unsigned int age)
+jumanji_db_history_clean(jumanji_database_t* database, unsigned int age)
 {
-  if (session == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->history_session == NULL) {
+  if (database == NULL || database->session == NULL) {
     return;
   }
 
@@ -427,7 +358,7 @@ db_sqlite_history_clean(db_session_t* session, unsigned int age)
     "DELETE FROM history WHERE visited >= ?;";
 
   sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->history_session, SQL_HISTORY_CLEAN);
+    jumanji_db_prepare_statement(database->session, SQL_HISTORY_CLEAN);
 
   if (statement == NULL) {
     return;
@@ -446,15 +377,9 @@ db_sqlite_history_clean(db_session_t* session, unsigned int age)
 }
 
 void
-db_sqlite_quickmark_add(db_session_t* session, const char identifier, const char* url)
+jumanji_db_quickmark_add(jumanji_database_t* database, const char identifier, const char* url)
 {
-  if (session == NULL || url == NULL || session->data == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->quickmarks_session == NULL) {
+  if (database == NULL || database->session == NULL || url == NULL) {
     return;
   }
 
@@ -462,8 +387,8 @@ db_sqlite_quickmark_add(db_session_t* session, const char identifier, const char
   static const char SQL_QUICKMARK_ADD[] =
     "REPLACE INTO quickmarks (identifier, url) VALUES (?, ?)";
 
-  sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARK_ADD);
+  sqlite3_stmt* statement = jumanji_db_prepare_statement(database->session,
+      SQL_QUICKMARK_ADD);
 
   if (statement == NULL) {
     return;
@@ -482,15 +407,9 @@ db_sqlite_quickmark_add(db_session_t* session, const char identifier, const char
 }
 
 char*
-db_sqlite_quickmark_find(db_session_t* session, const char identifier)
+jumanji_db_quickmark_find(jumanji_database_t* database, const char identifier)
 {
-  if (session == NULL) {
-    return NULL;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->quickmarks_session == NULL) {
+  if (database == NULL || database->session == NULL) {
     return NULL;
   }
 
@@ -499,7 +418,7 @@ db_sqlite_quickmark_find(db_session_t* session, const char identifier)
     "SELECT url FROM quickmarks WHERE identifier = ?;";
 
   sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARKS_FIND);
+    jumanji_db_prepare_statement(database->session, SQL_QUICKMARKS_FIND);
 
   if (statement == NULL) {
     return NULL;
@@ -524,15 +443,9 @@ db_sqlite_quickmark_find(db_session_t* session, const char identifier)
 }
 
 void
-db_sqlite_quickmark_remove(db_session_t* session, const char identifier)
+jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
 {
-  if (session == NULL) {
-    return;
-  }
-
-  /* get database connection */
-  db_sqlite_t* sqlite_session = (db_sqlite_t*) session->data;
-  if (sqlite_session->quickmarks_session == NULL) {
+  if (database == NULL || database->session == NULL) {
     return;
   }
 
@@ -540,8 +453,8 @@ db_sqlite_quickmark_remove(db_session_t* session, const char identifier)
   static const char SQL_QUICKMARK_ADD[] =
     "DELETE FROM quickmarks WHERE identifier = ?;";
 
-  sqlite3_stmt* statement =
-    db_sqlite_prepare_statement(sqlite_session->quickmarks_session, SQL_QUICKMARK_ADD);
+  sqlite3_stmt* statement = jumanji_db_prepare_statement(database->session,
+      SQL_QUICKMARK_ADD);
 
   if (statement == NULL) {
     return;
@@ -557,5 +470,3 @@ db_sqlite_quickmark_remove(db_session_t* session, const char identifier)
   sqlite3_step(statement);
   sqlite3_finalize(statement);
 }
-
-#endif

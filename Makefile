@@ -7,12 +7,14 @@ SOURCE   = $(shell find . -iname "*.c" -a ! -iname "database-*")
 OBJECTS  = $(patsubst %.c, %.o,  $(SOURCE))
 DOBJECTS = $(patsubst %.c, %.do, $(SOURCE))
 
-ifeq (${DATABASE},sqlite)
-CFLAGS += -DSQLITE $(shell pkg-config --cflags sqlite3)
-LIBS   +=  $(shell pkg-config --libs sqlite3)
+ifeq (${DATABASE}, sqlite)
+INCS   += $(SQLITE_INC)
+LIBS   += $(SQLITE_LIB)
 SOURCE += database-sqlite.c
 else
+ifeq (${DATABASE}, plain)
 SOURCE += database-plain.c
+endif
 endif
 
 all: options ${PROJECT}

@@ -46,46 +46,14 @@ jumanji_init(int argc, char* argv[])
   g_option_context_free(context);
 
   /* jumanji */
-  jumanji_t* jumanji = malloc(sizeof(jumanji_t));
+  jumanji_t* jumanji = g_malloc0(sizeof(jumanji_t));
 
   if (jumanji == NULL) {
     goto error_out;
   }
 
   /* set default values */
-  jumanji->ui.session          = NULL;
-  jumanji->ui.statusbar.url    = NULL;
-  jumanji->ui.statusbar.buffer = NULL;
-  jumanji->ui.statusbar.tabs   = NULL;
-  jumanji->ui.statusbar.proxy  = NULL;
-
-  jumanji->config.config_dir = NULL;
-  jumanji->config.data_dir   = NULL;
-
-  jumanji->modes.normal = 0;
-
-  jumanji->global.browser_settings = NULL;
-  jumanji->global.search_engines   = NULL;
-  jumanji->global.proxies          = NULL;
-  jumanji->global.marks            = NULL;
-  jumanji->global.last_closed      = NULL;
-  jumanji->global.current_proxy    = NULL;
-  jumanji->global.user_scripts     = NULL;
-  jumanji->global.soup             = NULL;
-  jumanji->global.arguments        = argv;
-
-  jumanji->database.session = NULL;
-
-  jumanji->search.item = NULL;
-
-  jumanji->downloads.list   = NULL;
-  jumanji->downloads.widget = NULL;
-
-  jumanji->hints.links      = NULL;
-  jumanji->hints.hints      = NULL;
-  jumanji->hints.hint_style = NULL;
-  jumanji->hints.hint_box   = NULL;
-  jumanji->hints.input      = NULL;
+  jumanji->global.arguments = argv;
   jumanji->hints.open_mode  = DEFAULT;
 
   /* begin initialization */
@@ -250,37 +218,8 @@ jumanji_init(int argc, char* argv[])
   }
 
   /* database */
-  jumanji->database.session = db_new(jumanji);
-  if (jumanji->database.session == NULL) {
-    girara_error("Could not create database object");
-    goto error_free;
-  }
-
-  char* bookmark_file = g_build_filename(jumanji->config.config_dir, JUMANJI_BOOKMARKS_FILE, NULL);
-  if (bookmark_file != NULL) {
-    db_set_bookmark_file(jumanji->database.session, bookmark_file);
-    g_free(bookmark_file);
-  } else {
-    goto error_free;
-  }
-
-  char* history_file = g_build_filename(jumanji->config.config_dir, JUMANJI_HISTORY_FILE, NULL);
-  if (history_file != NULL) {
-    db_set_history_file(jumanji->database.session, history_file);
-    g_free(history_file);
-  } else {
-    goto error_free;
-  }
-
-  char* quickmarks_file = g_build_filename(jumanji->config.config_dir, JUMANJI_QUICKMARKS_FILE, NULL);
-  if (quickmarks_file != NULL) {
-    db_set_quickmarks_file(jumanji->database.session, quickmarks_file);
-    g_free(quickmarks_file);
-  } else {
-    goto error_free;
-  }
-
-  if (db_init(jumanji->database.session) == false) {
+  jumanji->database = jumanji_db_init(jumanji->config.config_dir);
+  if (jumanji->database == NULL) {
     girara_error("Could not initialize database");
     goto error_free;
   }
@@ -306,17 +245,17 @@ jumanji_init(int argc, char* argv[])
 
 error_free:
 
-  if (jumanji) {
-    if (jumanji->ui.session) {
+  if (jumanji != NULL) {
+    if (jumanji->ui.session != NULL) {
       girara_session_destroy(jumanji->ui.session);
     }
 
-    if (jumanji->database.session) {
-      db_close(jumanji->database.session);
+    if (jumanji->database != NULL) {
+      jumanji_db_free(jumanji->database);
     }
   }
 
-  free(jumanji);
+  g_free(jumanji);
 
 error_out:
 
@@ -361,8 +300,8 @@ jumanji_free(jumanji_t* jumanji)
   girara_list_free(jumanji->downloads.list);
 
   /* free database */
-  if (jumanji->database.session) {
-    db_close(jumanji->database.session);
+  if (jumanji->database) {
+    jumanji_db_free(jumanji->database);
   }
 
   /* free soup */
@@ -371,7 +310,7 @@ jumanji_free(jumanji_t* jumanji)
   /* free adblock filters */
   girara_list_free(jumanji->global.adblock_filters);
 
-  free(jumanji);
+  g_free(jumanji);
 }
 
 jumanji_tab_t*

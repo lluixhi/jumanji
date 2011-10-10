@@ -59,7 +59,7 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
 {
   jumanji_tab_t* tab = (jumanji_tab_t*) data;
 
-  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database.session == NULL
+  if (web_view == NULL || tab == NULL || tab->jumanji == NULL || tab->jumanji->database == NULL
       || tab->jumanji->ui.session == NULL) {
     return;
   }
@@ -69,7 +69,7 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
     const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
     const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
-    db_history_add(tab->jumanji->database.session, url, title);
+    jumanji_db_history_add(tab->jumanji->database, url, title);
   }
   free(enable_private_browsing);
 }

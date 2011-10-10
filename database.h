@@ -7,23 +7,12 @@
 
 #include "jumanji.h"
 
-typedef struct db_session_s
-{
-  jumanji_t* jumanji; /**> Jumanji session */
-
-  char* bookmark_file; /**> Database file of the bookmarks */
-  char* history_file; /**> Database file of the history */
-  char* quickmarks_file; /**> Database file of the quickmarks */
-
-  void* data; /**> Implementation based data */
-} db_session_t;
-
-typedef struct db_result_link_s
+typedef struct jumanji_db_result_link_s
 {
   char* url; /**> The url of the link */
   char* title; /**> The link title */
   int visited; /**> Last time the link has been visited */
-} db_result_link_t;
+} jumanji_db_result_link_t;
 
 /**
  * Creates a new database object
@@ -31,46 +20,14 @@ typedef struct db_result_link_s
  * @param session The jumanji session
  * @return Session object or NULL if an error occured
  */
-db_session_t* db_new(jumanji_t* session);
-
-/**
- * Initializes the database
- *
- * @param session The database session
- * @return true on success otherwise false
- */
-bool db_init(db_session_t* session);
-
-/**
- * Sets the path to the bookmark database file
- *
- * @param session The database session
- * @param bookmark_file Path to the bookmark file
- */
-void db_set_bookmark_file(db_session_t* session, const char* bookmark_file);
-
-/**
- * Sets the path to the history database file
- *
- * @param session The database session
- * @param history_file Path to the history file
- */
-void db_set_history_file(db_session_t* session, const char* history_file);
-
-/**
- * Sets the path to the quickmark database file
- *
- * @param session The database session
- * @param history_file Path to the history file
- */
-void db_set_quickmarks_file(db_session_t* session, const char* quickmarks_file);
+jumanji_database_t* jumanji_db_init(const char* dir);
 
 /**
  * Closes a database connection
  *
  * @param session The database session
  */
-void db_close(db_session_t* session);
+void jumanji_db_free(jumanji_database_t* session);
 
 /**
  * Save a new bookmark in the database
@@ -79,7 +36,7 @@ void db_close(db_session_t* session);
  * @param url The url of the bookmark
  * @param title The title of the bookmark
  */
-void db_bookmark_add(db_session_t* session, const char* url, const char* title);
+void jumanji_db_bookmark_add(jumanji_database_t* session, const char* url, const char* title);
 
 /**
  * Find bookmarks
@@ -88,7 +45,7 @@ void db_bookmark_add(db_session_t* session, const char* url, const char* title);
  * @param input The data that the bookmark should match
  * @return list or NULL if an error occured
  */
-girara_list_t* db_bookmark_find(db_session_t* session, const char* input);
+girara_list_t* jumanji_db_bookmark_find(jumanji_database_t* session, const char* input);
 
 /**
  * Removes a saved bookmark
@@ -96,7 +53,7 @@ girara_list_t* db_bookmark_find(db_session_t* session, const char* input);
  * @param session The database session
  * @param url The url that should be removed
  */
-void db_bookmark_remove(db_session_t* session, const char* url);
+void jumanji_db_bookmark_remove(jumanji_database_t* session, const char* url);
 
 /**
  * Save a new history item in the database
@@ -105,7 +62,7 @@ void db_bookmark_remove(db_session_t* session, const char* url);
  * @param url The url of the history item
  * @param title The title of the history item
  */
-void db_history_add(db_session_t* session, const char* url, const char* title);
+void jumanji_db_history_add(jumanji_database_t* session, const char* url, const char* title);
 
 /**
  * Find history
@@ -114,7 +71,7 @@ void db_history_add(db_session_t* session, const char* url, const char* title);
  * @param input The data that the bookmark should match
  * @return list or NULL if an error occured
  */
-girara_list_t* db_history_find(db_session_t* session, const char* input);
+girara_list_t* jumanji_db_history_find(jumanji_database_t* session, const char* input);
 
 /**
  * Cleans the history
@@ -122,7 +79,7 @@ girara_list_t* db_history_find(db_session_t* session, const char* input);
  * @param session The database session
  * @param age The age of the entries in seconds
  */
-void db_history_clean(db_session_t* session, unsigned int age);
+void jumanji_db_history_clean(jumanji_database_t* session, unsigned int age);
 
 /**
  * Saves a new quickmark (or overwrites an existing one)
@@ -131,7 +88,7 @@ void db_history_clean(db_session_t* session, unsigned int age);
  * @param identifier The quickmark identifier
  * @param url Url the quickmark points to
  */
-void db_quickmark_add(db_session_t* session, const char identifier, const char* url);
+void jumanji_db_quickmark_add(jumanji_database_t* session, const char identifier, const char* url);
 
 /**
  * Finds a quickmark
@@ -140,7 +97,7 @@ void db_quickmark_add(db_session_t* session, const char identifier, const char* 
  * @param identifier The quickmark identifier
  * @return The url of the quickmark otherwise NULL
  */
-char* db_quickmark_find(db_session_t* session, const char identifier);
+char* jumanji_db_quickmark_find(jumanji_database_t* session, const char identifier);
 
 /**
  * Remove a quickmark
@@ -148,13 +105,13 @@ char* db_quickmark_find(db_session_t* session, const char identifier);
  * @param session The database session
  * @param identifier The quickmark identifier
  */
-void db_quickmark_remove(db_session_t* session, const char identifier);
+void jumanji_db_quickmark_remove(jumanji_database_t* session, const char identifier);
 
 /**
  * Frees a result link
  *
  * @param data Link data
  */
-void db_free_result_link(void* data);
+void jumanji_db_free_result_link(void* data);
 
 #endif // DATABASE_H

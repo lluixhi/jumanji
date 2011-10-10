@@ -41,12 +41,12 @@ cb_quickmarks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
   }
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
-  if (tab == NULL || tab->web_view == NULL || jumanji->database.session == NULL) {
+  if (tab == NULL || tab->web_view == NULL || jumanji->database == NULL) {
     return false;
   }
 
   const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
-  db_quickmark_add(jumanji->database.session, event->keyval, uri);
+  jumanji_db_quickmark_add(jumanji->database, event->keyval, uri);
 
   return true;
 }
@@ -93,11 +93,11 @@ bool cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
     return false;
   }
 
-  if (jumanji->database.session == NULL) {
+  if (jumanji->database == NULL) {
     return false;
   }
 
-  char* uri = db_quickmark_find(jumanji->database.session, event->keyval);
+  char* uri = jumanji_db_quickmark_find(jumanji->database, event->keyval);
 
   if (uri == NULL) {
     return false;
@@ -120,7 +120,7 @@ cmd_quickmarks_add(girara_session_t* session, girara_list_t* argument_list)
   g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
-  if (jumanji->database.session == NULL) {
+  if (jumanji->database == NULL) {
     return false;
   }
 
@@ -146,7 +146,7 @@ cmd_quickmarks_add(girara_session_t* session, girara_list_t* argument_list)
     return false;
   }
 
-  db_quickmark_add(jumanji->database.session, identifier, url);
+  jumanji_db_quickmark_add(jumanji->database, identifier, url);
 
   return false;
 }
@@ -158,7 +158,7 @@ cmd_quickmarks_delete(girara_session_t* session, girara_list_t* argument_list)
   g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
-  if (jumanji->database.session == NULL) {
+  if (jumanji->database == NULL) {
     return false;
   }
 
@@ -180,7 +180,7 @@ cmd_quickmarks_delete(girara_session_t* session, girara_list_t* argument_list)
         return true;
       }
 
-      db_quickmark_remove(jumanji->database.session, identifier);
+      jumanji_db_quickmark_remove(jumanji->database, identifier);
     }
   } while (girara_list_iterator_next(iter) != NULL);
   girara_list_iterator_free(iter);
