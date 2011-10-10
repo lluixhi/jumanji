@@ -1,8 +1,5 @@
 /* See LICENSE file for license and copyright information */
 
-#ifndef COMPLETION_H
-#define COMPLETION_H
-
 #include <girara.h>
 #include <stdio.h>
 #include <string.h>
@@ -95,5 +92,3 @@ error_free:
 
   return NULL;
 }
-
-#endif // COMPLETION_H

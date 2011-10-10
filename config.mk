@@ -31,8 +31,8 @@ SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 #GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk2)
 
 # libs
-INCS = ${GIRARA_INC} ${GTK_INC} ${WEBKIT_INC}
-LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} -lpthread -lm
+INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC}
+LIBS = ${GTK_LIB} ${WEBKIT_LIB} ${GIRARA_LIB} -lpthread
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
@@ -44,7 +44,7 @@ DFLAGS = -O0 -g
 CC ?= gcc
 
 # strip
-SFLAGS = -s
+SFLAGS ?= -s
 
 # possible values are: sqlite and plain
 DATABASE ?= plain
