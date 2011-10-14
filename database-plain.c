@@ -3,12 +3,20 @@
 #include <girara.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "database.h"
 
 #define BOOKMARKS "bookmarks"
 #define HISTORY "history"
 #define QUICKMARKS "quickmarks"
+
+#define file_lock_set(fd, cmd) \
+  { \
+  struct flock lock = { .l_type = cmd, .l_start = 0, .l_whence = SEEK_SET, .l_len = 0}; \
+  fcntl(fd, F_SETLK, lock); \
+  }
 
 /* forward declaration */
 static void jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickmarks);
@@ -25,17 +33,14 @@ struct jumanji_database_s
   gchar* bookmark_file; /**> File path to the bookmark file */
   girara_list_t* bookmarks; /**> Temporary bookmarks */
   GFileMonitor* bookmark_monitor; /**> File monitor for the bookmark file */
-  unsigned int bookmark_signal; /**> Signal id */
 
   gchar* history_file; /**> File path to the history file */
   girara_list_t* history; /**>  Temporary history */
   GFileMonitor* history_monitor; /**> File monitor for the history file */
-  unsigned int history_signal; /**> Signal id */
 
   gchar* quickmarks_file; /**> File path to the quickmarks file */
   girara_list_t* quickmarks; /**>  Temporary quickmarks */
   GFileMonitor* quickmarks_monitor; /**> File monitor for the quickmarks file */
-  unsigned int quickmarks_signal; /**> Signal id */
 };
 
 typedef struct jumanji_db_quickmark_s
@@ -140,11 +145,11 @@ jumanji_db_init(const char* dir)
     goto error_free;
   }
 
-  database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
-  database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->history_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
-  database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
 
   return database;
@@ -242,9 +247,8 @@ jumanji_db_bookmark_remove(jumanji_database_t* database, const char* url)
 
     girara_list_iterator_free(iter);
 
-    g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
     jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
-    database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+    g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
         G_CALLBACK(cb_jumanji_db_watch_file), database);
   }
 }
@@ -268,9 +272,8 @@ jumanji_db_bookmark_add(jumanji_database_t* database, const char* url, const cha
       if (strstr(link->url, url) != NULL) {
         g_free(link->title);
         link->title = title ? g_strdup(title) : NULL;
-        g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
         jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
-        database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+        g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
             G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
@@ -292,9 +295,8 @@ jumanji_db_bookmark_add(jumanji_database_t* database, const char* url, const cha
   girara_list_append(database->bookmarks, link);
 
   /* write to file */
-  g_signal_handler_disconnect(database->bookmark_monitor, database->bookmark_signal);
   jumanji_db_write_urls_to_file(database->bookmark_file, database->bookmarks, false);
-  database->bookmark_signal = g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->bookmark_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
@@ -328,9 +330,8 @@ jumanji_db_history_add(jumanji_database_t* database, const char* url, const char
         g_free(link->title);
         link->title   = title ? g_strdup(title) : NULL;
         link->visited = time(NULL);
-        g_signal_handler_disconnect(database->history_monitor, database->history_signal);
         jumanji_db_write_urls_to_file(database->history_file, database->history, false);
-        database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+        g_signal_connect(G_OBJECT(database->history_monitor), "changed",
             G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
@@ -352,9 +353,8 @@ jumanji_db_history_add(jumanji_database_t* database, const char* url, const char
   girara_list_append(database->history, link);
 
   /* write to file */
-  g_signal_handler_disconnect(database->history_monitor, database->history_signal);
   jumanji_db_write_urls_to_file(database->history_file, database->history, false);
-  database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->history_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
@@ -380,9 +380,8 @@ jumanji_db_history_clean(jumanji_database_t* database, unsigned int age)
 
     girara_list_iterator_free(iter);
 
-    g_signal_handler_disconnect(database->history_monitor, database->history_signal);
     jumanji_db_write_urls_to_file(database->history_file, database->history, false);
-    database->history_signal = g_signal_connect(G_OBJECT(database->history_monitor), "changed",
+    g_signal_connect(G_OBJECT(database->history_monitor), "changed",
         G_CALLBACK(cb_jumanji_db_watch_file), database);
   }
 }
@@ -407,9 +406,8 @@ jumanji_db_quickmark_add(jumanji_database_t* database, const char identifier, co
         g_free(quickmark->url);
         quickmark->url = g_strdup(url);
 
-        g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
         jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
-        database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+        g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
             G_CALLBACK(cb_jumanji_db_watch_file), database);
         girara_list_iterator_free(iter);
         return;
@@ -430,9 +428,8 @@ jumanji_db_quickmark_add(jumanji_database_t* database, const char identifier, co
   girara_list_append(database->quickmarks, quickmark);
 
   /* write to file */
-  g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
   jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
-  database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+  g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
 }
 
@@ -488,9 +485,8 @@ jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
       }
     } while (girara_list_iterator_next(iter) != NULL);
 
-    g_signal_handler_disconnect(database->quickmarks_monitor, database->quickmarks_signal);
     jumanji_db_write_quickmarks_to_file(database->quickmarks_file, database->quickmarks);
-    database->quickmarks_signal = g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
+    g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
         G_CALLBACK(cb_jumanji_db_watch_file), database);
     girara_list_iterator_free(iter);
   }
@@ -504,22 +500,24 @@ jumanji_db_read_urls_from_file(const char* filename)
   }
 
   /* open file */
-  FILE* file = girara_file_open(filename, "r");
-  if (file == NULL) {
+  int fd = open(filename, O_RDONLY);
+  if (fd == -1) {
     return NULL;
   }
 
   girara_list_t* list = girara_list_new();
   if (list == NULL) {
-    fclose(file);
+    close(fd);
     return NULL;
   }
 
   girara_list_set_free_function(list, jumanji_db_free_result_link);
 
+  file_lock_set(fd, F_WRLCK);
+
   /* read lines */
   char* line = NULL;
-  while ((line = girara_file_read_line(file)) != NULL) {
+  while ((line = girara_file_read_line_from_fd(fd)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
       free(line);
@@ -549,7 +547,8 @@ jumanji_db_read_urls_from_file(const char* filename)
     free(line);
   }
 
-  fclose(file);
+  file_lock_set(fd, F_UNLCK);
+  close(fd);
 
   return list;
 }
@@ -562,20 +561,22 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
   }
 
   /* open file */
-  FILE* file = girara_file_open(filename, "r");
-  if (file == NULL) {
+  int fd = open(filename, O_RDONLY);
+  if (fd == -1) {
     return NULL;
   }
 
   girara_list_t* list = girara_list_new();
   if (list == NULL) {
-    fclose(file);
+    close(fd);
     return NULL;
   }
 
+  file_lock_set(fd, F_WRLCK);
+
   /* read lines */
   char* line = NULL;
-  while ((line = girara_file_read_line(file)) != NULL) {
+  while ((line = girara_file_read_line_from_fd(fd)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
       free(line);
@@ -608,7 +609,8 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
     free(line);
   }
 
-  fclose(file);
+  file_lock_set(fd, F_UNLCK);
+  close(fd);
 
   return list;
 }
@@ -620,11 +622,12 @@ jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool vi
     return;
   }
 
-  /* open file */
-  FILE* file = girara_file_open(filename, "w");
-  if (file == NULL) {
+  int fd = open(filename, O_RDWR);
+  if (fd == -1) {
     return;
   }
+
+  file_lock_set(fd, F_WRLCK);
 
   if (girara_list_size(urls) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(urls);
@@ -635,28 +638,30 @@ jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool vi
       }
 
       /* write url */
-      fwrite(link->url, sizeof(char), strlen(link->url), file);
+      write(fd, link->url, strlen(link->url));
 
       /* write title */
       char* title_quoted = g_shell_quote(link->title ? link->title : "");
       char* text = g_strdup_printf(" %s", title_quoted);
-      fwrite(text, sizeof(char), strlen(text), file);
+      write(fd, text, strlen(text));
       g_free(title_quoted);
       g_free(text);
 
       /* write last visit */
       if (visited == true) {
         char* text = g_strdup_printf(" %d", link->visited);
-        fwrite(text, sizeof(char), strlen(text), file);
+        write(fd, text, strlen(text));
         g_free(text);
       }
 
-      fwrite("\n", sizeof(char), 1, file);
+      write(fd, "\n", 1);
     } while (girara_list_iterator_next(iter) != NULL);
     girara_list_iterator_free(iter);
   }
 
-  fclose(file);
+  file_lock_set(fd, F_UNLCK);
+
+  close(fd);
 }
 
 static void
@@ -667,10 +672,12 @@ jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickma
   }
 
   /* open file */
-  FILE* file = girara_file_open(filename, "w");
-  if (file == NULL) {
+  int fd = open(filename, O_RDWR);
+  if (fd == -1) {
     return;
   }
+
+  file_lock_set(fd, F_WRLCK);
 
   if (girara_list_size(quickmarks) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(quickmarks);
@@ -681,15 +688,16 @@ jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickma
       }
 
       char* text = g_strdup_printf("%c %s", quickmark->identifier, quickmark->url);
-      fwrite(text, sizeof(char), strlen(text), file);
+      write(fd, text, strlen(text));
       g_free(text);
 
-      fwrite("\n", sizeof(char), 1, file);
+      write(fd, "\n", 1);
     } while (girara_list_iterator_next(iter) != NULL);
     girara_list_iterator_free(iter);
   }
 
-  fclose(file);
+  file_lock_set(fd, F_UNLCK);
+  close(fd);
 }
 
 static girara_list_t*
