@@ -71,6 +71,8 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
 
     g_spawn_command_line_async(command, NULL);
 
+    girara_notify(jumanji->ui.session, GIRARA_INFO, "Started download: %s", filename);
+
     free(download_command);
     g_free(command);
   /* internal download handler */
@@ -108,6 +110,9 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
 
     /* start download */
     webkit_download_start(download);
+
+    girara_notify(jumanji->ui.session, GIRARA_INFO, "Started download: %s",
+        file);
   }
 
   g_free(filename);
@@ -227,6 +232,11 @@ jumanji_download_set_status(jumanji_download_t* download)
       break;
     default:
       break;
+  }
+
+  if (status != NULL && download->jumanji != NULL && download->jumanji->ui.session != NULL) {
+    girara_notify(download->jumanji->ui.session, GIRARA_INFO, "%s download: %s",
+        status, download->file);
   }
 
   /* update entry */
