@@ -18,16 +18,16 @@ cc_open(girara_session_t* session, const char* input)
   jumanji_t* jumanji = session->global.data;
 
   girara_completion_t* completion  = girara_completion_init();
+  girara_completion_group_t* group = NULL;
 
   if (completion == NULL) {
     goto error_free;
   }
 
   /* search history */
-  girara_completion_group_t* group = NULL;
-  girara_list_t* bookmark_list     = jumanji_db_bookmark_find(jumanji->database, input);
+  girara_list_t* bookmark_list = jumanji_db_bookmark_find(jumanji->database, input);
 
-  if (bookmark_list) {
+  if (bookmark_list != NULL) {
     int bookmark_length = girara_list_size(bookmark_list);
 
     /* add group entry */
@@ -38,7 +38,7 @@ cc_open(girara_session_t* session, const char* input)
       } else {
         for (int i = 0; i < bookmark_length; i++) {
           jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_nth(bookmark_list, i);
-          if (link) {
+          if (link != NULL) {
             girara_completion_group_add_element(group, link->url, link->title);
           }
         }
@@ -54,7 +54,7 @@ cc_open(girara_session_t* session, const char* input)
   group                       = NULL;
   girara_list_t* history_list = jumanji_db_history_find(jumanji->database, input);
 
-  if (history_list) {
+  if (history_list != NULL) {
     int history_length = girara_list_size(history_list);
 
     /* add group entry */
@@ -65,7 +65,7 @@ cc_open(girara_session_t* session, const char* input)
       } else {
         for (int i = 0; i < history_length; i++) {
           jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_nth(history_list, i);
-          if (link) {
+          if (link != NULL) {
             girara_completion_group_add_element(group, link->url, link->title);
           }
         }
@@ -82,11 +82,11 @@ cc_open(girara_session_t* session, const char* input)
 
 error_free:
 
-  if (completion) {
+  if (completion != NULL) {
     girara_completion_free(completion);
   }
 
-  if (group) {
+  if (group != NULL) {
     girara_completion_group_free(group);
   }
 
