@@ -18,7 +18,7 @@ jumanji_database_t*
 jumanji_db_init(const char* dir)
 {
   if (dir == NULL) {
-    goto error_ret;
+    return NULL;
   }
 
   char* path = g_build_filename(dir, DATABASE, NULL);
@@ -107,7 +107,7 @@ error_ret:
 
   g_free(path);
 
-  return false;
+  return NULL;
 }
 
 void
