@@ -12,7 +12,7 @@ GTK_INC ?= $(shell pkg-config --cflags gtk+-3.0)
 GTK_LIB ?= $(shell pkg-config --libs   gtk+-3.0)
 
 WEBKIT_INC ?= $(shell pkg-config --cflags webkitgtk-3.0)
-WEBKIT_LIB ?= $(shell pkg-config --libs   webkitgtk-3.0)
+WEBKIT_LIB ?= $(shell pkg-config --libs   webkitgtk-3.0 javascriptcoregtk-3.0)
 
 GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk3)
 GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk3)
@@ -32,7 +32,7 @@ SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 
 # libs
 INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC}
-LIBS = ${GTK_LIB} ${WEBKIT_LIB} ${GIRARA_LIB} -lpthread
+LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} -lpthread
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
