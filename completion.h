@@ -3,7 +3,7 @@
 #ifndef COMPLETION_H
 #define COMPLETION_H
 
-#include <girara.h>
+#include <girara/girara.h>
 
 /**
  * Completion for the open command

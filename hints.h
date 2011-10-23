@@ -3,7 +3,7 @@
 #ifndef HINTS_H
 #define HINTS_H
 
-#include <girara.h>
+#include <girara/girara.h>
 
 #include "jumanji.h"
 

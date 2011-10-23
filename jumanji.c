@@ -1,7 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
-#include <girara.h>
+#include <girara/girara.h>
 #include <string.h>
 
 #include "adblock.h"

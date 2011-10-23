@@ -3,7 +3,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <girara.h>
+#include <girara/girara.h>
 
 /**
  * This function builds a girara list out of a string

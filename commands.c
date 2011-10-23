@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <girara.h>
+#include <girara/girara.h>
 
 #include "commands.h"
 #include "database.h"

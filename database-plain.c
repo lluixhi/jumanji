@@ -1,6 +1,6 @@
 /* See LICENSE file for license and copyright information */
 
-#include <girara.h>
+#include <girara/girara.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
