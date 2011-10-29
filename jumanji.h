@@ -4,7 +4,7 @@
 #define JUMANJI_H
 
 #include <stdbool.h>
-#include <girara/girara.h>
+#include <girara/types.h>
 #include <gtk/gtk.h>
 
 #include <webkit/webkit.h>

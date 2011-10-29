@@ -6,6 +6,9 @@
 #include <webkit/webkit.h>
 
 #include "hints.h"
+#include <girara/session.h>
+#include <girara/settings.h>
+#include <girara/callbacks.h>
 
 bool
 sc_hints(girara_session_t* session, girara_argument_t* argument, unsigned int t)

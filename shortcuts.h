@@ -3,7 +3,7 @@
 #ifndef SHORTCUTS_H
 #define SHORTCUTS_H
 
-#include <girara/girara.h>
+#include <girara/types.h>
 
 /**
  * Open homepage (in a new tab)

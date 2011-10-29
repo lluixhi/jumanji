@@ -4,6 +4,9 @@
 
 #include "database.h"
 #include "quickmarks.h"
+#include <girara/session.h>
+#include <girara/datastructures.h>
+#include <girara/callbacks.h>
 
 bool
 sc_quickmark_add(girara_session_t* session, girara_argument_t* argument,

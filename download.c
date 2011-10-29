@@ -4,6 +4,10 @@
 #include <stdlib.h>
 
 #include "download.h"
+#include <girara/settings.h>
+#include <girara/utils.h>
+#include <girara/session.h>
+#include <girara/datastructures.h>
 
 bool
 jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)

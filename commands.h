@@ -4,7 +4,7 @@
 #define COMMANDS_H
 
 #include <stdbool.h>
-#include <girara/girara.h>
+#include <girara/types.h>
 
 /**
  * Add a bookmark

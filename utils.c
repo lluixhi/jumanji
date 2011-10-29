@@ -1,8 +1,9 @@
 /* See LICENSE file for license and copyright information */
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 #include "utils.h"
+#include <girara/datastructures.h>
 
 girara_list_t*
 build_girara_list(const char* string)

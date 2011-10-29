@@ -4,6 +4,9 @@
 #include <string.h>
 
 #include "marks.h"
+#include <girara/session.h>
+#include <girara/callbacks.h>
+#include <girara/datastructures.h>
 
 bool
 sc_mark_add(girara_session_t* session, girara_argument_t* argument, unsigned int t)

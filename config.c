@@ -10,6 +10,12 @@
 #include "quickmarks.h"
 #include "shortcuts.h"
 
+#include <girara/settings.h>
+#include <girara/session.h>
+#include <girara/shortcuts.h>
+#include <girara/commands.h>
+#include <girara/config.h>
+
 void
 config_load_default(jumanji_t* jumanji)
 {

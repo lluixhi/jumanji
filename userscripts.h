@@ -3,7 +3,7 @@
 #ifndef USERSCRIPTS_H
 #define USERSCRIPTS_H
 
-#include <girara/girara.h>
+#include <girara/types.h>
 
 #include "jumanji.h"
 

@@ -3,7 +3,7 @@
 #ifndef ADBLOCK_H
 #define ADBLOCK_H
 
-#include <girara/girara.h>
+#include <girara/types.h>
 
 #include "jumanji.h"
 

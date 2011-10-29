@@ -4,6 +4,8 @@
 #include <JavaScriptCore/JavaScript.h>
 
 #include "userscripts.h"
+#include <girara/datastructures.h>
+#include <girara/utils.h>
 
 #define USER_SCRIPT_HEADER ".*//.*(==UserScript==.*//.*==/UserScript==).*"
 #define USER_SCRIPT_VAR_VAL_PAIR "//\\s+@(?<name>\\S+)(\\s+(?<value>.*))?"
