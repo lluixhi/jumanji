@@ -88,7 +88,7 @@ jumanji_db_check_file(const char* path)
     } else {
       return false;
     }
-  } else if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == false) {
+  } else if (g_file_test(path, G_FILE_TEST_IS_DIR) == true) {
     return false;
   }
 
