@@ -203,28 +203,41 @@ config_load_default(jumanji_t* jumanji)
   girara_special_command_add(gsession, '/', cmd_search, true, 0, NULL),
 
   /* add shortcut mappings */
-  girara_shortcut_mapping_add(gsession, "focus_inputbar", sc_focus_inputbar);
-  girara_shortcut_mapping_add(gsession, "quit",           sc_quit);
-  girara_shortcut_mapping_add(gsession, "scroll",         sc_scroll);
-  girara_shortcut_mapping_add(gsession, "zoom",           sc_zoom);
+  girara_shortcut_mapping_add(gsession, "focus_inputbar",   sc_focus_inputbar);
+  girara_shortcut_mapping_add(gsession, "goto_homepage",    sc_goto_homepage);
+  girara_shortcut_mapping_add(gsession, "goto_parent_dir",  sc_goto_parent_directory);
+  girara_shortcut_mapping_add(gsession, "navigate_history", sc_navigate_history);
+  girara_shortcut_mapping_add(gsession, "put",              sc_put);
+  girara_shortcut_mapping_add(gsession, "quit",             sc_quit);
+  girara_shortcut_mapping_add(gsession, "reload",           sc_reload);
+  girara_shortcut_mapping_add(gsession, "restore",          sc_restore);
+  girara_shortcut_mapping_add(gsession, "scroll",           sc_scroll);
+  girara_shortcut_mapping_add(gsession, "show_source",      sc_toggle_source_mode);
+  girara_shortcut_mapping_add(gsession, "yank",             sc_yank);
+  girara_shortcut_mapping_add(gsession, "zoom",             sc_zoom);
 
   /* add argument mappings */
-  girara_argument_mapping_add(gsession, "left",       LEFT);
-  girara_argument_mapping_add(gsession, "right",      RIGHT);
-  girara_argument_mapping_add(gsession, "up",         UP);
-  girara_argument_mapping_add(gsession, "down",       DOWN);
-  girara_argument_mapping_add(gsession, "full_up",    FULL_UP);
-  girara_argument_mapping_add(gsession, "full_down",  FULL_DOWN);
-  girara_argument_mapping_add(gsession, "half_up",    HALF_UP);
-  girara_argument_mapping_add(gsession, "half_down",  HALF_DOWN);
-  girara_argument_mapping_add(gsession, "top",        TOP);
-  girara_argument_mapping_add(gsession, "bottom",     BOTTOM);
+  girara_argument_mapping_add(gsession, "append_url", APPEND_URL);
   girara_argument_mapping_add(gsession, "begin",      BEGIN);
-  girara_argument_mapping_add(gsession, "end",        END);
-  girara_argument_mapping_add(gsession, "in",         ZOOM_IN);
-  girara_argument_mapping_add(gsession, "out",        ZOOM_OUT);
+  girara_argument_mapping_add(gsession, "bottom",     BOTTOM);
   girara_argument_mapping_add(gsession, "default",    DEFAULT);
+  girara_argument_mapping_add(gsession, "down",       DOWN);
+  girara_argument_mapping_add(gsession, "end",        END);
+  girara_argument_mapping_add(gsession, "full_down",  FULL_DOWN);
+  girara_argument_mapping_add(gsession, "full_up",    FULL_UP);
+  girara_argument_mapping_add(gsession, "half_down",  HALF_DOWN);
+  girara_argument_mapping_add(gsession, "half_up",    HALF_UP);
+  girara_argument_mapping_add(gsession, "in",         ZOOM_IN);
+  girara_argument_mapping_add(gsession, "left",       LEFT);
+  girara_argument_mapping_add(gsession, "next",       NEXT);
+  girara_argument_mapping_add(gsession, "no_cache",   BYPASS_CACHE);
+  girara_argument_mapping_add(gsession, "out",        ZOOM_OUT);
+  girara_argument_mapping_add(gsession, "previous",   PREVIOUS);
+  girara_argument_mapping_add(gsession, "right",      RIGHT);
   girara_argument_mapping_add(gsession, "specific",   ZOOM_SPECIFIC);
+  girara_argument_mapping_add(gsession, "tab",        NEW_TAB);
+  girara_argument_mapping_add(gsession, "top",        TOP);
+  girara_argument_mapping_add(gsession, "up",         UP);
 
   /* add config handles */
   girara_config_handle_add(gsession, "searchengine", cmd_search_engine);
