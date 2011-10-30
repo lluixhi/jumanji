@@ -75,9 +75,9 @@ cb_jumanji_soup_jar_changed(SoupCookieJar* jar, SoupCookie* old_cookie,
   gboolean http_only = soup_cookie_get_http_only(cookie);
 
   if (new_cookie != NULL) {
-    jumanji_db_cookie_add(jumanji->database, name, value, domain, path,
-        soup_date_to_time_t(expires), (secure == TRUE) ? true : false,
-        (http_only == TRUE) ? true : false);
+    jumanji_db_cookie_add(jumanji->database, name, value, domain, path, (expires
+          != NULL) ? soup_date_to_time_t(expires) : 0, (secure == TRUE) ?
+        true : false, (http_only == TRUE) ? true : false);
   } else {
     jumanji_db_cookie_remove(jumanji->database, domain, name);
   }
