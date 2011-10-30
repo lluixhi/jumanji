@@ -791,6 +791,10 @@ cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file,
     girara_list_free(database->quickmarks);
     database->quickmarks = jumanji_db_read_quickmarks_from_file(database->quickmarks_file);
     girara_list_set_free_function(database->quickmarks, jumanji_db_free_quickmark);
+  } else if (database->cookie_file && strcmp(database->cookie_file, path) == 0) {
+    girara_list_free(database->cookies);
+    database->cookies = jumanji_db_read_cookies_from_file(database->cookie_file);
+    girara_list_set_free_function(database->cookies, jumanji_db_free_cookie);
   }
 
   g_free(path);
