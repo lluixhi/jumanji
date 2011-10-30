@@ -3,17 +3,11 @@
 #ifndef COOKIES_H
 #define COOKIES_H
 
-#include <libsoup/soup.h>
-
 #include "jumanji.h"
 
 #define JUMANJI_COOKIE_FILE "cookies"
 
-typedef struct jumanji_soup_s
-{
-  SoupSession* session; /*>> Soup session */
-  SoupCookieJar* cookie_jar; /**> Soup cookie jar */
-} jumanji_soup_t;
+typedef struct jumanji_soup_s jumanji_soup_t;
 
 /**
  * Initializes the soup session for cookie support

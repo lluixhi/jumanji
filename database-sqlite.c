@@ -595,7 +595,14 @@ jumanji_db_cookie_list(jumanji_database_t* database)
     bool secure    = (sqlite3_column_int(statement, 5) == 1) ? true : false;
     bool http_only = (sqlite3_column_int(statement, 6) == 1) ? true : false;
 
-    SoupCookie* cookie = soup_cookie_new( name, value, host, path, 0);
+    time_t now = time(NULL);
+    if (now >= expires) {
+      continue;
+    }
+
+    int max_age = (expires - now <= G_MAXINT ? expires - now : G_MAXINT);
+
+    SoupCookie* cookie = soup_cookie_new( name, value, host, path, max_age);
     if (cookie == NULL) {
       continue;
     }

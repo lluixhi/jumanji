@@ -2,9 +2,17 @@
 
 #include <stdlib.h>
 #include <girara/girara.h>
+#include <libsoup/soup.h>
 
 #include "database.h"
 #include "soup.h"
+
+struct jumanji_soup_s
+{
+  SoupSession* session; /*>> Soup session */
+  SoupCookieJar* cookie_jar; /**> Soup cookie jar */
+  gulong handler;
+};
 
 jumanji_soup_t*
 jumanji_soup_init(jumanji_t* jumanji)
@@ -34,7 +42,7 @@ jumanji_soup_init(jumanji_t* jumanji)
     return NULL;
   }
 
-  g_signal_connect(G_OBJECT(soup->cookie_jar), "changed",
+  soup->handler = g_signal_connect(G_OBJECT(soup->cookie_jar), "changed",
       G_CALLBACK(cb_jumanji_soup_jar_changed), jumanji);
 
   soup_session_add_feature(soup->session, (SoupSessionFeature*) soup->cookie_jar);
@@ -91,22 +99,11 @@ cb_jumanji_soup_session_request_started(SoupSession* soup_session, SoupMessage*
     return;
   }
 
-  /* read cookies */
+  /* read cookies and update the cookie jar */
   girara_list_t* cookies = jumanji_db_cookie_list(jumanji->database);
   if (cookies != NULL) {
     jumanji_soup_add_cookies(jumanji, cookies);
     girara_list_free(cookies);
-  }
-
-  SoupCookieJar* cookie_jar = ((jumanji_soup_t*)jumanji->global.soup)->cookie_jar;
-  SoupURI* uri              = soup_message_get_uri(message);
-  gchar* header             = soup_cookie_jar_get_cookies(cookie_jar, uri, TRUE);
-
-  if (header != NULL) {
-    soup_message_headers_replace(message->request_headers, "Cookie", header);
-    g_free(header);
-  } else {
-    soup_message_headers_remove(message->request_headers, "Cookie");
   }
 }
 
@@ -119,10 +116,12 @@ jumanji_soup_add_cookies(jumanji_t* jumanji, girara_list_t* cookies)
   }
 
   jumanji_soup_t* soup = (jumanji_soup_t*) jumanji->global.soup;
-
+  
   if (soup->cookie_jar == NULL) {
     return;
   }
+
+  g_signal_handler_disconnect(G_OBJECT(soup->cookie_jar), soup->handler);
 
   girara_list_iterator_t* iter = girara_list_iterator(cookies);
   do {
@@ -130,6 +129,9 @@ jumanji_soup_add_cookies(jumanji_t* jumanji, girara_list_t* cookies)
     soup_cookie_jar_add_cookie(soup->cookie_jar, cookie);
   } while (girara_list_iterator_next(iter));
   girara_list_iterator_free(iter);
+
+  soup->handler = g_signal_connect(G_OBJECT(soup->cookie_jar), "changed",
+      G_CALLBACK(cb_jumanji_soup_jar_changed), jumanji);
 }
 
 void

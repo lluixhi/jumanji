@@ -1062,12 +1062,18 @@ jumanji_db_cookie_list(jumanji_database_t* database)
       continue;
     }
 
+    time_t now = time(NULL);
+    if (now >= plain_cookie->expires) {
+      continue;
+    }
+    int max_age = (plain_cookie->expires - now <= G_MAXINT ? plain_cookie->expires - now : G_MAXINT);
+
     SoupCookie* cookie = soup_cookie_new(
         plain_cookie->name,
         plain_cookie->value,
         plain_cookie->domain,
         plain_cookie->path,
-        0
+        max_age
         );
 
     if (cookie == NULL) {
