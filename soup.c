@@ -68,26 +68,30 @@ cb_jumanji_soup_jar_changed(SoupCookieJar* jar, SoupCookie* old_cookie,
     return;
   }
 
-  SoupCookie* cookie = (new_cookie != NULL) ? new_cookie :
-    ((old_cookie != NULL) ? old_cookie : NULL);
-  if (cookie == NULL) {
+  if (new_cookie == NULL || old_cookie == NULL) {
     return;
   }
 
-  const char* name   = soup_cookie_get_name(cookie);
-  const char* value  = soup_cookie_get_value(cookie);
-  const char* domain = soup_cookie_get_domain(cookie);
-  const char* path   = soup_cookie_get_path(cookie);
-  SoupDate* expires  = soup_cookie_get_expires(cookie);
-  gboolean secure    = soup_cookie_get_secure(cookie);
-  gboolean http_only = soup_cookie_get_http_only(cookie);
+  if (old_cookie != NULL) {
+    const char* name   = soup_cookie_get_name(old_cookie);
+    const char* domain = soup_cookie_get_domain(old_cookie);
+    jumanji_db_cookie_remove(jumanji->database, domain, name);
+  }
 
   if (new_cookie != NULL) {
-    jumanji_db_cookie_add(jumanji->database, name, value, domain, path, (expires
-          != NULL) ? soup_date_to_time_t(expires) : 0, (secure == TRUE) ?
-        true : false, (http_only == TRUE) ? true : false);
-  } else {
-    jumanji_db_cookie_remove(jumanji->database, domain, name);
+    SoupDate* expires  = soup_cookie_get_expires(new_cookie);
+    if (expires) {
+      const char* name   = soup_cookie_get_name(new_cookie);
+      const char* value  = soup_cookie_get_value(new_cookie);
+      const char* domain = soup_cookie_get_domain(new_cookie);
+      const char* path   = soup_cookie_get_path(new_cookie);
+      gboolean secure    = soup_cookie_get_secure(new_cookie);
+      gboolean http_only = soup_cookie_get_http_only(new_cookie);
+
+      jumanji_db_cookie_add(jumanji->database, name, value, domain, path,
+          soup_date_to_time_t(expires), (secure == TRUE) ?
+          true : false, (http_only == TRUE) ? true : false);
+    }
   }
 }
 
