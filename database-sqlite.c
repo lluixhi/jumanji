@@ -57,7 +57,6 @@ jumanji_db_init(const char* dir)
   static const char SQL_COOKIES_INIT[] =
     /* cookies table */
     "CREATE TABLE IF NOT EXISTS moz_cookies ("
-      "id INTEGER PRIMARY KEY,"
       "name TEXT,"
       "value TEXT,"
       "host TEXT,"
@@ -65,8 +64,8 @@ jumanji_db_init(const char* dir)
       "expiry INTEGER,"
       "lastAccessed INTEGER,"
       "isSecure INTEGER,"
-      "isHttpOnly INTEGER"
-      ");";
+      "isHttpOnly INTEGER,"
+      "PRIMARY KEY(host, name));";
 
   if (sqlite3_open(path, &(database->session)) != SQLITE_OK) {
     goto error_free;
@@ -541,7 +540,7 @@ jumanji_db_cookie_remove(jumanji_database_t* database, const char* domain, const
 
   /* prepare statement */
   static const char SQL_COOKIE_REMOVE[] =
-    "DELETE FROM moz_cookies WHERE host = ? and name = ?;";
+    "DELETE FROM moz_cookies WHERE host = ? AND name = ?;";
 
   sqlite3_stmt* statement =
     jumanji_db_prepare_statement(database->session, SQL_COOKIE_REMOVE);
