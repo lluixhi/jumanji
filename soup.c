@@ -1,7 +1,8 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
-#include <girara/girara.h>
+#include <girara/datastructures.h>
+#include <girara/statusbar.h>
 #include <libsoup/soup.h>
 
 #include "database.h"

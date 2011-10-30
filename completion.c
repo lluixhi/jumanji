@@ -1,6 +1,8 @@
 /* See LICENSE file for license and copyright information */
 
-#include <girara/girara.h>
+#include <girara/completion.h>
+#include <girara/datastructures.h>
+#include <girara/session.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

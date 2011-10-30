@@ -1,6 +1,5 @@
 /* See LICENSE file for license and copyright information */
 
-#include <girara/girara.h>
 #include <stdlib.h>
 
 #include "database.h"

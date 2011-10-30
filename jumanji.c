@@ -1,7 +1,12 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
-#include <girara/girara.h>
+#include <girara/session.h>
+#include <girara/datastructures.h>
+#include <girara/utils.h>
+#include <girara/tabs.h>
+#include <girara/settings.h>
+#include <girara/statusbar.h>
 #include <string.h>
 
 #include "adblock.h"

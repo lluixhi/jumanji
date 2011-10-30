@@ -2,7 +2,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <girara/girara.h>
+#include <girara/datastructures.h>
+#include <girara/utils.h>
 
 #include "adblock.h"
 

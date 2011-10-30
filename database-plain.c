@@ -1,6 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
-#include <girara/girara.h>
+#include <girara/datastructures.h>
+#include <girara/utils.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
