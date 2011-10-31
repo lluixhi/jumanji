@@ -488,7 +488,8 @@ jumanji_build_url_from_string(jumanji_t* jumanji, const char* string)
 char*
 jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 {
-  if (jumanji == NULL || list == NULL || jumanji->ui.session == NULL) {
+  if (jumanji == NULL || jumanji->ui.session == NULL || list == NULL ||
+      jumanji->ui.session == NULL) {
     return NULL;
   }
 
@@ -504,8 +505,9 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
       }
     }
   } else if (list_length > 1) {
-    char* identifier = (char*) girara_list_nth(list, 0);
-    char* search_url = NULL;
+    char* identifier   = (char*) girara_list_nth(list, 0);
+    char* search_url   = NULL;
+    bool all_arguments = false;
 
     /* search matching search engine */
     if (girara_list_size(jumanji->global.search_engines) > 0) {
@@ -531,38 +533,16 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
         if (search_url == NULL) {
           return NULL;
         }
+        all_arguments = true;
       }
     /* there is no search engine available */
     } else {
+      girara_notify(jumanji->ui.session, GIRARA_WARNING, "Could not process input. No search engine has been defined.");
       return NULL;
     }
 
-    /* if the search url does not contain any %s we abort */
-    if (strstr(search_url, "%s") == NULL) {
-      girara_error("Search engine (%s) url is invalid", identifier);
-      g_free(search_url);
-      return NULL;
-    }
-
-    /* build search item */
-    char* search_item = g_strdup((char*) girara_list_nth(list, 1));
-    for (unsigned int i = 2; i < girara_list_size(list); i++) {
-      char* tmp = g_strjoin("+", search_item, (char*) girara_list_nth(list, i), NULL);
-      g_free(search_item);
-      search_item = tmp;
-    }
-
-    /* replace all spaces in the search item with '+' */
-    for (unsigned int i = 0; i < strlen(search_item); i++ ) {
-      if (search_item[i] == ' ') {
-        search_item[i] = '+';
-      }
-    }
-
-    url = g_strdup_printf(search_url, search_item);
-
+    url = jumanji_build_search_engine_url(search_url, list, all_arguments);
     g_free(search_url);
-    g_free(search_item);
   } else {
     char* input = (char*) girara_list_nth(list, 0);
 
@@ -571,13 +551,58 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
       url = g_strconcat("file://", input, NULL);
     /* uri does not contain any '.', ':', '/' nor starts with localhost so the default
      * search engine will be used */
-    } else if (strpbrk(input, ".:/") == NULL
-        && strncmp(input, "localhost", 9) != 0 ) {
+    } else if (strpbrk(input, ".:/") == NULL && strncmp(input, "localhost", 9) != 0 ) {
+      if (girara_list_size(jumanji->global.search_engines) > 0) {
+        jumanji_search_engine_t* search_engine = (jumanji_search_engine_t*) girara_list_nth(jumanji->global.search_engines, 0);
+        char* search_url = search_engine ? g_strdup(search_engine->url) : NULL;
+        if (search_url == NULL) {
+          return NULL;
+        }
+
+        url = jumanji_build_search_engine_url(search_url, list, true);
+      } else {
+        girara_notify(jumanji->ui.session, GIRARA_WARNING, "Could not process input. No search engine has been defined.");
+      }
     /* just use the url as it is */
     } else {
       url = strstr(input, "://") ? g_strdup(input) : g_strconcat("http://", input, NULL);
     }
   }
+
+  return url;
+}
+
+char*
+jumanji_build_search_engine_url(char* search_url, girara_list_t* list, bool all_arguments)
+{
+  if (search_url == NULL || list == NULL || girara_list_size(list) == 0) {
+    return NULL;
+  }
+
+  /* if the search url does not contain any %s we abort */
+  if (strstr(search_url, "%s") == NULL) {
+    girara_error("Search engine url is invalid: %s", search_url);
+    return NULL;
+  }
+
+  /* build search item */
+  int begin = (all_arguments == true) ? 0 : 1;
+  char* search_item = g_strdup((char*) girara_list_nth(list, begin));
+  for (unsigned int i = begin + 1; i < girara_list_size(list); i++) {
+    char* tmp = g_strjoin("+", search_item, (char*) girara_list_nth(list, i), NULL);
+    g_free(search_item);
+    search_item = tmp;
+  }
+
+  /* replace all spaces in the search item with '+' */
+  for (unsigned int i = 0; i < strlen(search_item); i++ ) {
+    if (search_item[i] == ' ') {
+      search_item[i] = '+';
+    }
+  }
+
+  char* url = g_strdup_printf(search_url, search_item);
+  g_free(search_item);
 
   return url;
 }

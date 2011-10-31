@@ -187,6 +187,17 @@ char* jumanji_build_url_from_string(jumanji_t* jumanji, const char* string);
 char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
 
 /**
+ * Builds a search engine url based on the search url and the given arguments
+ *
+ * @param search_url Search url
+ * @param list Search items
+ * @param all_arguments true if all arguments of the list should be appended
+ * otherwise the first one will be skipped
+ * @return String that has to be freed or NULL if an error occured
+ */
+char* jumanji_build_search_engine_url(char* search_url, girara_list_t* list, bool all_arguments);
+
+/**
  * Creates a new jumanji instance
  *
  * @param jumanji The jumanji session
