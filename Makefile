@@ -1,6 +1,7 @@
 # See LICENSE file for license and copyright information
 
 include config.mk
+include common.mk
 
 PROJECT  = jumanji
 SOURCE   = $(shell find . -iname "*.c" -a ! -iname "database-*")
@@ -27,32 +28,32 @@ options:
 	@echo "CC      = ${CC}"
 
 %.o: %.c
-	@echo CC $<
+	$(ECHO) CC $<
 	@mkdir -p .depend
-	@${CC} -c ${CFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
+	$(QUIET)${CC} -c ${CPPFLAGS} ${CFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
 
 # force recompilation of database.o if the DATABASE has changed
 database.o: database-${DATABASE}.o
 
 %.do: %.c
-	@echo CC $<
+	$(ECHO) CC $<
 	@mkdir -p .depend
-	@${CC} -c ${CFLAGS} ${DFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
+	$(QUIET)${CC} -c ${CPPFLAGS} ${CFLAGS} ${DFLAGS} -o $@ $< -MMD -MF .depend/$@.dep
 
 ${OBJECTS}:  config.mk
 ${DOBJECTS}: config.mk
 
 ${PROJECT}: ${OBJECTS}
-	@echo CC -o $@
-	@${CC} ${SFLAGS} ${LDFLAGS} -o $@ ${OBJECTS} ${LIBS}
+	$(ECHO) CC -o $@
+	$(QUIET)${CC} ${SFLAGS} ${LDFLAGS} -o $@ ${OBJECTS} ${LIBS}
 
 clean:
-	@rm -rf ${PROJECT} ${OBJECTS} ${PROJECT}-${VERSION}.tar.gz \
+	$(QUIET)rm -rf ${PROJECT} ${OBJECTS} ${PROJECT}-${VERSION}.tar.gz \
 		${DOBJECTS} ${PROJECT}-debug .depend
 
 ${PROJECT}-debug: ${DOBJECTS}
-	@echo CC -o ${PROJECT}-debug
-	@${CC} ${LDFLAGS} -o ${PROJECT}-debug ${DOBJECTS} ${LIBS}
+	$(ECHO) CC -o $@
+	$(QUIET)${CC} ${LDFLAGS} -o $@ ${DOBJECTS} ${LIBS}
 
 debug: ${PROJECT}-debug
 
@@ -64,28 +65,28 @@ gdb: debug
 	cgdb ${PROJECT}-debug
 
 dist: clean
-	@${MAKE} -p ${PROJECT}-${VERSION}
-	@cp -R LICENSE Makefile config.mk README \
+	$(QUIET)mkdir -p ${PROJECT}-${VERSION}
+	$(QUIET)cp -R LICENSE Makefile config.mk README \
 			${PROJECT}.1 ${SOURCE} ${PROJECT}-${VERSION}
-	@tar -cf ${PROJECT}-${VERSION}.tar ${PROJECT}-${VERSION}
-	@gzip ${PROJECT}-${VERSION}.tar
-	@rm -rf ${PROJECT}-${VERSION}
+	$(QUIET)tar -cf ${PROJECT}-${VERSION}.tar ${PROJECT}-${VERSION}
+	$(QUIET)gzip ${PROJECT}-${VERSION}.tar
+	$(QUIET)rm -rf ${PROJECT}-${VERSION}
 
 install: all
-	@echo installing executable file
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f ${PROJECT} ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${PROJECT} ${DESTDIR}${PREFIX}/bin/${PROJECT}
-	@echo installing manual page
-	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	@sed "s/VERSION/${VERSION}/g" < ${PROJECT}.1 > ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
-	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+	$(ECHO) installing executable file
+	$(QUIET)mkdir -p ${DESTDIR}${PREFIX}/bin
+	$(QUIET)cp -f ${PROJECT} ${DESTDIR}${PREFIX}/bin
+	$(QUIET)chmod 755 ${PROJECT} ${DESTDIR}${PREFIX}/bin/${PROJECT}
+	$(ECHO) installing manual page
+	$(QUIET)mkdir -p ${DESTDIR}${MANPREFIX}/man1
+	$(QUIET)sed "s/VERSION/${VERSION}/g" < ${PROJECT}.1 > ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+	$(QUIET)chmod 644 ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
 
 uninstall:
-	@echo removing executable file
-	@rm -f ${DESTDIR}${PREFIX}/bin/${PROJECT}
-	@echo removing manual page
-	@rm -f ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+	$(ECHO) removing executable file
+	$(QUIET)rm -f ${DESTDIR}${PREFIX}/bin/${PROJECT}
+	$(ECHO) removing manual page
+	$(QUIET)rm -f ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
 
 -include $(wildcard .depend/*.dep)
 

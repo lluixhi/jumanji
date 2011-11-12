@@ -46,5 +46,8 @@ CC ?= gcc
 # strip
 SFLAGS ?= -s
 
+# set to something != 0 if you want verbose build output
+VERBOSE ?= 0
+
 # possible values are: sqlite and plain
 DATABASE ?= plain
