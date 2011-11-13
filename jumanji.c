@@ -488,8 +488,7 @@ jumanji_build_url_from_string(jumanji_t* jumanji, const char* string)
 char*
 jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 {
-  if (jumanji == NULL || jumanji->ui.session == NULL || list == NULL ||
-      jumanji->ui.session == NULL) {
+  if (jumanji == NULL || jumanji->ui.session == NULL || list == NULL) {
     return NULL;
   }
 
