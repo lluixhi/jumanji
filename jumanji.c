@@ -503,6 +503,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
         url = jumanji_build_url_from_string(jumanji, homepage);
       }
     }
+    g_free(homepage);
   } else if (list_length > 1) {
     char* identifier   = (char*) girara_list_nth(list, 0);
     char* search_url   = NULL;
@@ -548,6 +549,9 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
     /* file path */
     if (input[0] == '/' || strncmp(input, "./", 2) == 0) {
       url = g_strconcat("file://", input, NULL);
+    /* special case: about: */
+    } else if (strncmp(input, "about:", 6) == 0) {
+      url = g_strdup(input);
     /* uri does not contain any '.', ':', '/' nor starts with localhost so the default
      * search engine will be used */
     } else if (strpbrk(input, ".:/") == NULL && strncmp(input, "localhost", 9) != 0 ) {
