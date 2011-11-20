@@ -177,18 +177,13 @@ user_script_load_file(const char* path)
   /* init values */
   char* name                  = NULL;
   char* description           = NULL;
-  girara_list_t* include      = girara_list_new();
-  girara_list_t* exclude      = girara_list_new();
+  girara_list_t* include      = girara_list_new2(free);
+  girara_list_t* exclude      = girara_list_new2(free);
   bool load_on_document_start = false;
 
   if (include == NULL || exclude == NULL) {
-    if (include != NULL) {
-      girara_list_free(include);
-    }
-
-    if (exclude != NULL) {
-      girara_list_free(exclude);
-    }
+    girara_list_free(include);
+    girara_list_free(exclude);
 
     return NULL;
   }
@@ -296,26 +291,6 @@ user_script_free(void* data)
   free(user_script->name);
   free(user_script->description);
   free(user_script->content);
-
-  /* free include list */
-  if (girara_list_size(user_script->include) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(user_script->include);
-    do {
-      free(girara_list_iterator_data(iter));
-    } while (girara_list_iterator_next(iter));
-    girara_list_iterator_free(iter);
-  }
-  girara_list_free(user_script->include);
-
-  /* free exclude list */
-  if (girara_list_size(user_script->exclude) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(user_script->exclude);
-    do {
-      free(girara_list_iterator_data(iter));
-    } while (girara_list_iterator_next(iter));
-    girara_list_iterator_free(iter);
-  }
-  girara_list_free(user_script->exclude);
 
   /* free object */
   free(user_script);
