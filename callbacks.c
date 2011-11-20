@@ -250,10 +250,10 @@ cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView* web_view,
 }
 
 void
-cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
+cb_settings_webkit(girara_session_t* session, const char* name, girara_setting_type_t type, void* value, void* data)
 {
   g_return_if_fail(session != NULL);
-  g_return_if_fail(setting != NULL);
+  g_return_if_fail(value != NULL);
   g_return_if_fail(session->global.data != NULL);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
@@ -270,23 +270,23 @@ cb_settings_webkit(girara_session_t* session, girara_setting_t* setting)
   }
 
   /* special case: set value in webkitview */
-  if (g_strcmp0(setting->name, "full-content-zoom") == 0) {
+  if (g_strcmp0(name, "full-content-zoom") == 0) {
     if (tab && tab->web_view) {
-      g_object_set(G_OBJECT(tab->web_view), setting->name, setting->value.b, NULL);
+      g_object_set(G_OBJECT(tab->web_view), name, *(bool*)value, NULL);
     }
   } else if (browser_settings != NULL) {
-    switch (setting->type) {
+    switch (type) {
       case STRING:
-        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.s, NULL);
+        g_object_set(G_OBJECT(browser_settings), name, (const char*) value, NULL);
         break;
       case INT:
-        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.i, NULL);
+        g_object_set(G_OBJECT(browser_settings), name, *(int*) value, NULL);
         break;
       case FLOAT:
-        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.f, NULL);
+        g_object_set(G_OBJECT(browser_settings), name, *(float*) value, NULL);
         break;
       case BOOLEAN:
-        g_object_set(G_OBJECT(browser_settings), setting->name, setting->value.b, NULL);
+        g_object_set(G_OBJECT(browser_settings), name, *(bool*) value, NULL);
         break;
       default:
         return;

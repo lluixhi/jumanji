@@ -137,7 +137,7 @@ bool cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView*
  * @param session The girara session
  * @param setting The girara setting
  */
-void cb_settings_webkit(girara_session_t* session, girara_setting_t* setting);
+void cb_settings_webkit(girara_session_t* session, const char* name, girara_setting_type_t type, void* value, void* data);
 
 /**
  * Executed when someone clicks the statusbar entry
