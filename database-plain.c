@@ -748,7 +748,7 @@ jumanji_db_filter_url_list(girara_list_t* list, const char* input)
   do {
     jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
 
-    if (strstr(link->url, input) != NULL || strstr(link->title, input)) {
+    if (strstr(link->url, input) != NULL || (link->title && strstr(link->title, input)) ) {
       /* duplicate entry */
       jumanji_db_result_link_t* link_dup = malloc(sizeof(jumanji_db_result_link_t));
       if (link_dup != NULL) {
