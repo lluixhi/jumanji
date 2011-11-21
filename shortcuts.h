@@ -126,6 +126,16 @@ bool sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, 
 bool sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, unsigned int t);
 
 /**
+ * Toggle "enable-plugins" setting
+ *
+ * @param session The used girara session
+ * @param argument The used argument
+ * @param t Number of executions
+ * @return true if no error occured otherwise false
+ */
+bool sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, unsigned int t);
+
+/**
  * Toggle between the rendered and source code view
  *
  * @param session The used girara session

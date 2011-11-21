@@ -409,6 +409,23 @@ sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, unsigned
 }
 
 bool
+sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+{
+  g_return_val_if_fail(session != NULL, false);
+  
+  bool* value = girara_setting_get(session, "enable-plugins");
+  if (value == NULL) {
+    return false;
+  }
+
+  *value = !(*value);
+  girara_setting_set(session, "enable-plugins", value);
+  g_free(value);
+
+  return false;
+}
+
+bool
 sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);

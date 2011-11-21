@@ -75,7 +75,7 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
 
     jumanji_db_history_add(tab->jumanji->database, url, title);
   }
-  free(enable_private_browsing);
+  g_free(enable_private_browsing);
 }
 
 void
@@ -148,7 +148,7 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
         free(url);
       }
     }
-    free(close_window_with_last_tab);
+    g_free(close_window_with_last_tab);
   }
 }
 

@@ -213,6 +213,10 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "restore",          sc_restore);
   girara_shortcut_mapping_add(gsession, "scroll",           sc_scroll);
   girara_shortcut_mapping_add(gsession, "show_source",      sc_toggle_source_mode);
+  girara_shortcut_mapping_add(gsession, "proxy",            sc_toggle_proxy);
+  girara_shortcut_mapping_add(gsession, "plugins",          sc_toggle_plugins);
+
+
   girara_shortcut_mapping_add(gsession, "yank",             sc_yank);
   girara_shortcut_mapping_add(gsession, "zoom",             sc_zoom);
 
