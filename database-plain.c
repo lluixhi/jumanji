@@ -1,11 +1,14 @@
 /* See LICENSE file for license and copyright information */
 
+#define _POSIX_SOURCE
+
 #include <girara/datastructures.h>
 #include <girara/utils.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 #include "database.h"
 
@@ -529,24 +532,22 @@ jumanji_db_read_urls_from_file(const char* filename)
   }
 
   /* open file */
-  int fd = open(filename, O_RDONLY);
-  if (fd == -1) {
+  FILE* file = fopen(filename, "r");
+  if (file == NULL) {
     return NULL;
   }
 
-  girara_list_t* list = girara_list_new();
+  girara_list_t* list = girara_list_new2(jumanji_db_free_result_link);
   if (list == NULL) {
-    close(fd);
+    fclose(file);
     return NULL;
   }
 
-  girara_list_set_free_function(list, jumanji_db_free_result_link);
-
-  file_lock_set(fd, F_WRLCK);
+  file_lock_set(fileno(file), F_WRLCK);
 
   /* read lines */
   char* line = NULL;
-  while ((line = girara_file_read_line_from_fd(fd)) != NULL) {
+  while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
       free(line);
@@ -576,8 +577,8 @@ jumanji_db_read_urls_from_file(const char* filename)
     free(line);
   }
 
-  file_lock_set(fd, F_UNLCK);
-  close(fd);
+  file_lock_set(fileno(file), F_UNLCK);
+  fclose(file);
 
   return list;
 }
@@ -590,22 +591,22 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
   }
 
   /* open file */
-  int fd = open(filename, O_RDONLY);
-  if (fd == -1) {
+  FILE* file = fopen(filename, "r");
+  if (file == NULL) {
     return NULL;
   }
 
-  girara_list_t* list = girara_list_new();
+  girara_list_t* list = girara_list_new2(jumanji_db_free_quickmark);
   if (list == NULL) {
-    close(fd);
+    fclose(file);
     return NULL;
   }
 
-  file_lock_set(fd, F_WRLCK);
+  file_lock_set(fileno(file), F_WRLCK);
 
   /* read lines */
   char* line = NULL;
-  while ((line = girara_file_read_line_from_fd(fd)) != NULL) {
+  while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
       free(line);
@@ -638,8 +639,8 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
     free(line);
   }
 
-  file_lock_set(fd, F_UNLCK);
-  close(fd);
+  file_lock_set(fileno(file), F_UNLCK);
+  fclose(file);
 
   return list;
 }
@@ -820,24 +821,22 @@ jumanji_db_read_cookies_from_file(const char* filename)
   }
 
   /* open file */
-  int fd = open(filename, O_RDONLY);
-  if (fd == -1) {
+  FILE* file = fopen(filename, "r");
+  if (file == NULL) {
     return NULL;
   }
 
-  girara_list_t* list = girara_list_new();
+  girara_list_t* list = girara_list_new2(jumanji_db_free_cookie);
   if (list == NULL) {
-    close(fd);
+    fclose(file);
     return NULL;
   }
 
-  girara_list_set_free_function(list, jumanji_db_free_cookie);
-
-  file_lock_set(fd, F_WRLCK);
+  file_lock_set(fileno(file), F_WRLCK);
 
   /* read lines */
   char* line = NULL;
-  while ((line = girara_file_read_line_from_fd(fd)) != NULL) {
+  while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
       free(line);
@@ -882,9 +881,8 @@ jumanji_db_read_cookies_from_file(const char* filename)
     free(line);
   }
 
-  file_lock_set(fd, F_UNLCK);
-
-  close(fd);
+  file_lock_set(fileno(file), F_UNLCK);
+  fclose(file);
 
   return list;
 }
