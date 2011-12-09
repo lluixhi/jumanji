@@ -77,7 +77,7 @@ bool cmd_proxy(girara_session_t* session, girara_list_t* argument_list);
  * @param argument User data
  * @return true if no error occured
  */
-bool cmd_search(girara_session_t* session, char* input, girara_argument_t* argument);
+bool cmd_search(girara_session_t* session, const char* input, girara_argument_t* argument);
 
 /**
  * Adds a search engine
