@@ -32,7 +32,7 @@ SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 
 # libs
 INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC}
-LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} -lpthread
+LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} -lpthread -lm
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
