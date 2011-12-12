@@ -45,7 +45,7 @@ config_load_default(jumanji_t* jumanji)
   string_value = "~/dl";
   girara_setting_add(gsession, "download-dir",                string_value, STRING,  false, "Download directory",          NULL, NULL);
   string_value = NULL;
-  girara_setting_add(gsession, "download-command",            string_value, STRING,  false, "Download directory",          NULL, NULL);
+  girara_setting_add(gsession, "download-command",            string_value, STRING,  false, "Download command",            NULL, NULL);
   string_value = "http://pwmt.org";
   girara_setting_add(gsession, "homepage",                    string_value, STRING,  false, "Home page",                   NULL, NULL);
   int_value = 40;
