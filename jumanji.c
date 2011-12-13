@@ -158,7 +158,7 @@ jumanji_init(int argc, char* argv[])
   g_free(configuration_file);
 
   /* initialize girara */
-  if (girara_session_init(jumanji->ui.session) == false) {
+  if (girara_session_init(jumanji->ui.session, "jumanji") == false) {
     goto error_free;
   }
 
