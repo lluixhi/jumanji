@@ -10,7 +10,7 @@
 
 bool
 sc_quickmark_add(girara_session_t* session, girara_argument_t* argument,
-    unsigned int t)
+    girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL,           FALSE);
   g_return_val_if_fail(session->gtk.view != NULL, FALSE);
@@ -56,7 +56,7 @@ cb_quickmarks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
 
 bool
 sc_quickmark_evaluate(girara_session_t* session, girara_argument_t* argument,
-    unsigned int t)
+    girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL,              FALSE);
   g_return_val_if_fail(session->gtk.view != NULL,    FALSE);

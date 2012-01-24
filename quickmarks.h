@@ -10,11 +10,12 @@
  *
  * @param session The used girara session
  * @param argument The used argument
+ * @param event Girara event
  * @param t Number of executions
  * @return true if no error occured otherwise false
  */
 bool sc_quickmark_add(girara_session_t* session, girara_argument_t* argument,
-    unsigned int t);
+    girara_event_t* event, unsigned int t);
 
 /**
  * Callback for key-press-event when adding a quickmark
@@ -32,11 +33,12 @@ bool cb_quickmarks_view_key_press_event_add(GtkWidget* widget, GdkEventKey*
  *
  * @param session The used girara session
  * @param argument The used argument
+ * @param event Girara event
  * @param t Number of executions
  * @return true if no error occured otherwise false
  */
 bool sc_quickmark_evaluate(girara_session_t* session, girara_argument_t*
-    argument, unsigned int t);
+    argument, girara_event_t* event, unsigned int t);
 
 /**
  * Callback for key-press-event when evaluating a quickmark

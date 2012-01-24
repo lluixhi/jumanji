@@ -11,7 +11,7 @@
 #include <girara/callbacks.h>
 
 bool
-sc_hints(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_hints(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);

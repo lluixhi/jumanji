@@ -21,22 +21,24 @@ typedef struct jumanji_marker_s
  *
  * @param session The used girara session
  * @param argument The used argument
+ * @param event Girara event
  * @param t Number of executions
  * @return true if no error occured otherwise false
  */
 bool sc_mark_add(girara_session_t* session, girara_argument_t* argument,
-    unsigned int t);
+    girara_event_t* event, unsigned int t);
 
 /**
  * Evaluates a mark
  *
  * @param session The used girara session
  * @param argument The used argument
+ * @param event Girara event
  * @param t Number of executions
  * @return true if no error occured otherwise false
  */
 bool sc_mark_evaluate(girara_session_t* session, girara_argument_t* argument,
-    unsigned int t);
+    girara_event_t* event, unsigned int t);
 
 /**
  * Callback for key-press-event when adding a mark

@@ -9,7 +9,7 @@
 #include <girara/datastructures.h>
 
 bool
-sc_mark_add(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_mark_add(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL,           FALSE);
   g_return_val_if_fail(session->gtk.view != NULL, FALSE);
@@ -23,7 +23,7 @@ sc_mark_add(girara_session_t* session, girara_argument_t* argument, unsigned int
 }
 
 bool
-sc_mark_evaluate(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_mark_evaluate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL,           FALSE);
   g_return_val_if_fail(session->gtk.view != NULL, FALSE);

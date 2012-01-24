@@ -294,7 +294,7 @@ cb_settings_webkit(girara_session_t* session, const char* name, girara_setting_t
 
     /* reload website */
     girara_argument_t argument = { 0, NULL };
-    sc_reload(session, &argument, 0);
+    sc_reload(session, &argument, NULL, 0);
   }
 }
 

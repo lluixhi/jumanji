@@ -14,7 +14,7 @@
 #include "shortcuts.h"
 
 bool
-sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -42,7 +42,7 @@ sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, unsigne
 }
 
 bool
-sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -112,7 +112,7 @@ sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument,
 }
 
 bool
-sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -133,20 +133,20 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsign
       if (tab != NULL && tab->web_view != NULL) {
         const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
         char* data      = g_strdup_printf("%s%s", (char*) argument->data, uri);
-        gtk_entry_set_text(session->gtk.inputbar, data);
+        gtk_entry_set_text(session->gtk.inputbar_entry, data);
         g_free(data);
       } else {
-        gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
+        gtk_entry_set_text(session->gtk.inputbar_entry, (char*) argument->data);
       }
     } else {
-      gtk_entry_set_text(session->gtk.inputbar, (char*) argument->data);
+      gtk_entry_set_text(session->gtk.inputbar_entry, (char*) argument->data);
     }
 
     /* save the X clipboard that will be cleared by "grab focus" */
     gchar* x_clipboard_text = gtk_clipboard_wait_for_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY));
 
-    gtk_widget_grab_focus(GTK_WIDGET(session->gtk.inputbar));
-    gtk_editable_set_position(GTK_EDITABLE(session->gtk.inputbar), -1);
+    gtk_widget_grab_focus(GTK_WIDGET(session->gtk.inputbar_entry));
+    gtk_editable_set_position(GTK_EDITABLE(session->gtk.inputbar_entry), -1);
 
     if (x_clipboard_text != NULL) {
       /* reset x clipboard */
@@ -159,7 +159,7 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, unsign
 }
 
 bool
-sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_navigate_history(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -180,7 +180,7 @@ sc_navigate_history(girara_session_t* session, girara_argument_t* argument, unsi
 }
 
 bool
-sc_put(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_put(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -215,12 +215,12 @@ sc_put(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 }
 
 bool
-sc_quit(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_quit(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
 
   girara_argument_t arg = { GIRARA_HIDE, NULL };
-  girara_isc_completion(session, &arg, 0);
+  girara_isc_completion(session, &arg, NULL, 0);
 
   cb_destroy(NULL, NULL);
 
@@ -230,7 +230,7 @@ sc_quit(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 }
 
 bool
-sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_scroll(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -302,7 +302,7 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
-sc_search(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_search(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -327,7 +327,7 @@ sc_search(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
-sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_reload(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -348,7 +348,7 @@ sc_reload(girara_session_t* session, girara_argument_t* argument, unsigned int t
 }
 
 bool
-sc_restore(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_restore(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -372,7 +372,7 @@ sc_restore(girara_session_t* session, girara_argument_t* argument, unsigned int 
 }
 
 bool
-sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -402,17 +402,17 @@ sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, unsig
 }
 
 bool
-sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   return cb_statusbar_proxy(NULL, NULL, session);
 }
 
 bool
-sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
-  
+
   bool* value = girara_setting_get(session, "enable-plugins");
   if (value == NULL) {
     return false;
@@ -426,7 +426,7 @@ sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, unsign
 }
 
 bool
-sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -453,7 +453,7 @@ sc_toggle_source_mode(girara_session_t* session, girara_argument_t* argument, un
 }
 
 bool
-sc_yank(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
@@ -483,7 +483,7 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, unsigned int t)
 }
 
 bool
-sc_zoom(girara_session_t* session, girara_argument_t* argument, unsigned int t)
+sc_zoom(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
   g_return_val_if_fail(session->global.data != NULL, false);
