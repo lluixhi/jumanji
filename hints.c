@@ -116,7 +116,8 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
 
   webkit_dom_element_set_attribute(style, "type", "text/css", NULL);
 
-  char* string_value = girara_setting_get(jumanji->ui.session, "hint-css");
+  char* string_value = NULL;
+  girara_setting_get(jumanji->ui.session, "hint-css", &string_value);
   if (string_value == NULL) {
     return;
   }
@@ -128,7 +129,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
 
   webkit_dom_html_element_set_inner_html(WEBKIT_DOM_HTML_ELEMENT(style), hint_div_style, NULL);
 
-  free(string_value);
+  g_free(string_value);
   g_free(hint_div_style);
 
   WebKitDOMNodeList *list = webkit_dom_document_get_elements_by_tag_name(dom_document, "head");

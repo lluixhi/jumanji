@@ -213,8 +213,9 @@ jumanji_init(int argc, char* argv[])
   }
 
   if (jumanji->global.proxies && girara_list_size(jumanji->global.proxies) > 0 && jumanji->global.current_proxy == NULL) {
-    bool* auto_set_proxy = (bool*) girara_setting_get(jumanji->ui.session, "auto-set-proxy");
-    if (auto_set_proxy && *auto_set_proxy == true) {
+    bool auto_set_proxy = false;
+    girara_setting_get(jumanji->ui.session, "auto-set-proxy", &auto_set_proxy);
+    if (auto_set_proxy == true) {
       jumanji_proxy_t* proxy = (jumanji_proxy_t*) girara_list_nth(jumanji->global.proxies, 0);
       jumanji_proxy_set(jumanji, proxy);
     } else {
@@ -231,13 +232,14 @@ jumanji_init(int argc, char* argv[])
 
   /* load tabs */
   if(argc < 2) {
-    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+    char* homepage = NULL;
+    girara_setting_get(jumanji->ui.session, "homepage", &homepage);
     if (homepage != NULL) {
       char* url = jumanji_build_url_from_string(jumanji, homepage);
       jumanji_tab_new(jumanji, url, false);
       free(url);
     }
-    free(homepage);
+    g_free(homepage);
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       char* url = jumanji_build_url_from_string(jumanji, argv[i]);
@@ -380,11 +382,11 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   user_script_init_tab(tab, jumanji->global.user_scripts);
 
   /* setup adblock */
-  bool* block_ads = girara_setting_get(jumanji->ui.session, "adblock");
-  if (block_ads && *block_ads == true) {
+  bool block_ads = true;
+  girara_setting_get(jumanji->ui.session, "adblock", &block_ads);
+  if (block_ads == true) {
     adblock_filter_init_tab(tab, jumanji->global.adblock_filters);
   }
-  free(block_ads);
 
   return tab;
 
@@ -497,7 +499,8 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 
   if (list_length == 0) {
     /* open homepage */
-    char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+    char* homepage = NULL;
+    girara_setting_get(jumanji->ui.session, "homepage", &homepage);
     if (homepage != NULL) {
       if (list != NULL) {
         url = jumanji_build_url_from_string(jumanji, homepage);

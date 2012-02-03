@@ -24,7 +24,8 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
   }
 
   /* get download dir */
-  char* download_dir_tmp = girara_setting_get(jumanji->ui.session, "download-dir");
+  char* download_dir_tmp = NULL;
+  girara_setting_get(jumanji->ui.session, "download-dir", &download_dir_tmp);
   if (download_dir_tmp == NULL) {
     return false;
   }
@@ -56,7 +57,8 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
   }
 
   /* check for custom download command */
-  char* download_command = girara_setting_get(jumanji->ui.session, "download-command");
+  char* download_command = NULL;
+  girara_setting_get(jumanji->ui.session, "download-command", &download_command);
   if (download_command != NULL) {
     char* command = strstr(download_command, "%s");
     if (command == NULL) {

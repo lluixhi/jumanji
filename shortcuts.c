@@ -21,10 +21,12 @@ sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, girara_
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(argument != NULL, false);
 
-  char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+  char* homepage = NULL;
+  girara_setting_get(jumanji->ui.session, "homepage", &homepage);
   char* url      = NULL;
   if (homepage != NULL) {
     url = jumanji_build_url_from_string(jumanji, homepage);
+    g_free(homepage);
   }
 
   if (argument->n == NEW_TAB) {
@@ -254,8 +256,8 @@ sc_scroll(girara_session_t* session, girara_argument_t* argument, girara_event_t
   gdouble value       = gtk_adjustment_get_value(adjustment);
   gdouble max         = gtk_adjustment_get_upper(adjustment) - view_size;
 
-  int* tmp = (int*) girara_setting_get(jumanji->ui.session, "scroll-step");
-  gdouble scroll_step = tmp ? *tmp : 40;
+  int scroll_step = 40;
+  girara_setting_get(jumanji->ui.session, "scroll-step", &scroll_step);
 
   gdouble new_value;
   switch(argument->n)
@@ -413,14 +415,11 @@ sc_toggle_plugins(girara_session_t* session, girara_argument_t* argument, girara
 {
   g_return_val_if_fail(session != NULL, false);
 
-  bool* value = girara_setting_get(session, "enable-plugins");
-  if (value == NULL) {
-    return false;
-  }
+  bool value = true;
+  girara_setting_get(session, "enable-plugins", &value);
 
-  *value = !(*value);
-  girara_setting_set(session, "enable-plugins", value);
-  g_free(value);
+  value = !value;
+  girara_setting_set(session, "enable-plugins", &value);
 
   return false;
 }
@@ -496,8 +495,8 @@ sc_zoom(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
     return false;
   }
 
-  int* tmp = (int*) girara_setting_get(jumanji->ui.session, "zoom-step");
-  float zoom_step = tmp ? *tmp : 10;
+  float zoom_step = 10;
+  girara_setting_get(jumanji->ui.session, "zoom-step", &zoom_step);
 
   float zoom_level = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(tab->web_view));
 

@@ -68,14 +68,14 @@ cb_jumanji_tab_load_finished(WebKitWebView* web_view, WebKitWebFrame* frame, gpo
     return;
   }
 
-  bool* enable_private_browsing = girara_setting_get(tab->jumanji->ui.session, "enable-private-browsing");
-  if (enable_private_browsing == NULL || *enable_private_browsing == false) {
+  bool enable_private_browsing = true;
+  girara_setting_get(tab->jumanji->ui.session, "enable-private-browsing", &enable_private_browsing);
+  if (enable_private_browsing == false) {
     const gchar* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
     const gchar* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
     jumanji_db_history_add(tab->jumanji->database, url, title);
   }
-  g_free(enable_private_browsing);
 }
 
 void
@@ -136,19 +136,21 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
   }
 
   if (gtk_notebook_get_n_pages(tabs) == 0) {
-    bool* close_window_with_last_tab = girara_setting_get(jumanji->ui.session, "close-window-with-last-tab");
-    if (close_window_with_last_tab != NULL && *close_window_with_last_tab == true) {
+    bool close_window_with_last_tab = false;
+    girara_setting_get(jumanji->ui.session, "close-window-with-last-tab", &close_window_with_last_tab);
+    if (close_window_with_last_tab == true) {
       cb_destroy(NULL, NULL);
       gtk_main_quit();
     } else {
-      char* homepage = girara_setting_get(jumanji->ui.session, "homepage");
+      char* homepage = NULL;
+      girara_setting_get(jumanji->ui.session, "homepage", &homepage);
       if (homepage != NULL) {
         char* url = jumanji_build_url_from_string(jumanji, homepage);
         jumanji_tab_new(jumanji, url, false);
         free(url);
       }
+      g_free(homepage);
     }
-    g_free(close_window_with_last_tab);
   }
 }
 
