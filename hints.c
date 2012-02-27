@@ -46,12 +46,12 @@ sc_hints(girara_session_t* session, girara_argument_t* argument, girara_event_t*
         jumanji
         );
 
-  g_signal_handler_disconnect(G_OBJECT(session->gtk.inputbar),
+  g_signal_handler_disconnect(G_OBJECT(session->gtk.inputbar_entry),
       session->signals.inputbar_key_pressed);
 
   session->signals.inputbar_key_pressed =
     g_signal_connect(
-        G_OBJECT(session->gtk.inputbar),
+        G_OBJECT(session->gtk.inputbar_entry),
         "key-press-event",
         G_CALLBACK(cb_hints_key_press_event_add),
         jumanji
@@ -459,12 +459,12 @@ hints_reset(jumanji_t* jumanji)
         jumanji->ui.session
         );
 
-  g_signal_handler_disconnect(G_OBJECT(jumanji->ui.session->gtk.inputbar),
+  g_signal_handler_disconnect(G_OBJECT(jumanji->ui.session->gtk.inputbar_entry),
       jumanji->ui.session->signals.inputbar_key_pressed);
 
   jumanji->ui.session->signals.inputbar_key_pressed =
     g_signal_connect(
-        G_OBJECT(jumanji->ui.session->gtk.inputbar),
+        G_OBJECT(jumanji->ui.session->gtk.inputbar_entry),
         "key-press-event",
         G_CALLBACK(girara_callback_inputbar_key_press_event),
         jumanji->ui.session
