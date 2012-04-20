@@ -559,7 +559,7 @@ jumanji_db_read_urls_from_file(const char* filename)
     gint    argc = 0;
 
     if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
-      jumanji_db_result_link_t* link = malloc(sizeof(link));
+      jumanji_db_result_link_t* link = malloc(sizeof(jumanji_db_result_link_t));
       if (link == NULL) {
         g_strfreev(argv);
         free(line);
