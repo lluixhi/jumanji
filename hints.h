@@ -49,16 +49,18 @@ void hints_clear(jumanji_t* jumanji);
  *
  * @param jumanji Jumanji session
  * @param n Index of the hint
+ * @return true if the hint has been processed
  */
-void hints_process(jumanji_t* jumanji, guint n);
+bool hints_process(jumanji_t* jumanji, guint n);
 
 /**
  * Updates the current hints based on the input
  *
  * @param jumanji Jumanji session
  * @param input Input
+ * @return true if a hint has been processed through the update
  */
-void hints_update(jumanji_t* jumanji, char* input);
+bool hints_update(jumanji_t* jumanji, char* input);
 
 /**
  * Resets all hint settings

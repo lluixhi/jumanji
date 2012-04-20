@@ -10,6 +10,8 @@
 #include <girara/settings.h>
 #include <girara/callbacks.h>
 
+static bool cb_hints_activate(GtkWidget* widget, jumanji_t* jumanji);
+
 bool
 sc_hints(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
@@ -35,29 +37,20 @@ sc_hints(girara_session_t* session, girara_argument_t* argument, girara_event_t*
   hints_show(jumanji, tab);
 
   /* redirect signal handler */
-  g_signal_handler_disconnect(G_OBJECT(session->gtk.view),
-      session->signals.view_key_pressed);
-
-  session->signals.view_key_pressed =
-    g_signal_connect(
-        G_OBJECT(session->gtk.view),
-        "key-press-event",
-        G_CALLBACK(cb_hints_key_press_event_add),
-        jumanji
-        );
-
-  g_signal_handler_disconnect(G_OBJECT(session->gtk.inputbar_entry),
-      session->signals.inputbar_key_pressed);
-
-  session->signals.inputbar_key_pressed =
-    g_signal_connect(
-        G_OBJECT(session->gtk.inputbar_entry),
-        "key-press-event",
-        G_CALLBACK(cb_hints_key_press_event_add),
-        jumanji
-        );
+  girara_dialog(session, "Follow link:", FALSE,
+      (girara_callback_inputbar_key_press_event_t) cb_hints_key_press_event_add,
+      (girara_callback_inputbar_activate_t) cb_hints_activate, jumanji);
 
   return false;
+}
+
+bool
+cb_hints_activate(GtkWidget* widget, jumanji_t* jumanji)
+{
+  fprintf(stderr, "reset\n");
+  g_return_val_if_fail(jumanji != NULL, false);
+  hints_reset(jumanji);
+  return true;
 }
 
 bool
@@ -71,19 +64,15 @@ cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
   /* evaluate event */
   if (jumanji->hints.input == NULL) {
     jumanji->hints.input = g_string_new("");
-    if (jumanji->hints.input == NULL) {
-      return false;
-    }
   }
 
   /* only allow numbers and characters */
   if (((event->keyval >= 0x30 && event->keyval <= 0x39) || (event->keyval >= 0x41 && event->keyval <= 0x5A) ||
       (event->keyval >= 0x61 && event->keyval <= 0x7A)) == true) {
     g_string_append_c(jumanji->hints.input, (char) event->keyval);
-    hints_update(jumanji, jumanji->hints.input->str);
+    return hints_update(jumanji, jumanji->hints.input->str);
   } else if (event->keyval == GDK_KEY_Escape || event->keyval == GDK_KEY_Return) {
     hints_reset(jumanji);
-    return true;
   }
 
   return true;
@@ -324,33 +313,33 @@ hints_clear(jumanji_t* jumanji)
   }
 }
 
-void
+bool
 hints_process(jumanji_t* jumanji, guint n)
 {
   if (jumanji == NULL) {
-    return;
+    return false;
   }
 
   jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
 
   if (tab == NULL || tab->web_view == NULL) {
-    return;
+    return false;
   }
 
   WebKitDOMDocument *dom_document = webkit_web_view_get_dom_document(WEBKIT_WEB_VIEW(tab->web_view));
 
   if (dom_document == NULL) {
-    return;
+    return false;
   }
 
   if (jumanji->hints.links == NULL || jumanji->hints.links->len < n) {
-    return;
+    return false;
   }
 
   WebKitDOMNode *item = g_ptr_array_index(jumanji->hints.links, n);
 
   if (item == NULL) {
-    return;
+    return false;
   }
 
   gchar *tag_ = webkit_dom_element_get_tag_name(WEBKIT_DOM_ELEMENT(item));
@@ -366,6 +355,8 @@ hints_process(jumanji_t* jumanji, guint n)
       || g_ascii_strcasecmp(tag->str, "textarea") == 0) {
     webkit_dom_element_focus(WEBKIT_DOM_ELEMENT(item));
     hints_reset(jumanji);
+    g_string_free(tag, TRUE);
+    return true;
   /* open link */
   } else {
     WebKitDOMEvent *event = webkit_dom_document_create_event(dom_document, "MouseEvents", NULL);
@@ -389,16 +380,22 @@ hints_process(jumanji_t* jumanji, guint n)
     webkit_dom_node_dispatch_event(item, event, NULL);
 
     hints_reset(jumanji);
+
+    g_string_free(tag, TRUE);
+
+    return true;
   }
 
   g_string_free(tag, TRUE);
+
+  return false;
 }
 
-void
+bool
 hints_update(jumanji_t* jumanji, char* input)
 {
   if (jumanji == NULL || input == NULL || jumanji->hints.links == NULL) {
-    return;
+    return false;
   }
 
   int number_of_hints       = jumanji->hints.links->len;
@@ -410,7 +407,7 @@ hints_update(jumanji_t* jumanji, char* input)
       id += (input[i] - 'a') * pow(26, number_of_letters_max - i - 1);
     }
 
-    hints_process(jumanji, id);
+    return hints_process(jumanji, id);
   } else {
     for (int i = 0; i < number_of_hints; i++)
     {
@@ -429,6 +426,8 @@ hints_update(jumanji_t* jumanji, char* input)
       g_free(current_text);
     }
   }
+
+  return false;
 }
 
 void
@@ -446,27 +445,4 @@ hints_reset(jumanji_t* jumanji)
     g_string_free(jumanji->hints.input, TRUE);
     jumanji->hints.input = NULL;
   }
-
-  /* reset signal handler */
-  g_signal_handler_disconnect(G_OBJECT(jumanji->ui.session->gtk.view),
-      jumanji->ui.session->signals.view_key_pressed);
-
-  jumanji->ui.session->signals.view_key_pressed =
-    g_signal_connect(
-        G_OBJECT(jumanji->ui.session->gtk.view),
-        "key-press-event",
-        G_CALLBACK(girara_callback_view_key_press_event),
-        jumanji->ui.session
-        );
-
-  g_signal_handler_disconnect(G_OBJECT(jumanji->ui.session->gtk.inputbar_entry),
-      jumanji->ui.session->signals.inputbar_key_pressed);
-
-  jumanji->ui.session->signals.inputbar_key_pressed =
-    g_signal_connect(
-        G_OBJECT(jumanji->ui.session->gtk.inputbar_entry),
-        "key-press-event",
-        G_CALLBACK(girara_callback_inputbar_key_press_event),
-        jumanji->ui.session
-        );
 }
