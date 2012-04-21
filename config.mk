@@ -20,6 +20,9 @@ GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk3)
 SQLITE_INC ?= $(shell pkg-config --cflags sqlite3)
 SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 
+GTHREAD_INC ?= $(shell pkg-config --cflags gthread-2.0)
+GTHREAD_LIB ?= $(shell pkg-config --libs gthread-2.0)
+
 # if you want to use gtk2 uncomment the following lines
 #GTK_INC ?= $(shell pkg-config --cflags gtk+-2.0)
 #GTK_LIB ?= $(shell pkg-config --libs   gtk+-2.0)
@@ -31,8 +34,8 @@ SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 #GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk2)
 
 # libs
-INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC}
-LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} -lpthread -lm
+INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC} ${GTHREAD_INC}
+LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} ${GTHREAD_LIB} -lpthread -lm
 
 # flags
 CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
