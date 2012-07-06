@@ -171,7 +171,12 @@ jumanji_download_create_widget(jumanji_t* jumanji, jumanji_download_t* download)
     return false;
   }
 
+#if (GTK_MAJOR_VERSION == 3)
+  download->widget.main     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(download->widget.main), TRUE);
+#else
   download->widget.main     = gtk_vbox_new(TRUE, 0);
+#endif
   download->widget.filename = gtk_label_new(NULL);
   download->widget.status   = gtk_label_new(NULL);
 
