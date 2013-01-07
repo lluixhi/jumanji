@@ -512,3 +512,26 @@ sc_zoom(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
 
   return false;
 }
+
+bool
+sc_toggle_stylesheet(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t) {
+  jumanji_t* jumanji = session->global.data;
+  g_return_val_if_fail(session != NULL, false);
+  gchar* user_stylesheet_uri = NULL;
+  girara_setting_get(session, "user-stylesheet-uri", &user_stylesheet_uri);
+  gchar* empty_string = "";
+
+  if (g_strcmp0(user_stylesheet_uri, empty_string) == 0) {
+    girara_setting_set(session, "user-stylesheet-uri", jumanji->global.user_stylesheet_uri);
+  }
+  else if (g_strcmp0(user_stylesheet_uri, jumanji->global.user_stylesheet_uri) == 0) {
+    girara_setting_set(session, "user-stylesheet-uri", empty_string);
+  }
+  else {
+    g_free(jumanji->global.user_stylesheet_uri);
+    jumanji->global.user_stylesheet_uri = g_strdup(user_stylesheet_uri);
+    girara_setting_set(session, "user-stylesheet-uri", empty_string);
+  }
+
+  return false;
+}

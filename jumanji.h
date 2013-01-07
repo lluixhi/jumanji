@@ -50,6 +50,7 @@ typedef struct jumanji_s
   struct
   {
     WebKitWebSettings* browser_settings; /*>> Browser settings */
+    gchar* user_stylesheet_uri;
     girara_list_t* search_engines; /**> Search engines */
     girara_list_t* proxies; /**> Proxies */
     girara_list_t* marks; /**> Marker */

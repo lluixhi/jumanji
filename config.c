@@ -184,6 +184,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_minus,      "zO", sc_zoom,                  NORMAL, ZOOM_OUT,        NULL);
   girara_shortcut_add(gsession, 0,                0,                  "z0", sc_zoom,                  NORMAL, DEFAULT,         NULL);
   girara_shortcut_add(gsession, 0,                GDK_KEY_Z,          NULL, sc_zoom,                  NORMAL, ZOOM_SPECIFIC,   NULL);
+  girara_shortcut_add(gsession, 0,                GDK_KEY_e,          NULL, sc_toggle_stylesheet,     NORMAL, 0,               NULL);
 
   /* define default inputbar commands */
   girara_inputbar_command_add(gsession, "bmark",     NULL,    cmd_bookmark_add,      NULL,    "Add a bookmark");
@@ -215,6 +216,7 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "show_source",      sc_toggle_source_mode);
   girara_shortcut_mapping_add(gsession, "proxy",            sc_toggle_proxy);
   girara_shortcut_mapping_add(gsession, "plugins",          sc_toggle_plugins);
+  girara_shortcut_mapping_add(gsession, "user_stylesheet",  sc_toggle_stylesheet);
 
 
   girara_shortcut_mapping_add(gsession, "yank",             sc_yank);

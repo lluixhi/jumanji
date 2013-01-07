@@ -234,6 +234,16 @@ jumanji_init(int argc, char* argv[])
     goto error_free;
   }
 
+  /* custom stylesheet */
+  char* user_stylesheet_uri = NULL;
+  girara_setting_get(jumanji->ui.session, "user-stylesheet-uri", &user_stylesheet_uri);
+  if (user_stylesheet_uri) {
+    if (!(jumanji->global.user_stylesheet_uri = g_strdup(user_stylesheet_uri))) {
+      girara_error("Could not initialize user stylesheet");
+      goto error_free;
+    }
+  }
+
   /* load tabs */
   if(argc < 2) {
     char* homepage = NULL;
@@ -313,6 +323,11 @@ jumanji_free(jumanji_t* jumanji)
   /* free database */
   if (jumanji->database) {
     jumanji_db_free(jumanji->database);
+  }
+
+  /* free user stylesheet uri */
+  if (jumanji->global.user_stylesheet_uri) {
+    g_free(jumanji->global.user_stylesheet_uri);
   }
 
   /* free soup */
