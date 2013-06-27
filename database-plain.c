@@ -212,6 +212,56 @@ error_ret:
   return NULL;
 }
 
+bool
+jumanji_db_check_location(const char* dir)
+{
+  if (dir == NULL) {
+    return false;
+  }
+
+  /* check bookmark file path */
+  char* file = g_build_filename(dir, BOOKMARKS, NULL);
+  if (file == NULL) {
+    return false;
+  }
+  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
+    return true;
+  }
+  free(file);
+
+  /* check history file path */
+  file = g_build_filename(dir, HISTORY, NULL);
+  if (file == NULL) {
+    return false;
+  }
+  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
+    return true;
+  }
+  free(file);
+
+  /* check quickmarks file path */
+  file = g_build_filename(dir, QUICKMARKS, NULL);
+  if (file == NULL) {
+    return false;
+  }
+  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
+    return true;
+  }
+  free(file);
+
+  /* check cookie file path */
+  file = g_build_filename(dir, COOKIES, NULL);
+  if (file == NULL) {
+    return false;
+  }
+  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
+    return true;
+  }
+  free(file);
+
+  return false;
+}
+
 void
 jumanji_db_free(jumanji_database_t* database)
 {

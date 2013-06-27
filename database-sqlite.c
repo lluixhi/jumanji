@@ -110,6 +110,26 @@ error_ret:
   return NULL;
 }
 
+bool
+jumanji_db_check_location(const char* dir)
+{
+  if (dir == NULL) {
+    return false;
+  }
+
+  /* check database file path */
+  char* file = g_build_filename(dir, DATABASE, NULL);
+  if (file == NULL) {
+    return false;
+  }
+  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
+    return true;
+  }
+  free(file);
+
+  return false;
+}
+
 void
 jumanji_db_free(jumanji_database_t* database)
 {

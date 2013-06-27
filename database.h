@@ -23,6 +23,15 @@ typedef struct jumanji_db_result_link_s
 jumanji_database_t* jumanji_db_init(const char* dir);
 
 /**
+ * Check if files in the old location still exist
+ *
+ * @param dir directory with (old) database data
+ * @return true if there are still files left in the old directory, false
+ *         otherwise
+ */
+bool jumanji_db_check_location(const char* dir);
+
+/**
  * Closes a database connection
  *
  * @param session The database session

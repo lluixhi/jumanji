@@ -228,6 +228,12 @@ jumanji_init(int argc, char* argv[])
   }
 
   /* database */
+  if (jumanji_db_check_location(jumanji->config.config_dir) == true) {
+    girara_warning("Data files have been detected in the old data directory "
+        "%s. Please move them to the new data directory %s.",
+        jumanji->config.config_dir, jumanji->config.data_dir);
+  }
+
   jumanji->database = jumanji_db_init(jumanji->config.data_dir);
   if (jumanji->database == NULL) {
     girara_error("Could not initialize database");
