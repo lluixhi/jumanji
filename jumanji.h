@@ -196,7 +196,7 @@ char* jumanji_build_url(jumanji_t* jumanji, girara_list_t* list);
  * otherwise the first one will be skipped
  * @return String that has to be freed or NULL if an error occured
  */
-char* jumanji_build_search_engine_url(char* search_url, girara_list_t* list, bool all_arguments);
+char* jumanji_build_search_engine_url(const char* search_url, girara_list_t* list, bool all_arguments);
 
 /**
  * Creates a new jumanji instance
