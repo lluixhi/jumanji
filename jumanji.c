@@ -228,7 +228,7 @@ jumanji_init(int argc, char* argv[])
   }
 
   /* database */
-  jumanji->database = jumanji_db_init(jumanji->config.config_dir);
+  jumanji->database = jumanji_db_init(jumanji->config.data_dir);
   if (jumanji->database == NULL) {
     girara_error("Could not initialize database");
     goto error_free;
