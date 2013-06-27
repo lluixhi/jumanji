@@ -694,7 +694,9 @@ int main(int argc, char* argv[])
 #if !GLIB_CHECK_VERSION(2, 31, 0)
   g_thread_init(NULL);
 #endif
+#if !GTK_CHECK_VERSION(3, 5, 0)
   gdk_threads_init();
+#endif
   gtk_init(&argc, &argv);
 
   jumanji_t* jumanji = jumanji_init(argc, argv);
@@ -703,9 +705,13 @@ int main(int argc, char* argv[])
     return -1;
   }
 
+#if !GTK_CHECK_VERSION(3, 5, 0)
   gdk_threads_enter();
+#endif
   gtk_main();
+#if !GTK_CHECK_VERSION(3, 5, 0)
   gdk_threads_leave();
+#endif
 
   jumanji_free(jumanji);
 
