@@ -39,20 +39,16 @@ build_girara_list(const char* string)
 
 char*
 url_encode(const char* string) {
-  char* ret_str = g_malloc(sizeof(char));
-  char* tmp = NULL;
-
-  for (unsigned int i=0 ; i<strlen(string) ; i++) {
-    tmp = g_strdup(ret_str);
-    g_free(ret_str);
-    if (string[i] == ' ')
-      ret_str = g_strdup_printf("%s+", tmp);
-    else if (!g_ascii_isalnum(string[i]))
-      ret_str = g_strdup_printf("%s%%%2x", tmp, string[i]);
-    else
-      ret_str = g_strdup_printf("%s%c", tmp, string[i]);
-    g_free(tmp);
+  if (string == NULL) {
+    return NULL;
   }
 
-  return ret_str;
+  char* escaped = g_uri_escape_string(string, NULL, true);
+  if (strchr(escaped, '+') == NULL) {
+    return escaped;
+  }
+
+  char* ret = g_strjoinv("%2B", g_strsplit(escaped, "+", -1));
+  g_free(escaped);
+  return ret;
 }

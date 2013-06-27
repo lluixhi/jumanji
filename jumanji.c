@@ -619,16 +619,14 @@ jumanji_build_search_engine_url(const char* search_url, girara_list_t* list, boo
 
   /* build search item */
   int begin = (all_arguments == true) ? 0 : 1;
-  char* search_item = g_strdup((char*) girara_list_nth(list, begin));
+  char* search_item = url_encode(girara_list_nth(list, begin));
   for (unsigned int i = begin + 1; i < girara_list_size(list); i++) {
-    tmp = g_strjoin(" ", search_item, (char*) girara_list_nth(list, i), NULL);
+    char* tmp2 = url_encode(girara_list_nth(list, i));
+    tmp = g_strjoin("+", search_item, tmp2, NULL);
+    g_free(tmp2);
     g_free(search_item);
     search_item = tmp;
   }
-
-  tmp = url_encode(search_item);
-  g_free(search_item);
-  search_item = tmp;
 
   char* url = g_strdup_printf(search_url, search_item);
   g_free(search_item);
