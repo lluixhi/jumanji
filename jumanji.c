@@ -685,7 +685,9 @@ jumanji_proxy_free(void* data)
 /* main function */
 int main(int argc, char* argv[])
 {
+#if !GLIB_CHECK_VERSION(2, 31, 0)
   g_thread_init(NULL);
+#endif
   gdk_threads_init();
   gtk_init(&argc, &argv);
 
