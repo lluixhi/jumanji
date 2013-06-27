@@ -606,6 +606,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 char*
 jumanji_build_search_engine_url(const char* search_url, girara_list_t* list, bool all_arguments)
 {
+  char* tmp;
   if (search_url == NULL || list == NULL || girara_list_size(list) == 0) {
     return NULL;
   }
@@ -620,17 +621,14 @@ jumanji_build_search_engine_url(const char* search_url, girara_list_t* list, boo
   int begin = (all_arguments == true) ? 0 : 1;
   char* search_item = g_strdup((char*) girara_list_nth(list, begin));
   for (unsigned int i = begin + 1; i < girara_list_size(list); i++) {
-    char* tmp = g_strjoin("+", search_item, (char*) girara_list_nth(list, i), NULL);
+    tmp = g_strjoin(" ", search_item, (char*) girara_list_nth(list, i), NULL);
     g_free(search_item);
     search_item = tmp;
   }
 
-  /* replace all spaces in the search item with '+' */
-  for (unsigned int i = 0; i < strlen(search_item); i++ ) {
-    if (search_item[i] == ' ') {
-      search_item[i] = '+';
-    }
-  }
+  tmp = url_encode(search_item);
+  g_free(search_item);
+  search_item = tmp;
 
   char* url = g_strdup_printf(search_url, search_item);
   g_free(search_item);

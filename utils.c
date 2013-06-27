@@ -4,6 +4,7 @@
 
 #include "utils.h"
 #include <girara/datastructures.h>
+#include <string.h>
 
 girara_list_t*
 build_girara_list(const char* string)
@@ -34,4 +35,24 @@ build_girara_list(const char* string)
   g_strfreev(argv);
 
   return list;
+}
+
+char*
+url_encode(const char* string) {
+  char* ret_str = g_malloc(sizeof(char));
+  char* tmp = NULL;
+
+  for (unsigned int i=0 ; i<strlen(string) ; i++) {
+    tmp = g_strdup(ret_str);
+    g_free(ret_str);
+    if (string[i] == ' ')
+      ret_str = g_strdup_printf("%s+", tmp);
+    else if (!g_ascii_isalnum(string[i]))
+      ret_str = g_strdup_printf("%s%%%2x", tmp, string[i]);
+    else
+      ret_str = g_strdup_printf("%s%c", tmp, string[i]);
+    g_free(tmp);
+  }
+
+  return ret_str;
 }

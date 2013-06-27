@@ -14,4 +14,11 @@
  */
 girara_list_t* build_girara_list(const char* string);
 
+/**
+ * This function creates a new string that url encode special chars.
+ * It returns a new string that is dynamically allocated and need to
+ * be manually freed.
+ */
+char* url_encode(const char* string);
+
 #endif // UTILS_H
