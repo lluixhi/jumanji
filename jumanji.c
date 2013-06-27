@@ -542,7 +542,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
         }
 
         if (!g_strcmp0(search_engine->identifier, identifier)) {
-          search_url = search_engine->url;
+          search_url = g_strdup(search_engine->url);
           break;
         }
       } while (girara_list_iterator_next(iter));
@@ -598,7 +598,7 @@ jumanji_build_url(jumanji_t* jumanji, girara_list_t* list)
 }
 
 char*
-jumanji_build_search_engine_url(char* search_url, girara_list_t* list, bool all_arguments)
+jumanji_build_search_engine_url(const char* search_url, girara_list_t* list, bool all_arguments)
 {
   if (search_url == NULL || list == NULL || girara_list_size(list) == 0) {
     return NULL;
