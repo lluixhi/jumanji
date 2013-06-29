@@ -16,6 +16,7 @@
 #define HISTORY "history"
 #define QUICKMARKS "quickmarks"
 #define COOKIES "cookies"
+#define SESSION_DIR "sessions"
 
 #define file_lock_set(fd, cmd) \
   { \
@@ -29,6 +30,7 @@ static void jumanji_db_write_quickmarks_to_file(const char* filename,
 static void cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile*
     other_file, GFileMonitorEvent event, jumanji_database_t* database);
 static bool jumanji_db_check_file(const char* path);
+static bool jumanji_db_check_dir(const char* path);
 static girara_list_t* jumanji_db_read_urls_from_file(const char* filename);
 static girara_list_t* jumanji_db_read_quickmarks_from_file(const char*
     filename);
@@ -59,6 +61,8 @@ struct jumanji_database_s
   gchar* cookie_file; /**> File path to the cookie file */
   girara_list_t* cookies; /**>  Temporary cookies */
   GFileMonitor* cookie_monitor; /**> File monitor for the cookie file */
+
+  gchar* session_dir; /**> Path to the session directory */
 };
 
 typedef struct jumanji_db_quickmark_s
@@ -99,6 +103,16 @@ jumanji_db_check_file(const char* path)
   return true;
 }
 
+static bool
+jumanji_db_check_dir(const char* path)
+{
+  if (path == NULL) {
+    return false;
+  }
+
+  return g_file_test(path, G_FILE_TEST_IS_DIR);
+}
+
 jumanji_database_t*
 jumanji_db_init(const char* dir)
 {
@@ -136,6 +150,13 @@ jumanji_db_init(const char* dir)
   database->cookie_file = g_build_filename(dir, COOKIES, NULL);
   if (database->cookie_file == NULL ||
       jumanji_db_check_file(database->cookie_file) == false) {
+    goto error_free;
+  }
+
+  /* get session dir path */
+  database->session_dir = g_build_filename(dir, SESSION_DIR, NULL);
+  if (database->session_dir == NULL ||
+      jumanji_db_check_dir(database->session_dir) == false) {
     goto error_free;
   }
 
@@ -1165,4 +1186,24 @@ jumanji_db_free_cookie(void* data)
   g_free(cookie->domain);
   g_free(cookie->path);
   free(data);
+}
+
+void
+jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t* urls)
+{
+  char* session_path = g_build_filename(database->session_dir, name, NULL);
+
+  jumanji_db_write_urls_to_file(session_path, urls, false);
+  free(session_path);
+}
+
+girara_list_t*
+jumanji_db_load_session(jumanji_database_t* database, char* name)
+{
+  char* session_path = g_build_filename(database->session_dir, name, NULL);
+  girara_list_t* url_list;
+
+  url_list = jumanji_db_read_urls_from_file(session_path);
+  free(session_path);
+  return url_list;
 }

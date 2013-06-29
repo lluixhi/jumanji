@@ -157,4 +157,20 @@ girara_list_t* jumanji_db_cookie_list(jumanji_database_t* database);
  */
 void jumanji_db_free_result_link(void* data);
 
+/**
+ * Write a list of urls in a session
+ *
+ * @param database The database session
+ * @param urls List of urls to be saved
+ */
+void jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t* urls);
+
+/**
+ * Load a list of urls in the current session
+ *
+ * @param database The database session
+ * @return List of urls loaded
+ */
+girara_list_t* jumanji_db_load_session(jumanji_database_t* database, char* name);
+
 #endif // DATABASE_H
