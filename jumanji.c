@@ -26,6 +26,8 @@
 #define JUMANJI_BOOKMARKS_FILE "bookmarks"
 #define JUMANJI_HISTORY_FILE "history"
 #define JUMANJI_QUICKMARKS_FILE "quickmarks"
+#define JUMANJI_SESSION_DIR "sessions"
+#define JUMANJI_DEFAULT_SESSION_FILE "default_session"
 
 jumanji_t*
 jumanji_init(int argc, char* argv[])
@@ -78,9 +80,13 @@ jumanji_init(int argc, char* argv[])
     g_free(path);
   }
 
+  jumanji->config.session_dir = g_build_filename(jumanji->config.data_dir,
+                                                 JUMANJI_SESSION_DIR, NULL);
+
   /* create zathura (config/data) directory */
-  g_mkdir_with_parents(jumanji->config.config_dir, 0771);
-  g_mkdir_with_parents(jumanji->config.data_dir,   0771);
+  g_mkdir_with_parents(jumanji->config.config_dir,   0771);
+  g_mkdir_with_parents(jumanji->config.data_dir,     0771);
+  g_mkdir_with_parents(jumanji->config.session_dir,  0771);
 
   /* UI */
   if ((jumanji->ui.session = girara_session_create()) == NULL) {

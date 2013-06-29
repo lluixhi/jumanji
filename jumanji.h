@@ -40,6 +40,7 @@ typedef struct jumanji_s
   {
     gchar* config_dir; /**> Path to the configuration directory */
     gchar* data_dir; /**> Path to the data directory */
+    gchar* session_dir; /**> Path to the sessions directory */
   } config;
 
   struct
