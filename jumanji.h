@@ -59,6 +59,7 @@ typedef struct jumanji_s
     jumanji_proxy_t* current_proxy; /**> Current proxy */
     girara_list_t* user_scripts; /**> User scripts */
     girara_list_t* adblock_filters; /**> Adblock filters */
+    girara_list_t* sessions; /**> Sessions */
     char** arguments; /**> Arguments that were passed at startup */
     int quickmark_open_mode; /**> How to open a quickmark */
     void* soup; /**> Soup session */

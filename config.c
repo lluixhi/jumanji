@@ -9,6 +9,7 @@
 #include "marks.h"
 #include "quickmarks.h"
 #include "shortcuts.h"
+#include "session.h"
 
 #include <girara/settings.h>
 #include <girara/session.h>
@@ -187,18 +188,20 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_add(gsession, 0,                GDK_KEY_e,          NULL, sc_toggle_stylesheet,     NORMAL, 0,               NULL);
 
   /* define default inputbar commands */
-  girara_inputbar_command_add(gsession, "bmark",     NULL,    cmd_bookmark_add,      NULL,    "Add a bookmark");
-  girara_inputbar_command_add(gsession, "delbmarks", NULL,    cmd_bookmark_delete,   NULL,    "Delete a bookmark");
-  girara_inputbar_command_add(gsession, "delmarks",  "delm",  cmd_marks_delete,      NULL,    "Delete the specified marks");
-  girara_inputbar_command_add(gsession, "delqmarks", "delqm", cmd_quickmarks_delete, NULL,    "Add quickmark");
-  girara_inputbar_command_add(gsession, "downloads", NULL,    cmd_downloads,         NULL,    "Show downloads");
-  girara_inputbar_command_add(gsession, "mark",      NULL,    cmd_marks_add,         NULL,    "Mark current location within the web page");
-  girara_inputbar_command_add(gsession, "open",      "o",     cmd_open,              cc_open, "Open URL in the current tab");
-  girara_inputbar_command_add(gsession, "print",     NULL,    cmd_print,             NULL,    "Show print dialog");
-  girara_inputbar_command_add(gsession, "qmark",     NULL,    cmd_quickmarks_add,    NULL,    "Add quickmark");
-  girara_inputbar_command_add(gsession, "stop",      NULL,    cmd_stop,              NULL,    "Stop loading the current page");
-  girara_inputbar_command_add(gsession, "tabopen",   "t",     cmd_tabopen,           cc_open, "Open URL in a new tab");
-  girara_inputbar_command_add(gsession, "winopen",   "w",     cmd_winopen,           cc_open, "Open URL in a new window");
+  girara_inputbar_command_add(gsession, "bmark",         NULL,    cmd_bookmark_add,      NULL,    "Add a bookmark");
+  girara_inputbar_command_add(gsession, "delbmarks",     NULL,    cmd_bookmark_delete,   NULL,    "Delete a bookmark");
+  girara_inputbar_command_add(gsession, "delmarks",      "delm",  cmd_marks_delete,      NULL,    "Delete the specified marks");
+  girara_inputbar_command_add(gsession, "delqmarks",     "delqm", cmd_quickmarks_delete, NULL,    "Add quickmark");
+  girara_inputbar_command_add(gsession, "downloads",     NULL,    cmd_downloads,         NULL,    "Show downloads");
+  girara_inputbar_command_add(gsession, "mark",          NULL,    cmd_marks_add,         NULL,    "Mark current location within the web page");
+  girara_inputbar_command_add(gsession, "open",          "o",     cmd_open,              cc_open, "Open URL in the current tab");
+  girara_inputbar_command_add(gsession, "print",         NULL,    cmd_print,             NULL,    "Show print dialog");
+  girara_inputbar_command_add(gsession, "qmark",         NULL,    cmd_quickmarks_add,    NULL,    "Add quickmark");
+  girara_inputbar_command_add(gsession, "stop",          NULL,    cmd_stop,              NULL,    "Stop loading the current page");
+  girara_inputbar_command_add(gsession, "tabopen",       "t",     cmd_tabopen,           cc_open, "Open URL in a new tab");
+  girara_inputbar_command_add(gsession, "winopen",       "w",     cmd_winopen,           cc_open, "Open URL in a new window");
+  girara_inputbar_command_add(gsession, "sessionsave",   "save",  cmd_sessionsave,       NULL,    "Save the current session");
+  girara_inputbar_command_add(gsession, "sessionload",   "load",  cmd_sessionload,       NULL,    "Open URL in a new window");
 
   /* special commands */
   girara_special_command_add(gsession, '/', cmd_search, true, 0, NULL),

@@ -1193,6 +1193,7 @@ jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t*
 {
   char* session_path = g_build_filename(database->session_dir, name, NULL);
 
+  jumanji_db_check_file(session_path);
   jumanji_db_write_urls_to_file(session_path, urls, false);
   free(session_path);
 }
