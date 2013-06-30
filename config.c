@@ -53,6 +53,10 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "scroll-step",                 &int_value,   INT,     true,  "Scroll step",                 NULL, NULL);
   int_value = 10;
   girara_setting_add(gsession, "zoom-step",                   &int_value,   INT,     true,  "Zoom step",                   NULL, NULL);
+  bool_value = true;
+  girara_setting_add(gsession, "save-session-at-exit",        &bool_value,  BOOLEAN, true,  "Save open tabs at exit",              NULL, NULL);
+  bool_value = true;
+  girara_setting_add(gsession, "load-session-at-startup",     &bool_value,  BOOLEAN, true,  "Load the default session at startup", NULL, NULL);
 
   /* hint settings */
   string_value =
