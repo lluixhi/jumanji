@@ -18,6 +18,10 @@ sessionload(girara_session_t* session, char* name)
   jumanji_db_result_link_t* link;
 
   url_list = jumanji_db_load_session(jumanji->database, name);
+  /* in case of empty session file, do nothing and return */
+  if (url_list == NULL) {
+    return false;
+  }
   iter = girara_list_iterator(url_list);
   do  {
     link = girara_list_iterator_data(iter);
