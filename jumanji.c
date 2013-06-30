@@ -20,6 +20,7 @@
 #include "marks.h"
 #include "utils.h"
 #include "soup.h"
+#include "session.h"
 
 #define GLOBAL_RC  "/etc/jumanjirc"
 #define JUMANJI_RC "jumanjirc"
@@ -256,11 +257,22 @@ jumanji_init(int argc, char* argv[])
     }
   }
 
-  /* load tabs */
+  /* load session */
+  bool load_default_session = true;
+  bool loaded = false; /* ensures initialization in case load_default session is false */
+  girara_setting_get(jumanji->ui.session, "load-session-at-startup",
+                     &load_default_session);
+  if (load_default_session) {
+    loaded = sessionload(jumanji->ui.session, JUMANJI_DEFAULT_SESSION_FILE);
+  }
+
+  /* if no url is specified at command line and no default session is loaded,
+   * load the homepage. Otherwise, load the urls passed as arguments after the
+   * session */
   if(argc < 2) {
     char* homepage = NULL;
     girara_setting_get(jumanji->ui.session, "homepage", &homepage);
-    if (homepage != NULL) {
+    if (homepage != NULL && !loaded) {
       char* url = jumanji_build_url_from_string(jumanji, homepage);
       jumanji_tab_new(jumanji, url, false);
       free(url);
@@ -300,6 +312,14 @@ jumanji_free(jumanji_t* jumanji)
 {
   if (jumanji == NULL) {
     return;
+  }
+
+  /* save the default session */
+  bool save_default_session = true;
+  girara_setting_get(jumanji->ui.session, "save-session-at-exit",
+                     &save_default_session);
+  if (save_default_session) {
+    sessionsave(jumanji->ui.session, JUMANJI_DEFAULT_SESSION_FILE);
   }
 
   /* destroy girara session */
