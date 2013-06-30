@@ -286,6 +286,10 @@ jumanji_init(int argc, char* argv[])
     }
   }
 
+  /* focus first tab */
+  jumanji_tab_t *first = jumanji_tab_get_nth(jumanji, 0);
+  girara_tab_current_set(jumanji->ui.session, first->girara_tab);
+
   return jumanji;
 
 error_free:
