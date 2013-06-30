@@ -9,7 +9,7 @@
 #include <girara/callbacks.h>
 #include <girara/datastructures.h>
 
-static bool
+bool
 sessionload(girara_session_t* session, char* name)
 {
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
@@ -31,7 +31,7 @@ sessionload(girara_session_t* session, char* name)
   return true;
 }
 
-static bool
+bool
 sessionsave(girara_session_t* session, char* name)
 {
   int tab_index = 0;

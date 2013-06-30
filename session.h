@@ -27,4 +27,20 @@ cmd_sessionload(girara_session_t* session, girara_list_t* argument_list);
 bool
 cmd_sessionsave(girara_session_t* session, girara_list_t* argument_list);
 
+/**
+ * Load a session
+ *
+ * @param session The used girara session
+ * @param name Name of the session
+ */
+bool sessionload(girara_session_t* session, char* name);
+
+/**
+ * Save a session
+ *
+ * @param session The used girara session
+ * @param name Name of the session
+ */
+bool sessionsave(girara_session_t* session, char* name);
+
 #endif // SESSION_H
