@@ -648,13 +648,13 @@ jumanji_db_cookie_list(jumanji_database_t* database)
 }
 
 void
-jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t* urls)
+jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_list_t* urls)
 {
   return;
 }
 
 girara_list_t*
-jumanji_db_load_session(jumanji_database_t* database, char* name)
+jumanji_db_load_session(jumanji_database_t* database, const char* name)
 {
   return NULL;
 }

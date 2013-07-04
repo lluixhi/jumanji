@@ -1189,7 +1189,7 @@ jumanji_db_free_cookie(void* data)
 }
 
 void
-jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t* urls)
+jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_list_t* urls)
 {
   char* session_path = g_build_filename(database->session_dir, name, NULL);
 
@@ -1199,7 +1199,7 @@ jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t*
 }
 
 girara_list_t*
-jumanji_db_load_session(jumanji_database_t* database, char* name)
+jumanji_db_load_session(jumanji_database_t* database, const char* name)
 {
   char* session_path = g_build_filename(database->session_dir, name, NULL);
   girara_list_t* url_list;

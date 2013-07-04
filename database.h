@@ -163,7 +163,7 @@ void jumanji_db_free_result_link(void* data);
  * @param database The database session
  * @param urls List of urls to be saved
  */
-void jumanji_db_save_session(jumanji_database_t* database, char* name, girara_list_t* urls);
+void jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_list_t* urls);
 
 /**
  * Load a list of urls in the current session
@@ -171,6 +171,6 @@ void jumanji_db_save_session(jumanji_database_t* database, char* name, girara_li
  * @param database The database session
  * @return List of urls loaded
  */
-girara_list_t* jumanji_db_load_session(jumanji_database_t* database, char* name);
+girara_list_t* jumanji_db_load_session(jumanji_database_t* database, const char* name);
 
 #endif // DATABASE_H

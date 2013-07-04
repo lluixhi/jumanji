@@ -33,7 +33,7 @@ cmd_sessionsave(girara_session_t* session, girara_list_t* argument_list);
  * @param session The used girara session
  * @param name Name of the session
  */
-bool sessionload(girara_session_t* session, char* name);
+bool sessionload(girara_session_t* session, const char* name);
 
 /**
  * Save a session
@@ -41,6 +41,6 @@ bool sessionload(girara_session_t* session, char* name);
  * @param session The used girara session
  * @param name Name of the session
  */
-bool sessionsave(girara_session_t* session, char* name);
+bool sessionsave(girara_session_t* session, const char* name);
 
 #endif // SESSION_H

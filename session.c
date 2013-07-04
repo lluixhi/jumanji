@@ -8,9 +8,10 @@
 #include <girara/session.h>
 #include <girara/callbacks.h>
 #include <girara/datastructures.h>
+#include <girara/tabs.h>
 
 bool
-sessionload(girara_session_t* session, char* name)
+sessionload(girara_session_t* session, const char* name)
 {
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
   girara_list_t* url_list;
@@ -32,21 +33,25 @@ sessionload(girara_session_t* session, char* name)
 }
 
 bool
-sessionsave(girara_session_t* session, char* name)
+sessionsave(girara_session_t* session, const char* name)
 {
-  int tab_index = 0;
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
   jumanji_tab_t* tab;
   girara_list_t* url_list = girara_list_new();
   jumanji_db_result_link_t* link;
 
-  while ((tab = jumanji_tab_get_nth(jumanji, tab_index)) != NULL) {
+  const int num_tabs = girara_get_number_of_tabs(jumanji->ui.session);
+  for (int tab_index = 0; tab_index != num_tabs; ++tab_index) {
+    tab = jumanji_tab_get_nth(jumanji, tab_index);
+    if (tab == NULL) {
+      continue;
+    }
+
     link = g_malloc0(sizeof(jumanji_db_result_link_t));
     link->url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
     link->title = NULL;
     link->visited = false;
     girara_list_append(url_list, link);
-    tab_index++;
   }
   jumanji_db_save_session(jumanji->database, name, url_list);
   girara_list_free(url_list);
