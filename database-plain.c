@@ -1,6 +1,7 @@
 /* See LICENSE file for license and copyright information */
 
 #define _POSIX_SOURCE
+#define _XOPEN_SOURCE 500
 
 #include <girara/datastructures.h>
 #include <girara/utils.h>
@@ -18,11 +19,16 @@
 #define COOKIES "cookies"
 #define SESSION_DIR "sessions"
 
+#ifdef __GNU__
+#include <sys/file.h>
+#define file_lock_set(fd, cmd) flock(fd, cmd)
+#else
 #define file_lock_set(fd, cmd) \
   { \
   struct flock lock = { .l_type = cmd, .l_start = 0, .l_whence = SEEK_SET, .l_len = 0}; \
   fcntl(fd, F_SETLK, lock); \
   }
+#endif
 
 /* forward declaration */
 static void jumanji_db_write_quickmarks_to_file(const char* filename,
@@ -903,7 +909,7 @@ jumanji_db_read_cookies_from_file(const char* filename)
     return NULL;
   }
 
-  file_lock_set(fileno(file), F_WRLCK);
+  file_lock_set(fileno(file), F_RDLCK);
 
   /* read lines */
   char* line = NULL;
