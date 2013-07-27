@@ -207,6 +207,26 @@ cb_jumanji_tab_download_requested(WebKitWebView* web_view, WebKitDownload* downl
 }
 
 bool
+cb_new_jumanji_tab_new_window_policy_decision_requested(WebKitWebView* web_view,
+    WebKitWebFrame* frame, WebKitNetworkRequest* request, WebKitWebNavigationAction* action,
+    WebKitWebPolicyDecision* decision, jumanji_tab_t* tab)
+{
+  if (web_view == NULL || action == NULL) {
+    return false;
+  }
+
+  if (webkit_web_navigation_action_get_reason(action) ==
+      WEBKIT_WEB_NAVIGATION_REASON_LINK_CLICKED) {
+    webkit_web_policy_decision_ignore(decision);
+    jumanji_tab_new(tab->jumanji, webkit_network_request_get_uri(request), TRUE);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool
 cb_jumanji_tab_mime_type_policy_decision_requested(WebKitWebView* web_view,
     WebKitWebFrame* frame, WebKitNetworkRequest* request, char* mimetype,
     WebKitWebPolicyDecision* decision, jumanji_tab_t* tab)
