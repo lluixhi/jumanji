@@ -146,7 +146,10 @@ cb_jumanji_tab_removed(GtkNotebook* tabs, GtkWidget* page, guint page_num, juman
       girara_setting_get(jumanji->ui.session, "homepage", &homepage);
       if (homepage != NULL) {
         char* url = jumanji_build_url_from_string(jumanji, homepage);
-        jumanji_tab_new(jumanji, url, false);
+        bool focus_new_tabs;
+        girara_setting_get(jumanji->ui.session,
+                           "focus-new-tabs", &focus_new_tabs);
+        jumanji_tab_new(jumanji, url, focus_new_tabs);
         free(url);
       }
       g_free(homepage);
@@ -217,8 +220,10 @@ cb_new_jumanji_tab_new_window_policy_decision_requested(WebKitWebView* web_view,
 
   if (webkit_web_navigation_action_get_reason(action) ==
       WEBKIT_WEB_NAVIGATION_REASON_LINK_CLICKED) {
+    bool focus_new_tabs;
+    girara_setting_get(tab->jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
     webkit_web_policy_decision_ignore(decision);
-    jumanji_tab_new(tab->jumanji, webkit_network_request_get_uri(request), TRUE);
+    jumanji_tab_new(tab->jumanji, webkit_network_request_get_uri(request), focus_new_tabs);
 
     return true;
   }
@@ -263,7 +268,9 @@ cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView* web_view,
         return false;
       }
 
-      jumanji_tab_new(tab->jumanji, uri, TRUE);
+      bool focus_new_tabs;
+      girara_setting_get(tab->jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+      jumanji_tab_new(tab->jumanji, uri, focus_new_tabs);
       webkit_web_policy_decision_ignore(decision);
       return true;
     default:

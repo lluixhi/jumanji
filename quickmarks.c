@@ -7,6 +7,7 @@
 #include <girara/session.h>
 #include <girara/datastructures.h>
 #include <girara/callbacks.h>
+#include <girara/settings.h>
 
 bool
 sc_quickmark_add(girara_session_t* session, girara_argument_t* argument,
@@ -107,7 +108,9 @@ bool cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
   }
 
   if (jumanji->global.quickmark_open_mode == NEW_TAB) {
-    jumanji_tab_new(jumanji, uri, false);
+    bool focus_new_tabs;
+    girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+    jumanji_tab_new(jumanji, uri, focus_new_tabs);
   } else {
     jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
     jumanji_tab_load_url(tab, uri);

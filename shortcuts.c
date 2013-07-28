@@ -30,7 +30,9 @@ sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, girara_
   }
 
   if (argument->n == NEW_TAB) {
-    jumanji_tab_new(jumanji, url, false);
+    bool focus_new_tabs;
+    girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
   } else {
     jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
     if (tab != NULL) {
@@ -202,7 +204,9 @@ sc_put(girara_session_t* session, girara_argument_t* argument, girara_event_t* e
   }
 
   if (argument->n == NEW_TAB) {
-    jumanji_tab_new(jumanji, url, false);
+    bool focus_new_tabs;
+    girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
   } else {
     jumanji_tab_t* tab = jumanji_tab_get_current(jumanji);
     if (tab != NULL) {
@@ -367,7 +371,9 @@ sc_restore(girara_session_t* session, girara_argument_t* argument, girara_event_
     return false;
   }
 
-  jumanji_tab_new(jumanji, uri, false);
+  bool focus_new_tabs;
+  girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+  jumanji_tab_new(jumanji, uri, focus_new_tabs);
   girara_list_remove(jumanji->global.last_closed, uri);
 
   return true;

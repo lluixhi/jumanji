@@ -274,14 +274,18 @@ jumanji_init(int argc, char* argv[])
     girara_setting_get(jumanji->ui.session, "homepage", &homepage);
     if (homepage != NULL && !loaded) {
       char* url = jumanji_build_url_from_string(jumanji, homepage);
-      jumanji_tab_new(jumanji, url, false);
+      bool focus_new_tabs;
+      girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+      jumanji_tab_new(jumanji, url, focus_new_tabs);
       free(url);
     }
     g_free(homepage);
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       char* url = jumanji_build_url_from_string(jumanji, argv[i]);
-      jumanji_tab_new(jumanji, url, false);
+      bool focus_new_tabs;
+      girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+      jumanji_tab_new(jumanji, url, focus_new_tabs);
       free(url);
     }
   }
@@ -376,13 +380,14 @@ jumanji_free(jumanji_t* jumanji)
 }
 
 jumanji_tab_t*
-jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
+jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
 {
   if (jumanji == NULL || url == NULL) {
     goto error_out;
   }
 
   jumanji_tab_t* tab = malloc(sizeof(jumanji_tab_t));
+  girara_tab_t* current_tab = girara_tab_current_get(jumanji->ui.session);
 
   if (tab == NULL) {
     goto error_out;
@@ -419,6 +424,14 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
 
   /* create new tab */
   tab->girara_tab = girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
+
+  /* tab focus */
+  if (focus) {
+    girara_tab_current_set(jumanji->ui.session,
+                           girara_tab_current_get(jumanji->ui.session));
+  } else {
+    girara_tab_current_set(jumanji->ui.session, current_tab);
+  }
 
   /* connect signals */
   g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
