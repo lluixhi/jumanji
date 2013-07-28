@@ -57,6 +57,8 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "save-session-at-exit",        &bool_value,  BOOLEAN, true,  "Save open tabs at exit",              NULL, NULL);
   bool_value = true;
   girara_setting_add(gsession, "load-session-at-startup",     &bool_value,  BOOLEAN, true,  "Load the default session at startup", NULL, NULL);
+  bool_value = true;
+  girara_setting_add(gsession, "focus-new-tabs",              &bool_value,  BOOLEAN, true,  "Focus newly opened tabs",     NULL, NULL);
 
   /* hint settings */
   string_value =
