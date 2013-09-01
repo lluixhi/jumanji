@@ -24,14 +24,21 @@ sessionload(girara_session_t* session, const char* name)
   if (url_list == NULL) {
     return false;
   }
+
   iter = girara_list_iterator(url_list);
-  do  {
+
+  bool focus_new_tabs = true;
+  girara_setting_get(session, "focus-new-tabs", &focus_new_tabs);
+
+  do {
     link = girara_list_iterator_data(iter);
-    bool focus_new_tabs;
-    girara_setting_get(session, "focus-new-tabs", &focus_new_tabs);
-    jumanji_tab_new(jumanji, link->url, focus_new_tabs);
+    if (link != NULL && link->url != NULL) {
+      jumanji_tab_new(jumanji, link->url, focus_new_tabs);
+    }
   } while(girara_list_iterator_next(iter) != NULL);
+
   girara_list_free(url_list);
+
   return true;
 }
 
