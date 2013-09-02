@@ -262,29 +262,26 @@ jumanji_init(int argc, char* argv[])
   bool loaded = false; /* ensures initialization in case load_default session is false */
   girara_setting_get(jumanji->ui.session, "load-session-at-startup",
                      &load_default_session);
-  if (load_default_session) {
+
+  if (load_default_session == true) {
     loaded = sessionload(jumanji->ui.session, JUMANJI_DEFAULT_SESSION_FILE);
   }
 
   /* if no url is specified at command line and no default session is loaded,
    * load the homepage. Otherwise, load the urls passed as arguments after the
    * session */
-  if(argc < 2) {
-    char* homepage = NULL;
-    girara_setting_get(jumanji->ui.session, "homepage", &homepage);
-    if (homepage != NULL && !loaded) {
-      char* url = jumanji_build_url_from_string(jumanji, homepage);
-      bool focus_new_tabs;
-      girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
-      jumanji_tab_new(jumanji, url, focus_new_tabs);
-      free(url);
-    }
-    g_free(homepage);
+  bool focus_new_tabs;
+  girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+  char* homepage = NULL;
+  girara_setting_get(jumanji->ui.session, "homepage", &homepage);
+
+  if(argc < 2 && homepage != NULL && loaded == false) {
+    char* url = jumanji_build_url_from_string(jumanji, homepage);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
+    free(url);
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       char* url = jumanji_build_url_from_string(jumanji, argv[i]);
-      bool focus_new_tabs;
-      girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
       jumanji_tab_new(jumanji, url, focus_new_tabs);
       free(url);
     }
@@ -292,7 +289,15 @@ jumanji_init(int argc, char* argv[])
 
   /* focus first tab */
   jumanji_tab_t *first = jumanji_tab_get_nth(jumanji, 0);
-  girara_tab_current_set(jumanji->ui.session, first->girara_tab);
+  if (first != NULL) {
+    girara_tab_current_set(jumanji->ui.session, first->girara_tab);
+  } else { /* empty session list */
+    char* url = jumanji_build_url_from_string(jumanji, homepage);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
+    free(url);
+  }
+
+  g_free(homepage);
 
   return jumanji;
 
