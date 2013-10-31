@@ -5,6 +5,7 @@
 #include <girara/datastructures.h>
 #include <girara/session.h>
 #include <girara/shortcuts.h>
+#include <girara/settings.h>
 
 #include "commands.h"
 #include "database.h"
@@ -303,7 +304,9 @@ cmd_tabopen(girara_session_t* session, girara_list_t* argument_list)
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   char* url = jumanji_build_url(jumanji, argument_list);
-  jumanji_tab_new(jumanji, url, false);
+  bool focus_new_tabs;
+  girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+  jumanji_tab_new(jumanji, url, focus_new_tabs);
   free(url);
 
   return true;

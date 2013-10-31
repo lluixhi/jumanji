@@ -262,33 +262,42 @@ jumanji_init(int argc, char* argv[])
   bool loaded = false; /* ensures initialization in case load_default session is false */
   girara_setting_get(jumanji->ui.session, "load-session-at-startup",
                      &load_default_session);
-  if (load_default_session) {
+
+  if (load_default_session == true) {
     loaded = sessionload(jumanji->ui.session, JUMANJI_DEFAULT_SESSION_FILE);
   }
 
   /* if no url is specified at command line and no default session is loaded,
    * load the homepage. Otherwise, load the urls passed as arguments after the
    * session */
-  if(argc < 2) {
-    char* homepage = NULL;
-    girara_setting_get(jumanji->ui.session, "homepage", &homepage);
-    if (homepage != NULL && !loaded) {
-      char* url = jumanji_build_url_from_string(jumanji, homepage);
-      jumanji_tab_new(jumanji, url, false);
-      free(url);
-    }
-    g_free(homepage);
+  bool focus_new_tabs;
+  girara_setting_get(jumanji->ui.session, "focus-new-tabs", &focus_new_tabs);
+  char* homepage = NULL;
+  girara_setting_get(jumanji->ui.session, "homepage", &homepage);
+
+  if(argc < 2 && homepage != NULL && loaded == false) {
+    char* url = jumanji_build_url_from_string(jumanji, homepage);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
+    free(url);
   } else {
     for (unsigned int i = argc - 1; i >= 1; i--) {
       char* url = jumanji_build_url_from_string(jumanji, argv[i]);
-      jumanji_tab_new(jumanji, url, false);
+      jumanji_tab_new(jumanji, url, focus_new_tabs);
       free(url);
     }
   }
 
   /* focus first tab */
   jumanji_tab_t *first = jumanji_tab_get_nth(jumanji, 0);
-  girara_tab_current_set(jumanji->ui.session, first->girara_tab);
+  if (first != NULL) {
+    girara_tab_current_set(jumanji->ui.session, first->girara_tab);
+  } else { /* empty session list */
+    char* url = jumanji_build_url_from_string(jumanji, homepage);
+    jumanji_tab_new(jumanji, url, focus_new_tabs);
+    free(url);
+  }
+
+  g_free(homepage);
 
   return jumanji;
 
@@ -376,13 +385,14 @@ jumanji_free(jumanji_t* jumanji)
 }
 
 jumanji_tab_t*
-jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
+jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus)
 {
   if (jumanji == NULL || url == NULL) {
     goto error_out;
   }
 
   jumanji_tab_t* tab = malloc(sizeof(jumanji_tab_t));
+  girara_tab_t* current_tab = girara_tab_current_get(jumanji->ui.session);
 
   if (tab == NULL) {
     goto error_out;
@@ -420,12 +430,29 @@ jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background)
   /* create new tab */
   tab->girara_tab = girara_tab_new(jumanji->ui.session, NULL, tab->scrolled_window, true, jumanji);
 
+  /* tab focus */
+  if (focus) {
+    girara_tab_current_set(jumanji->ui.session,
+                           girara_tab_current_get(jumanji->ui.session));
+  } else {
+    girara_tab_current_set(jumanji->ui.session, current_tab);
+  }
+
   /* connect signals */
-  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy",             G_CALLBACK(cb_jumanji_tab_destroy),            tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "hovering-over-link",  G_CALLBACK(cb_jumanji_tab_hovering_over_link), tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "notify::load-status", G_CALLBACK(cb_jumanji_tab_load_status),        tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "load-finished",       G_CALLBACK(cb_jumanji_tab_load_finished),      tab);
-  g_signal_connect(G_OBJECT(tab->web_view),        "download-requested",  G_CALLBACK(cb_jumanji_tab_download_requested), tab);
+  g_signal_connect(G_OBJECT(tab->scrolled_window), "destroy", G_CALLBACK(cb_jumanji_tab_destroy), tab);
+
+  g_signal_connect(G_OBJECT(tab->web_view), "hovering-over-link",
+      G_CALLBACK(cb_jumanji_tab_hovering_over_link), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "notify::load-status",
+      G_CALLBACK(cb_jumanji_tab_load_status), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "load-finished",
+      G_CALLBACK(cb_jumanji_tab_load_finished), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "download-requested",
+      G_CALLBACK(cb_jumanji_tab_download_requested), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "mime-type-policy-decision-requested",
+      G_CALLBACK(cb_jumanji_tab_mime_type_policy_decision_requested), tab);
+  g_signal_connect(G_OBJECT(tab->web_view), "new-window-policy-decision-requested",
+      G_CALLBACK(cb_new_jumanji_tab_new_window_policy_decision_requested), tab);
 
   g_signal_connect(
       G_OBJECT(tab->web_view),

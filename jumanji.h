@@ -125,10 +125,10 @@ void jumanji_free(jumanji_t* jumanji);
  *
  * @param jumanji The jumanji session
  * @param url URL of the site that should be loaded
- * @param background true if the tab should not be focused after creation
+ * @param focus true if the tab should be focused after creation
  * @return The webkit widget or NULL if an error occured
  */
-jumanji_tab_t* jumanji_tab_new(jumanji_t* jumanji, const char* url, bool background);
+jumanji_tab_t* jumanji_tab_new(jumanji_t* jumanji, const char* url, bool focus);
 
 /**
  * Frees and destroys a tab
