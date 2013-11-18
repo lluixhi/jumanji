@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <glib/gstdio.h>
 
 #include "database.h"
 
@@ -1199,6 +1200,11 @@ jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_l
 {
   char* session_path = g_build_filename(database->session_dir, name, NULL);
 
+  /* Removes the session file, so closed tabs won't be opened on next startup
+   * the return value shouldn't matter, since a error should only occur if
+   * the file doesn't already exists. When an sqlite backend is implemented
+   * for session, this removal shouldn't be needed. */
+  g_remove(session_path);
   jumanji_db_check_file(session_path);
   jumanji_db_write_urls_to_file(session_path, urls, false);
   free(session_path);
