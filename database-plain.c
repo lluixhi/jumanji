@@ -746,23 +746,23 @@ jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool vi
       }
 
       /* write url */
-      write(fd, link->url, strlen(link->url));
+      if (write(fd, link->url, strlen(link->url)) != strlen(link->url)) continue;
 
       /* write title */
       char* title_quoted = g_shell_quote(link->title ? link->title : "");
       char* text = g_strdup_printf(" %s", title_quoted);
-      write(fd, text, strlen(text));
+      if (write(fd, text, strlen(text)) != strlen(text)) continue;
       g_free(title_quoted);
       g_free(text);
 
       /* write last visit */
       if (visited == true) {
         char* text = g_strdup_printf(" %d", link->visited);
-        write(fd, text, strlen(text));
+        if (write(fd, text, strlen(text)) != strlen(text)) continue;
         g_free(text);
       }
 
-      write(fd, "\n", 1);
+      if (write(fd, "\n", 1) != 1) continue;
     } while (girara_list_iterator_next(iter) != NULL);
     girara_list_iterator_free(iter);
   }
@@ -796,10 +796,10 @@ jumanji_db_write_quickmarks_to_file(const char* filename, girara_list_t* quickma
       }
 
       char* text = g_strdup_printf("%c %s", quickmark->identifier, quickmark->url);
-      write(fd, text, strlen(text));
+      if (write(fd, text, strlen(text)) != strlen(text)) continue;
       g_free(text);
 
-      write(fd, "\n", 1);
+      if (write(fd, "\n", 1) != 1) continue;
     } while (girara_list_iterator_next(iter) != NULL);
     girara_list_iterator_free(iter);
   }
