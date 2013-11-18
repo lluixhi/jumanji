@@ -188,9 +188,9 @@ jumanji_download_create_widget(jumanji_t* jumanji, jumanji_download_t* download)
 
   /* set style */
 #if (GTK_MAJOR_VERSION == 3)
-  gtk_widget_override_color(GTK_WIDGET(download->widget.filename), GTK_STATE_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
+  gtk_widget_override_color(GTK_WIDGET(download->widget.filename), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
   gtk_widget_override_font(GTK_WIDGET(download->widget.filename),  jumanji->ui.session->style.font);
-  gtk_widget_override_color(GTK_WIDGET(download->widget.status), GTK_STATE_NORMAL, &(jumanji->ui.session->style.statusbar_foreground));
+  gtk_widget_override_color(GTK_WIDGET(download->widget.status), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.statusbar_foreground));
   gtk_widget_override_font(GTK_WIDGET(download->widget.status),  jumanji->ui.session->style.font);
 #else
   gtk_widget_modify_fg(GTK_WIDGET(download->widget.filename), GTK_STATE_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
