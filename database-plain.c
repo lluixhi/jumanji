@@ -995,36 +995,36 @@ jumanji_db_write_cookies_to_file(const char* filename, girara_list_t* cookies)
       }
 
       /* write domain */
-      write(fd, cookie->domain, strlen(cookie->domain));
-      write(fd, "\t", 1);
+      if (write(fd, cookie->domain, strlen(cookie->domain)) != strlen(cookie->domain)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write secure */
-      char* value = (cookie->secure == true) ? "TRUE" : "FALSE";
-      write(fd, value, strlen(value));
-      write(fd, "\t", 1);
+      char* value = (cookie->secure != true) ? "TRUE" : "FALSE";
+      if (write(fd, value, strlen(value)) != strlen(value));;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write path */
-      write(fd, cookie->path, strlen(cookie->path));
-      write(fd, "\t", 1);
+      if (write(fd, cookie->path, strlen(cookie->path)) != strlen(cookie->path)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write https */
-      value = (cookie->http_only == true) ? "TRUE" : "FALSE";
-      write(fd, value, strlen(value));
-      write(fd, "\t", 1);
+      value = (cookie->http_only != true) ? "TRUE" : "FALSE";
+      if (write(fd, value, strlen(value)) != strlen(value)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write expire date */
-      write(fd, tmp, strlen(tmp));
-      write(fd, "\t", 1);
+      if (write(fd, tmp, strlen(tmp)) != strlen(tmp)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write name */
-      write(fd, cookie->name, strlen(cookie->name));
-      write(fd, "\t", 1);
+      if (write(fd, cookie->name, strlen(cookie->name)) != strlen(cookie->name)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
       /* write value */
-      write(fd, cookie->value, strlen(cookie->value));
-      write(fd, "\t", 1);
+      if (write(fd, cookie->value, strlen(cookie->value)) != strlen(cookie->value)) continue;
+      if (write(fd, "\t", 1) != 1) continue;
 
-      write(fd, "\n", 1);
+      if (write(fd, "\n", 1) != 1) continue;
 
       g_free(tmp);
     } while (girara_list_iterator_next(iter) != NULL);

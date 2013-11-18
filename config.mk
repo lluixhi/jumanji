@@ -38,7 +38,7 @@ INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC} ${GTHREAD_INC}
 LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} ${GTHREAD_LIB} -lpthread -lm
 
 # flags
-CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length $(INCS)
+CFLAGS += -std=c99 -pedantic -Wall -Wno-format-zero-length -Wunused-result $(INCS)
 
 # debug
 DFLAGS = -O0 -g
