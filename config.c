@@ -207,7 +207,7 @@ config_load_default(jumanji_t* jumanji)
   girara_inputbar_command_add(gsession, "tabopen",       "t",     cmd_tabopen,           cc_open, "Open URL in a new tab");
   girara_inputbar_command_add(gsession, "winopen",       "w",     cmd_winopen,           cc_open, "Open URL in a new window");
   girara_inputbar_command_add(gsession, "sessionsave",   "save",  cmd_sessionsave,       NULL,    "Save the current session");
-  girara_inputbar_command_add(gsession, "sessionload",   "load",  cmd_sessionload,       NULL,    "Open URL in a new window");
+  girara_inputbar_command_add(gsession, "sessionload",   "load",  cmd_sessionload,       NULL,    "Load a specific session");
 
   /* special commands */
   girara_special_command_add(gsession, '/', cmd_search, true, 0, NULL),
