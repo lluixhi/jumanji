@@ -39,6 +39,17 @@ bool sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argu
 bool sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t);
 
 /**
+ * Navigates through the tabs
+ *
+ * @param session The used girara session
+ * @param argument The used argument
+ * @param event Girara event
+ * @param t Number of executions
+ * @return true if no error occured otherwise false
+ */
+bool sc_tab_navigate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t);
+
+/**
  * Navigates through the tabs history
  *
  * @param session The used girara session

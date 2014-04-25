@@ -163,6 +163,20 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, girara
 }
 
 bool
+sc_tab_navigate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
+{
+  g_return_val_if_fail(argument != NULL, false);
+
+  girara_argument_t arg = { GIRARA_NEXT, argument->data };
+
+  if (argument->n == PREVIOUS) {
+    arg.n = GIRARA_PREVIOUS;
+  }
+
+  return girara_sc_tab_navigate(session, &arg, event, t);
+}
+
+bool
 sc_navigate_history(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
@@ -521,7 +535,8 @@ sc_zoom(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
 }
 
 bool
-sc_toggle_stylesheet(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t) {
+sc_toggle_stylesheet(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
+{
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(session != NULL, false);
   gchar* user_stylesheet_uri = NULL;
