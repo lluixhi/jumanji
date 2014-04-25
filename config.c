@@ -118,7 +118,7 @@ config_load_default(jumanji_t* jumanji)
   bool_value = true;
   girara_setting_add(gsession, "print-backgrounds",           &bool_value,   BOOLEAN, false, "Print background images",              cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "resizeable-text-areas",       &bool_value,   BOOLEAN, false, "Allow resizeable text areas",          cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "resizable-text-areas",        &bool_value,   BOOLEAN, false, "Allow resizable text areas",           cb_settings_webkit, NULL);
   string_value = "sans-serif";
   girara_setting_add(gsession, "sans-serif-font-family",      &string_value, STRING,  false, "Sans-serif font family",               cb_settings_webkit, NULL);
   string_value = "serif";
