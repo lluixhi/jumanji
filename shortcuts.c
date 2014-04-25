@@ -205,7 +205,17 @@ sc_put(girara_session_t* session, girara_argument_t* argument, girara_event_t* e
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(argument != NULL, false);
 
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  GtkClipboard* clipboard;
+  char* default_clipboard = NULL;
+  girara_setting_get(session, "default-clipboard", &default_clipboard);
+  if (g_strcmp0(default_clipboard, "secondary") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_SECONDARY);
+  } else if (g_strcmp0(default_clipboard, "clipboard") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  } else {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  }
+
   if (clipboard == NULL) {
     return false;
   }
@@ -491,7 +501,17 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
     return false;
   }
 
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  GtkClipboard* clipboard;
+  char* default_clipboard = NULL;
+  girara_setting_get(session, "default-clipboard", &default_clipboard);
+  if (g_strcmp0(default_clipboard, "secondary") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_SECONDARY);
+  } else if (g_strcmp0(default_clipboard, "clipboard") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  } else {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  }
+
   if (clipboard != NULL) {
     gtk_clipboard_set_text(clipboard, url, -1);
     girara_notify(session, GIRARA_INFO, "Yanked: %s", url);

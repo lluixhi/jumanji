@@ -43,6 +43,8 @@ config_load_default(jumanji_t* jumanji)
   girara_setting_add(gsession, "auto-set-proxy",              &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
   bool_value = true;
   girara_setting_add(gsession, "close-window-with-last-tab",  &bool_value,  BOOLEAN, false,  "Close window with last tab", NULL, NULL);
+  string_value = "primary";
+  girara_setting_add(gsession, "default-clipboard",           string_value, STRING,  false, "Default clipboard",           NULL, NULL);
   string_value = "~/dl";
   girara_setting_add(gsession, "download-dir",                string_value, STRING,  false, "Download directory",          NULL, NULL);
   string_value = NULL;
