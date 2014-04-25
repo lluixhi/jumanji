@@ -226,6 +226,15 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "proxy",            sc_toggle_proxy);
   girara_shortcut_mapping_add(gsession, "plugins",          sc_toggle_plugins);
   girara_shortcut_mapping_add(gsession, "user_stylesheet",  sc_toggle_stylesheet);
+  girara_shortcut_mapping_add(gsession, "close",            girara_sc_tab_close);
+  girara_shortcut_mapping_add(gsession, "search",           sc_search);
+  girara_shortcut_mapping_add(gsession, "bookmark",         sc_toggle_bookmark);
+  girara_shortcut_mapping_add(gsession, "hints",            sc_hints);
+  girara_shortcut_mapping_add(gsession, "qmark_add",        sc_quickmark_add);
+  girara_shortcut_mapping_add(gsession, "qmark_eval",       sc_quickmark_evaluate);
+  girara_shortcut_mapping_add(gsession, "mark_add",         sc_mark_add);
+  girara_shortcut_mapping_add(gsession, "mark_eval",        sc_mark_evaluate);
+  girara_shortcut_mapping_add(gsession, "tab_navigate",     sc_tab_navigate);
 
 
   girara_shortcut_mapping_add(gsession, "yank",             sc_yank);
@@ -253,6 +262,8 @@ config_load_default(jumanji_t* jumanji)
   girara_argument_mapping_add(gsession, "tab",        NEW_TAB);
   girara_argument_mapping_add(gsession, "top",        TOP);
   girara_argument_mapping_add(gsession, "up",         UP);
+  girara_argument_mapping_add(gsession, "forward",   FORWARDS);
+  girara_argument_mapping_add(gsession, "backward",  BACKWARDS);
 
   /* add config handles */
   girara_config_handle_add(gsession, "searchengine", cmd_search_engine);
