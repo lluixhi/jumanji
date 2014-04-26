@@ -33,7 +33,7 @@ typedef struct adblock_filter_list_s
 } adblock_filter_t;
 
 /**
- * Loads a files from a directory as filter listsand returns a list
+ * Loads all files from a directory as filter lists and returns a list
  * of correctly parsed lists
  *
  * @param path Path to the directory
@@ -50,7 +50,7 @@ girara_list_t* adblock_filter_load_dir(const char* path);
 adblock_filter_t* adblock_filter_load(const char* path);
 
 /**
- * Frees an adblock filter and its entire rule lists
+ * Frees an adblock filter and its entire rule list
  *
  * @param data Adblock filter
  */

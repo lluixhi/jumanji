@@ -165,7 +165,7 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
 
   url = (strstr(url, "://") != NULL) ? g_strdup(url) : g_strconcat("http://", url, NULL);
 
-  /* search for existing search engine */
+  /* search for existing proxy */
   if (girara_list_size(jumanji->global.proxies) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
 

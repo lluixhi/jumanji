@@ -20,7 +20,7 @@ typedef struct user_script_s
 } user_script_t;
 
 /**
- * Loads a files from a directory as user scripts and returns a list
+ * Loads all files from a directory as user scripts and returns a list
  * of correctly parsed scripts
  *
  * @param path Path to the directory

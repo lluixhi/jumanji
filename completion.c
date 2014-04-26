@@ -111,7 +111,6 @@ cc_open(girara_session_t* session, const char* input)
     girara_list_free(history_list);
   }
 
-
   return completion;
 
 error_free:

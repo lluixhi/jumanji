@@ -31,7 +31,7 @@
   }
 #endif
 
-/* forward declaration */
+/* forward declarations */
 static void jumanji_db_write_quickmarks_to_file(const char* filename,
     girara_list_t* quickmarks);
 static void cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile*
@@ -475,7 +475,7 @@ jumanji_db_history_clean(jumanji_database_t* database, unsigned int age)
     return;
   }
 
-  /* remove url from list */
+  /* remove urls from list */
   if (girara_list_size(database->history) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(database->history);
 
@@ -550,7 +550,7 @@ jumanji_db_quickmark_find(jumanji_database_t* database, const char identifier)
     return NULL;
   }
 
-  /* search for existing entry and update it */
+  /* search for existing entry */
   if (girara_list_size(database->quickmarks) > 0) {
     char* url = NULL;
     girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
@@ -580,7 +580,7 @@ jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
     return;
   }
 
-  /* search for existing entry and update it */
+  /* search for existing entry */
   if (girara_list_size(database->quickmarks) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
     do {
@@ -1097,8 +1097,7 @@ void
 jumanji_db_cookie_remove(jumanji_database_t* database, const char* domain, const char*
     name)
 {
-  if (database == NULL || name == NULL || domain == NULL || database->cookies ==
-      NULL) {
+  if (database == NULL || name == NULL || domain == NULL || database->cookies == NULL) {
     return;
   }
 

@@ -17,7 +17,7 @@
 bool sc_goto_homepage(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t);
 
 /**
- * Go to (nth) parent (directory
+ * Go to (nth) parent (directory)
  *
  * @param session The used girara session
  * @param argument The used argument
@@ -50,7 +50,7 @@ bool sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, g
 bool sc_tab_navigate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t);
 
 /**
- * Navigates through the tabs history
+ * Navigates through the history of the current tab
  *
  * @param session The used girara session
  * @param argument The used argument
@@ -105,7 +105,7 @@ bool sc_reload(girara_session_t* session, girara_argument_t* argument, girara_ev
 bool sc_restore(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t);
 
 /**
- * Scroll through the web site
+ * Scroll through the page
  *
  * @param session The used girara session
  * @param argument The used argument

@@ -78,7 +78,8 @@ sc_quickmark_evaluate(girara_session_t* session, girara_argument_t* argument,
   return false;
 }
 
-bool cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
+bool
+cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
     event, girara_session_t* session)
 {
   g_return_val_if_fail(session != NULL,              FALSE);

@@ -92,7 +92,7 @@ sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument,
     GString* tmp   = g_string_new("");
 
     int limit = length - count;
-    for(int i = 0; i < limit; i++) {
+    for (int i = 0; i < limit; i++) {
       if (i == 0) {
         g_string_append(tmp, tokens[i]);
       } else {
@@ -437,6 +437,7 @@ bool
 sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
+
   return cb_statusbar_proxy(NULL, NULL, session);
 }
 
@@ -516,7 +517,6 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
     gtk_clipboard_set_text(clipboard, url, -1);
     girara_notify(session, GIRARA_INFO, "Yanked: %s", url);
   }
-
 
   return false;
 }

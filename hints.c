@@ -81,10 +81,8 @@ cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
 void
 hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
 {
-  if (tab == NULL ||
-      tab->web_view == NULL ||
-      jumanji == NULL ||
-      jumanji->ui.session == NULL) {
+  if (tab == NULL || tab->web_view == NULL ||
+      jumanji == NULL || jumanji->ui.session == NULL) {
     return;
   }
 
@@ -172,7 +170,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
   }
 
   /* retreive visible nodes */
-  for(guint i = 0; i < snapshot_length; i++) {
+  for (guint i = 0; i < snapshot_length; i++) {
     WebKitDOMNode *node = webkit_dom_xpath_result_snapshot_item(result, i, NULL);
 
     if (node == NULL) {
@@ -210,7 +208,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
     return;
   }
 
-  for(guint i = 0; i < number_of_hints; i++) {
+  for (guint i = 0; i < number_of_hints; i++) {
     WebKitDOMElement *hint = webkit_dom_document_create_element(dom_document, "div", NULL);
 
     if (hint == NULL) {
