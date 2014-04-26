@@ -46,10 +46,6 @@ static girara_list_t* jumanji_db_filter_url_list(girara_list_t* list, const
     char* input);
 static void jumanji_db_write_urls_to_file(const char* filename, girara_list_t*
     urls, bool visited);
-static girara_list_t* jumanji_db_read_cookies_from_file(const char* filename);
-static void jumanji_db_write_cookies_to_file(const char* filename,
-    girara_list_t* cookies);
-static void jumanji_db_free_cookie(void* data);
 
 struct jumanji_database_s
 {
@@ -65,10 +61,6 @@ struct jumanji_database_s
   girara_list_t* quickmarks; /**>  Temporary quickmarks */
   GFileMonitor* quickmarks_monitor; /**> File monitor for the quickmarks file */
 
-  gchar* cookie_file; /**> File path to the cookie file */
-  girara_list_t* cookies; /**>  Temporary cookies */
-  GFileMonitor* cookie_monitor; /**> File monitor for the cookie file */
-
   gchar* session_dir; /**> Path to the session directory */
 };
 
@@ -78,16 +70,6 @@ typedef struct jumanji_db_quickmark_s
   char* url; /**> Url */
 } jumanji_db_quickmark_t;
 
-typedef struct jumanji_database_cookie_s
-{
-  char* name; /**> Name of the cookie */
-  char* value; /**> Value */
-  char* domain; /**> Domain */
-  char* path; /**> Path */
-  time_t expires; /**> Expire date */
-  bool secure; /**> Secure */
-  bool http_only; /**> Http only */
-} jumanji_database_cookie_t;
 
 static bool
 jumanji_db_check_file(const char* path)
@@ -153,13 +135,6 @@ jumanji_db_init(const char* dir)
     goto error_free;
   }
 
-  /* get cookie file path */
-  database->cookie_file = g_build_filename(dir, COOKIES, NULL);
-  if (database->cookie_file == NULL ||
-      jumanji_db_check_file(database->cookie_file) == false) {
-    goto error_free;
-  }
-
   /* get session dir path */
   database->session_dir = g_build_filename(dir, SESSION_DIR, NULL);
   if (database->session_dir == NULL ||
@@ -171,12 +146,10 @@ jumanji_db_init(const char* dir)
   database->bookmarks  = jumanji_db_read_urls_from_file(database->bookmark_file);
   database->history    = jumanji_db_read_urls_from_file(database->history_file);
   database->quickmarks = jumanji_db_read_quickmarks_from_file(database->quickmarks_file);
-  database->cookies    = jumanji_db_read_cookies_from_file(database->cookie_file);
 
   girara_list_set_free_function(database->bookmarks,  jumanji_db_free_result_link);
   girara_list_set_free_function(database->history,    jumanji_db_free_result_link);
   girara_list_set_free_function(database->quickmarks, jumanji_db_free_quickmark);
-  girara_list_set_free_function(database->cookies,    jumanji_db_free_cookie);
 
   /* setup file monitors */
   GFile* bookmark_file = g_file_new_for_path(database->bookmark_file);
@@ -206,17 +179,8 @@ jumanji_db_init(const char* dir)
   }
   g_object_unref(quickmarks_file);
 
-  GFile* cookie_file = g_file_new_for_path(database->cookie_file);
-  if (cookie_file != NULL) {
-    database->cookie_monitor = g_file_monitor(cookie_file,
-        G_FILE_MONITOR_NONE, NULL, NULL);
-  } else {
-    goto error_free;
-  }
-  g_object_unref(cookie_file);
-
   if (database->bookmark_monitor == NULL || database->history_monitor == NULL ||
-      database->quickmarks_monitor == NULL || database->cookie_monitor == NULL) {
+      database->quickmarks_monitor == NULL) {
     goto error_free;
   }
 
@@ -225,8 +189,6 @@ jumanji_db_init(const char* dir)
   g_signal_connect(G_OBJECT(database->history_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
   g_signal_connect(G_OBJECT(database->quickmarks_monitor), "changed",
-      G_CALLBACK(cb_jumanji_db_watch_file), database);
-  g_signal_connect(G_OBJECT(database->cookie_monitor), "changed",
       G_CALLBACK(cb_jumanji_db_watch_file), database);
 
   return database;
@@ -277,16 +239,6 @@ jumanji_db_check_location(const char* dir)
   }
   free(file);
 
-  /* check cookie file path */
-  file = g_build_filename(dir, COOKIES, NULL);
-  if (file == NULL) {
-    return false;
-  }
-  if (g_file_test(file, G_FILE_TEST_EXISTS) == true) {
-    return true;
-  }
-  free(file);
-
   return false;
 }
 
@@ -300,12 +252,10 @@ jumanji_db_free(jumanji_database_t* database)
   g_free(database->bookmark_file);
   g_free(database->history_file);
   g_free(database->quickmarks_file);
-  g_free(database->cookie_file);
 
   girara_list_free(database->bookmarks);
   girara_list_free(database->history);
   girara_list_free(database->quickmarks);
-  girara_list_free(database->cookies);
 
   if (database->bookmark_monitor != NULL) {
     g_object_unref(database->bookmark_monitor);
@@ -317,10 +267,6 @@ jumanji_db_free(jumanji_database_t* database)
 
   if (database->quickmarks_monitor != NULL) {
     g_object_unref(database->quickmarks_monitor);
-  }
-
-  if (database->cookie_monitor != NULL) {
-    g_object_unref(database->cookie_monitor);
   }
 
   g_free(database);
@@ -870,10 +816,6 @@ cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile* other_file,
     girara_list_free(database->quickmarks);
     database->quickmarks = jumanji_db_read_quickmarks_from_file(database->quickmarks_file);
     girara_list_set_free_function(database->quickmarks, jumanji_db_free_quickmark);
-  } else if (database->cookie_file && strcmp(database->cookie_file, path) == 0) {
-    girara_list_free(database->cookies);
-    database->cookies = jumanji_db_read_cookies_from_file(database->cookie_file);
-    girara_list_set_free_function(database->cookies, jumanji_db_free_cookie);
   }
 
   g_free(path);
@@ -891,309 +833,6 @@ jumanji_db_free_quickmark(void* data)
   free(quickmark);
 }
 
-static girara_list_t*
-jumanji_db_read_cookies_from_file(const char* filename)
-{
-  if (filename == NULL) {
-    return NULL;
-  }
-
-  /* open file */
-  FILE* file = fopen(filename, "r");
-  if (file == NULL) {
-    return NULL;
-  }
-
-  girara_list_t* list = girara_list_new2(jumanji_db_free_cookie);
-  if (list == NULL) {
-    fclose(file);
-    return NULL;
-  }
-
-  file_lock_set(fileno(file), F_RDLCK);
-
-  /* read lines */
-  char* line = NULL;
-  while ((line = girara_file_read_line(file)) != NULL) {
-    /* skip empty lines */
-    if (strlen(line) == 0) {
-      free(line);
-      continue;
-    }
-
-    /* parse line */
-    gchar** argv = NULL;
-    gint    argc = 0;
-
-    if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
-      jumanji_database_cookie_t* cookie = malloc(sizeof(jumanji_database_cookie_t));
-      if (cookie == NULL || argc != 7) {
-        g_strfreev(argv);
-        free(line);
-        continue;
-      }
-
-      cookie->domain    = g_strdup(argv[0]);
-      cookie->secure    = (strcmp(argv[1], "TRUE") == 0) ? true : false;
-      cookie->path      = g_strdup(argv[2]);
-      cookie->http_only = (strcmp(argv[3], "TRUE") == 0) ? true : false;
-      cookie->name      = g_strdup(argv[5]);
-      cookie->value     = g_strdup(argv[6]);
-
-      /* parse expire value */
-      long long unsigned int tmp = 0;
-      char* p = argv[4];
-      for (; *p != '\0'; p++) {
-        tmp = 10 * tmp + (*p - '0');
-      }
-
-      cookie->expires = (time_t) tmp;
-
-      /* add parsed cookie to list */
-      girara_list_append(list, cookie);
-
-      /* add cookie to cookie jar */
-    }
-
-    g_strfreev(argv);
-    free(line);
-  }
-
-  file_lock_set(fileno(file), F_UNLCK);
-  fclose(file);
-
-  return list;
-}
-
-static void
-jumanji_db_write_cookies_to_file(const char* filename, girara_list_t* cookies)
-{
-  if (filename == NULL || cookies == NULL) {
-    return;
-  }
-
-  /* open file */
-  int fd = open(filename, O_RDWR);
-  if (fd == -1) {
-    return;
-  }
-
-  file_lock_set(fd, F_WRLCK);
-
-  if (girara_list_size(cookies) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(cookies);
-    do {
-      jumanji_database_cookie_t* cookie = (jumanji_database_cookie_t*) girara_list_iterator_data(iter);
-      if (cookie == NULL || cookie->domain == NULL || cookie->name == NULL ||
-          cookie->value == NULL || cookie->path == NULL) {
-        continue;
-      }
-
-      char* tmp = g_strdup_printf("%llu", (long long unsigned int) cookie->expires);
-      if (tmp == NULL) {
-        continue;
-      }
-
-      /* write domain */
-      if (write(fd, cookie->domain, strlen(cookie->domain)) != strlen(cookie->domain)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write secure */
-      char* value = (cookie->secure != true) ? "TRUE" : "FALSE";
-      if (write(fd, value, strlen(value)) != strlen(value));;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write path */
-      if (write(fd, cookie->path, strlen(cookie->path)) != strlen(cookie->path)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write https */
-      value = (cookie->http_only != true) ? "TRUE" : "FALSE";
-      if (write(fd, value, strlen(value)) != strlen(value)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write expire date */
-      if (write(fd, tmp, strlen(tmp)) != strlen(tmp)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write name */
-      if (write(fd, cookie->name, strlen(cookie->name)) != strlen(cookie->name)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      /* write value */
-      if (write(fd, cookie->value, strlen(cookie->value)) != strlen(cookie->value)) continue;
-      if (write(fd, "\t", 1) != 1) continue;
-
-      if (write(fd, "\n", 1) != 1) continue;
-
-      g_free(tmp);
-    } while (girara_list_iterator_next(iter) != NULL);
-    girara_list_iterator_free(iter);
-  }
-
-  file_lock_set(fd, F_UNLCK);
-  close(fd);
-}
-
-void
-jumanji_db_cookie_add(jumanji_database_t* database, const char* name, const char* value,
-    const char* domain, const char* path, time_t expires, bool secure, bool
-    http_only)
-{
-  if (database == NULL || name == NULL || value == NULL || domain == NULL || path
-      == NULL || database->cookies == NULL) {
-    return;
-  }
-
-  /* search for existing entry and update it */
-  if (girara_list_size(database->cookies) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(database->cookies);
-    do {
-      jumanji_database_cookie_t* cookie = (jumanji_database_cookie_t*) girara_list_iterator_data(iter);
-      if (cookie == NULL || cookie->name == NULL || cookie->path == NULL ||
-          cookie->value == NULL) {
-        continue;
-      }
-
-      if (strcmp(cookie->name, name) == 0 && strcmp(cookie->path, path) == 0 &&
-          strcmp(cookie->value, value) == 0)  {
-        g_free(cookie->domain);
-        cookie->domain    = g_strdup(domain);
-        cookie->expires   = expires;
-        cookie->secure    = secure;
-        cookie->http_only = http_only;
-
-        jumanji_db_write_cookies_to_file(database->cookie_file,
-            database->cookies);
-
-        girara_list_iterator_free(iter);
-        return;
-      }
-    } while (girara_list_iterator_next(iter) != NULL);
-    girara_list_iterator_free(iter);
-  }
-
-  /* add url to list */
-  jumanji_database_cookie_t* cookie = (jumanji_database_cookie_t*) malloc(sizeof(jumanji_database_cookie_t));
-  if (cookie == NULL) {
-    return;
-  }
-
-  cookie->name      = g_strdup(name);
-  cookie->value     = g_strdup(value);
-  cookie->domain    = g_strdup(domain);
-  cookie->path      = (path != NULL) ? g_strdup(path) : g_strdup("/");
-  cookie->expires   = expires;
-  cookie->secure    = secure;
-  cookie->http_only = http_only;
-
-  girara_list_append(database->cookies, cookie);
-
-  /* write to file */
-  jumanji_db_write_cookies_to_file(database->cookie_file, database->cookies);
-}
-
-void
-jumanji_db_cookie_remove(jumanji_database_t* database, const char* domain, const char*
-    name)
-{
-  if (database == NULL || name == NULL || domain == NULL || database->cookies ==
-      NULL) {
-    return;
-  }
-
-  /* search for existing entry and update it */
-  if (girara_list_size(database->cookies) > 0) {
-    girara_list_iterator_t* iter = girara_list_iterator(database->cookies);
-    do {
-      jumanji_database_cookie_t* cookie = (jumanji_database_cookie_t*) girara_list_iterator_data(iter);
-      if (cookie == NULL) {
-        continue;
-      }
-
-      if (strcmp(cookie->name, name) == 0 && strcmp(cookie->domain, domain) == 0) {
-        girara_list_remove(database->cookies, cookie);
-
-        jumanji_db_write_cookies_to_file(database->cookie_file, database->cookies);
-        girara_list_iterator_free(iter);
-        return;
-      }
-    } while (girara_list_iterator_next(iter) != NULL);
-    girara_list_iterator_free(iter);
-  }
-}
-
-girara_list_t*
-jumanji_db_cookie_list(jumanji_database_t* database)
-{
-  if (database == NULL || database->cookies == NULL || girara_list_size(database->cookies) == 0) {
-    return NULL;
-  }
-
-  girara_list_t* list = girara_list_new();
-  if (list == NULL) {
-    return NULL;
-  }
-
-  girara_list_iterator_t* iter = girara_list_iterator(database->cookies);
-  do {
-    jumanji_database_cookie_t* plain_cookie = (jumanji_database_cookie_t*) girara_list_iterator_data(iter);
-
-    if (plain_cookie == NULL) {
-      continue;
-    }
-
-    time_t now = time(NULL);
-    if (now >= plain_cookie->expires) {
-      continue;
-    }
-    int max_age = (plain_cookie->expires - now <= G_MAXINT ? plain_cookie->expires - now : G_MAXINT);
-
-    SoupCookie* cookie = soup_cookie_new(
-        plain_cookie->name,
-        plain_cookie->value,
-        plain_cookie->domain,
-        plain_cookie->path,
-        max_age
-        );
-
-    if (cookie == NULL) {
-      continue;
-    }
-
-    soup_cookie_set_secure(cookie, plain_cookie->secure);
-    soup_cookie_set_http_only(cookie, plain_cookie->http_only);
-
-    if (plain_cookie->expires > 0) {
-      SoupDate* date = soup_date_new_from_time_t(plain_cookie->expires);
-      soup_cookie_set_expires(cookie, date);
-      soup_date_free(date);
-    } else if (plain_cookie->expires == -1) {
-      soup_cookie_set_max_age(cookie, plain_cookie->expires);
-    }
-
-    girara_list_append(list, cookie);
-  } while (girara_list_iterator_next(iter));
-  girara_list_iterator_free(iter);
-
-  return list;
-}
-
-static void
-jumanji_db_free_cookie(void* data)
-{
-  if (data == NULL) {
-    return;
-  }
-
-  jumanji_database_cookie_t* cookie = (jumanji_database_cookie_t*) data;
-
-  g_free(cookie->name);
-  g_free(cookie->value);
-  g_free(cookie->domain);
-  g_free(cookie->path);
-  free(data);
-}
 
 void
 jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_list_t* urls)

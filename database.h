@@ -116,39 +116,6 @@ char* jumanji_db_quickmark_find(jumanji_database_t* database, const char identif
  */
 void jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier);
 
-/**
- * Saves a cookie
- *
- * @param session Database session
- * @param name Name
- * @param value Value
- * @param domain Domain
- * @param path Path
- * @param expires Expire date
- * @param secure Secure
- * @param http_only Http only
- */
-void jumanji_db_cookie_add(jumanji_database_t* database, const char* name, const char*
-    value, const char* domain, const char* path, time_t expires, bool secure,
-    bool http_only);
-
-/**
- * Remove a cookie
- *
- * @param session Database session
- * @param domain domain
- * @param name Name
- */
-void jumanji_db_cookie_remove(jumanji_database_t* database, const char* domain, const char*
-    name);
-
-/**
- * Returns a list of all SoupCookie's
- *
- * @param session The database session
- * @return List of cookies or NULL if an error occured
- */
-girara_list_t* jumanji_db_cookie_list(jumanji_database_t* database);
 
 /**
  * Frees a result link

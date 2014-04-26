@@ -55,19 +55,6 @@ jumanji_db_init(const char* dir)
       "url TEXT"
       ");";
 
-  static const char SQL_COOKIES_INIT[] =
-    /* cookies table */
-    "CREATE TABLE IF NOT EXISTS moz_cookies ("
-      "name TEXT,"
-      "value TEXT,"
-      "host TEXT,"
-      "path TEXT,"
-      "expiry INTEGER,"
-      "lastAccessed INTEGER,"
-      "isSecure INTEGER,"
-      "isHttpOnly INTEGER,"
-      "PRIMARY KEY(host, name));";
-
   if (sqlite3_open(path, &(database->session)) != SQLITE_OK) {
     goto error_free;
   }
@@ -84,11 +71,6 @@ jumanji_db_init(const char* dir)
   }
 
   if (sqlite3_exec(database->session, SQL_QUICKMARKS_INIT, NULL, 0, NULL) != SQLITE_OK) {
-    girara_error("Could not initialize database: %s\n", path);
-    goto error_free;
-  }
-
-  if (sqlite3_exec(database->session, SQL_COOKIES_INIT, NULL, 0, NULL) != SQLITE_OK) {
     girara_error("Could not initialize database: %s\n", path);
     goto error_free;
   }
@@ -508,143 +490,6 @@ jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
 
   sqlite3_step(statement);
   sqlite3_finalize(statement);
-}
-
-void
-jumanji_db_cookie_add(jumanji_database_t* database, const char* name, const char*
-    value, const char* domain, const char* path, time_t expires, bool secure,
-    bool http_only)
-{
-  if (database == NULL || database->session == NULL || name == NULL || value == NULL
-      || domain == NULL || path == NULL) {
-    return;
-  }
-
-  /* prepare statement */
-  static const char SQL_COOKIE_ADD[] =
-    "REPLACE INTO moz_cookies (name, value, host, path, expiry, lastAccessed, \
-    isSecure, isHttpOnly) VALUES (?, ?, ?, ?, ?, NULL, ?, ?);";
-
-  sqlite3_stmt* statement =
-    jumanji_db_prepare_statement(database->session, SQL_COOKIE_ADD);
-
-  if (statement == NULL) {
-    return;
-  }
-
-  /* bind values */
-  if (sqlite3_bind_text(statement, 1, name,   -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_text(statement, 2, value,  -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_text(statement, 3, domain, -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_text(statement, 4, path,   -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_int( statement, 5, expires) != SQLITE_OK ||
-      sqlite3_bind_int( statement, 6, (secure == true)    ? 1 : 0) != SQLITE_OK ||
-      sqlite3_bind_int( statement, 7, (http_only == true) ? 1 : 0) != SQLITE_OK
-      ) {
-    girara_error("Could not bind query parameters");
-    sqlite3_finalize(statement);
-    return;
-  }
-
-  sqlite3_step(statement);
-  sqlite3_finalize(statement);
-}
-
-void
-jumanji_db_cookie_remove(jumanji_database_t* database, const char* domain, const
-    char* name)
-{
-  if (database == NULL || database->session == NULL || domain == NULL || name ==
-      NULL) {
-    return;
-  }
-
-  /* prepare statement */
-  static const char SQL_COOKIE_REMOVE[] =
-    "DELETE FROM moz_cookies WHERE host = ? AND name = ?;";
-
-  sqlite3_stmt* statement =
-    jumanji_db_prepare_statement(database->session, SQL_COOKIE_REMOVE);
-
-  if (statement == NULL) {
-    return;
-  }
-
-  /* bind values */
-  if (sqlite3_bind_text(statement, 1, name,   -1, NULL) != SQLITE_OK ||
-      sqlite3_bind_text(statement, 2, domain, -1, NULL) != SQLITE_OK
-      ) {
-    girara_error("Could not bind query parameters");
-    sqlite3_finalize(statement);
-    return;
-  }
-
-  sqlite3_step(statement);
-  sqlite3_finalize(statement);
-}
-
-girara_list_t*
-jumanji_db_cookie_list(jumanji_database_t* database)
-{
-  if (database == NULL || database->session == NULL) {
-    return NULL;
-  }
-
-  /* create list */
-  girara_list_t* list = girara_list_new();
-  if (list == NULL) {
-    return NULL;
-  }
-
-  /* prepare statement */
-  static const char SQL_COOKIE_LIST[] =
-    "SELECT name, value, host, path, expiry, isSecure, isHttpOnly FROM moz_cookies;";
-
-  sqlite3_stmt* statement =
-    jumanji_db_prepare_statement(database->session, SQL_COOKIE_LIST);
-
-  if (statement == NULL) {
-    return NULL;
-  }
-
-  while(sqlite3_step(statement) == SQLITE_ROW) {
-    char* name     = (char*) sqlite3_column_text(statement, 0);
-    char* value    = (char*) sqlite3_column_text(statement, 1);
-    char* host     = (char*) sqlite3_column_text(statement, 2);
-    char* path     = (char*) sqlite3_column_text(statement, 3);
-    int expires    = sqlite3_column_int(statement, 4);
-    bool secure    = (sqlite3_column_int(statement, 5) == 1) ? true : false;
-    bool http_only = (sqlite3_column_int(statement, 6) == 1) ? true : false;
-
-    time_t now = time(NULL);
-    if (now >= expires) {
-      continue;
-    }
-
-    int max_age = (expires - now <= G_MAXINT ? expires - now : G_MAXINT);
-
-    SoupCookie* cookie = soup_cookie_new( name, value, host, path, max_age);
-    if (cookie == NULL) {
-      continue;
-    }
-
-    soup_cookie_set_secure(cookie, secure);
-    soup_cookie_set_http_only(cookie, http_only);
-
-    if (expires > 0) {
-      SoupDate* date = soup_date_new_from_time_t(expires);
-      soup_cookie_set_expires(cookie, date);
-      soup_date_free(date);
-    } else if (expires == -1) {
-      soup_cookie_set_max_age(cookie, expires);
-    }
-
-    girara_list_append(list, cookie);
-  }
-
-  sqlite3_finalize(statement);
-
-  return list;
 }
 
 void

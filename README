@@ -7,7 +7,7 @@ Requirements
 ------------
 gtk3 (>= 3.0.11)
 libwebkit3 (>= 1.4.1)
-libsoup (>= 2.22.4)
+libsoup (>= 2.42)
 girara-gtk3
 
 Please note that you need to have a working pkg-config installation

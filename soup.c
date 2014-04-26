@@ -1,18 +1,15 @@
 /* See LICENSE file for license and copyright information */
 
 #include <stdlib.h>
-#include <girara/datastructures.h>
-#include <girara/statusbar.h>
+#include <girara/girara.h>
+
 #include <libsoup/soup.h>
 
-#include "database.h"
 #include "soup.h"
 
 struct jumanji_soup_s
 {
   SoupSession* session; /*>> Soup session */
-  SoupCookieJar* cookie_jar; /**> Soup cookie jar */
-  gulong handler;
 };
 
 jumanji_soup_t*
@@ -34,19 +31,22 @@ jumanji_soup_init(jumanji_t* jumanji)
     return NULL;
   }
 
-  g_signal_connect(G_OBJECT(soup->session), "request-started",
-      G_CALLBACK(cb_jumanji_soup_session_request_started), jumanji);
-
-  soup->cookie_jar = soup_cookie_jar_new();
-  if (soup->cookie_jar == NULL) {
+  char* cookie_file = g_build_filename(jumanji->config.config_dir,
+      JUMANJI_COOKIE_FILE, NULL);
+  if (cookie_file == NULL) {
     free(soup);
     return NULL;
   }
 
-  soup->handler = g_signal_connect(G_OBJECT(soup->cookie_jar), "changed",
-      G_CALLBACK(cb_jumanji_soup_jar_changed), jumanji);
+  SoupCookieJar* cookie_jar = soup_cookie_jar_text_new(cookie_file, FALSE);
+  if (cookie_jar == NULL) {
+    g_free(cookie_file);
+    free(soup);
+    return NULL;
+  }
+  g_free(cookie_file);
 
-  soup_session_add_feature(soup->session, (SoupSessionFeature*) soup->cookie_jar);
+  soup_session_add_feature(soup->session, (SoupSessionFeature*) cookie_jar);
 
   return soup;
 }
@@ -59,84 +59,6 @@ jumanji_soup_free(jumanji_soup_t* soup)
   }
 
   free(soup);
-}
-
-void
-cb_jumanji_soup_jar_changed(SoupCookieJar* jar, SoupCookie* old_cookie,
-    SoupCookie* new_cookie, jumanji_t* jumanji)
-{
-  if (jar == NULL || jumanji == NULL || jumanji->database == NULL) {
-    return;
-  }
-
-  if (new_cookie == NULL || old_cookie == NULL) {
-    return;
-  }
-
-  if (old_cookie != NULL) {
-    const char* name   = soup_cookie_get_name(old_cookie);
-    const char* domain = soup_cookie_get_domain(old_cookie);
-    jumanji_db_cookie_remove(jumanji->database, domain, name);
-  }
-
-  if (new_cookie != NULL) {
-    SoupDate* expires  = soup_cookie_get_expires(new_cookie);
-    if (expires) {
-      const char* name   = soup_cookie_get_name(new_cookie);
-      const char* value  = soup_cookie_get_value(new_cookie);
-      const char* domain = soup_cookie_get_domain(new_cookie);
-      const char* path   = soup_cookie_get_path(new_cookie);
-      gboolean secure    = soup_cookie_get_secure(new_cookie);
-      gboolean http_only = soup_cookie_get_http_only(new_cookie);
-
-      jumanji_db_cookie_add(jumanji->database, name, value, domain, path,
-          soup_date_to_time_t(expires), (secure == TRUE) ?
-          true : false, (http_only == TRUE) ? true : false);
-    }
-  }
-}
-
-void
-cb_jumanji_soup_session_request_started(SoupSession* soup_session, SoupMessage*
-    message, SoupSocket* socket, jumanji_t* jumanji)
-{
-  if (jumanji == NULL || jumanji->database== NULL) {
-    return;
-  }
-
-  /* read cookies and update the cookie jar */
-  girara_list_t* cookies = jumanji_db_cookie_list(jumanji->database);
-  if (cookies != NULL) {
-    jumanji_soup_add_cookies(jumanji, cookies);
-    girara_list_free(cookies);
-  }
-}
-
-void
-jumanji_soup_add_cookies(jumanji_t* jumanji, girara_list_t* cookies)
-{
-  if (jumanji == NULL || cookies == NULL || jumanji->global.soup == 0 ||
-      girara_list_size(cookies) == 0) {
-    return;
-  }
-
-  jumanji_soup_t* soup = (jumanji_soup_t*) jumanji->global.soup;
-  
-  if (soup->cookie_jar == NULL) {
-    return;
-  }
-
-  g_signal_handler_disconnect(G_OBJECT(soup->cookie_jar), soup->handler);
-
-  girara_list_iterator_t* iter = girara_list_iterator(cookies);
-  do {
-    SoupCookie* cookie = girara_list_iterator_data(iter);
-    soup_cookie_jar_add_cookie(soup->cookie_jar, cookie);
-  } while (girara_list_iterator_next(iter));
-  girara_list_iterator_free(iter);
-
-  soup->handler = g_signal_connect(G_OBJECT(soup->cookie_jar), "changed",
-      G_CALLBACK(cb_jumanji_soup_jar_changed), jumanji);
 }
 
 void
