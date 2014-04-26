@@ -13,8 +13,8 @@ bool
 sc_quickmark_add(girara_session_t* session, girara_argument_t* argument,
     girara_event_t* event, unsigned int t)
 {
-  g_return_val_if_fail(session != NULL,           FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,           false);
+  g_return_val_if_fail(session->gtk.view != NULL, false);
 
   /* redirect signal handler */
   g_signal_handler_disconnect(G_OBJECT(session->gtk.view), session->signals.view_key_pressed);
@@ -28,9 +28,9 @@ bool
 cb_quickmarks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
     girara_session_t* session)
 {
-  g_return_val_if_fail(session != NULL,              FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL,    FALSE);
-  g_return_val_if_fail(session->global.data != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,              false);
+  g_return_val_if_fail(session->gtk.view != NULL,    false);
+  g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   /* reset signal handler */
@@ -59,9 +59,9 @@ bool
 sc_quickmark_evaluate(girara_session_t* session, girara_argument_t* argument,
     girara_event_t* event, unsigned int t)
 {
-  g_return_val_if_fail(session != NULL,              FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL,    FALSE);
-  g_return_val_if_fail(session->global.data != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,              false);
+  g_return_val_if_fail(session->gtk.view != NULL,    false);
+  g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   /* redirect signal handler */
@@ -82,9 +82,9 @@ bool
 cb_quickmarks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
     event, girara_session_t* session)
 {
-  g_return_val_if_fail(session != NULL,              FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL,    FALSE);
-  g_return_val_if_fail(session->global.data != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,              false);
+  g_return_val_if_fail(session->gtk.view != NULL,    false);
+  g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   /* reset signal handler */

@@ -57,9 +57,9 @@ bool
 cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
     jumanji_t* jumanji)
 {
-  g_return_val_if_fail(jumanji != NULL, FALSE);
-  g_return_val_if_fail(jumanji->ui.session != NULL, FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+  g_return_val_if_fail(jumanji != NULL, false);
+  g_return_val_if_fail(jumanji->ui.session != NULL, false);
+  g_return_val_if_fail(event != NULL, false);
 
   /* evaluate event */
   if (jumanji->hints.input == NULL) {
