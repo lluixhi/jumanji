@@ -7,6 +7,10 @@
 #include <girara/datastructures.h>
 #include <girara/utils.h>
 
+static void cb_user_script_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
+    girara_list_t* user_scripts);
+
+
 #define USER_SCRIPT_HEADER ".*//.*(==UserScript==.*//.*==/UserScript==).*"
 #define USER_SCRIPT_VAR_VAL_PAIR "//\\s+@(?<name>\\S+)(\\s+(?<value>.*))?"
 

@@ -8,6 +8,12 @@
 #include <girara/callbacks.h>
 #include <girara/datastructures.h>
 
+static bool cb_marks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
+    girara_session_t* session);
+
+static bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
+    event, girara_session_t* session);
+
 bool
 sc_mark_add(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {

@@ -67,14 +67,4 @@ void user_script_inject_text(WebKitWebView* web_view, const char* text);
  */
 void user_script_init_tab(jumanji_tab_t* tab, girara_list_t* user_scripts);
 
-/**
- * Callback that is used to load user scripts at the correct time
- *
- * @param web_view Webkit view
- * @param pspec -
- * @param user_scripts The list of user scripts
- */
-void cb_user_script_tab_load_status(WebKitWebView* web_view, GParamSpec* pspec,
-    girara_list_t* user_scripts);
-
 #endif // USERSCRIPTS_H

@@ -40,24 +40,6 @@ bool jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download);
 void jumanji_download_free(void* data);
 
 /**
- * Callback for the status of the download
- *
- * @param download Webkit download object
- * @param pspec -
- * @param jumanji_download Jumanji download object
- */
-void cb_jumanji_download_status(WebKitDownload* download, GParamSpec* pspec, jumanji_download_t* jumanji_download);
-
-/**
- * Callback for the progress of the download
- *
- * @param download Webkit download object
- * @param pspec -
- * @param jumanji_download Jumanji download object
- */
-void cb_jumanji_download_progress(WebKitDownload* download, GParamSpec* pspec, jumanji_download_t* jumanji_download);
-
-/**
  * Creates the widget that will be displayed for the jumanji download
  *
  * @param jumanji The jumanji session

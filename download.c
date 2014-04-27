@@ -9,6 +9,10 @@
 #include <girara/session.h>
 #include <girara/datastructures.h>
 
+static void cb_jumanji_download_status(WebKitDownload* download, GParamSpec* pspec, jumanji_download_t* jumanji_download);
+
+static void cb_jumanji_download_progress(WebKitDownload* download, GParamSpec* pspec, jumanji_download_t* jumanji_download);
+
 bool
 jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
 {

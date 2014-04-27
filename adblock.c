@@ -7,6 +7,14 @@
 
 #include "adblock.h"
 
+static void cb_adblock_filter_resource_request_starting(WebKitWebView* web_view,
+    WebKitWebFrame* web_frame, WebKitWebResource* web_resource,
+    WebKitNetworkRequest* request, WebKitNetworkResponse* response,
+    girara_list_t* adblock_filters);
+
+static void cb_adblock_tab_window_object_cleared(WebKitWebView* web_view, WebKitWebFrame* frame,
+    gpointer context, gpointer window_object, girara_list_t* adblock_filters);
+
 girara_list_t*
 adblock_filter_load_dir(const char* path)
 {
