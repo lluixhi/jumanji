@@ -1201,7 +1201,7 @@ jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_l
 
   /* Removes the session file, so closed tabs won't be opened on next startup
    * the return value shouldn't matter, since a error should only occur if
-   * the file doesn't already exists. When an sqlite backend is implemented
+   * the file doesn't already exist. When an sqlite backend is implemented
    * for session, this removal shouldn't be needed. */
   g_remove(session_path);
   jumanji_db_check_file(session_path);
