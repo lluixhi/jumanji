@@ -216,7 +216,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
     }
 
     webkit_dom_html_element_set_inner_text(WEBKIT_DOM_HTML_ELEMENT(hint), id, NULL);
-    webkit_dom_html_element_set_class_name(WEBKIT_DOM_HTML_ELEMENT(hint), "__jumanji_hint");
+    webkit_dom_element_set_class_name(WEBKIT_DOM_ELEMENT(hint), "__jumanji_hint");
 
     guint decimal = number_of_letters - 1;
     while (id[decimal] == 'z') {
