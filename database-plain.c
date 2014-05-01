@@ -741,7 +741,7 @@ jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool vi
     girara_list_iterator_t* iter = girara_list_iterator(urls);
     do {
       jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
-      if (link == NULL) {
+      if (link == NULL || link->url == NULL) {
         continue;
       }
 
