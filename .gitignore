@@ -1,6 +1,8 @@
 *.o
 *.do
+*~
 *.swp
 .depend
 jumanji
 jumanji-debug
+jumanji-*.tar.gz

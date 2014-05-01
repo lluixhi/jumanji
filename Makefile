@@ -48,8 +48,13 @@ ${PROJECT}: ${OBJECTS}
 	$(QUIET)${CC} ${SFLAGS} ${LDFLAGS} -o $@ ${OBJECTS} ${LIBS}
 
 clean:
-	$(QUIET)rm -rf ${PROJECT} ${OBJECTS} ${PROJECT}-${VERSION}.tar.gz \
-		${DOBJECTS} ${PROJECT}-debug .depend
+	$(QUIET)rm -rf ${PROJECT} \
+		${OBJECTS} \
+		${TARFILE} \
+		${TARDIR} \
+		${DOBJECTS} \
+		${PROJECT}-debug \
+		.depend
 
 ${PROJECT}-debug: ${DOBJECTS}
 	$(ECHO) CC -o $@
@@ -65,12 +70,7 @@ gdb: debug
 	cgdb ${PROJECT}-debug
 
 dist: clean
-	$(QUIET)mkdir -p ${PROJECT}-${VERSION}
-	$(QUIET)cp -R LICENSE Makefile config.mk README \
-			${PROJECT}.1 ${SOURCE} ${PROJECT}-${VERSION}
-	$(QUIET)tar -cf ${PROJECT}-${VERSION}.tar ${PROJECT}-${VERSION}
-	$(QUIET)gzip ${PROJECT}-${VERSION}.tar
-	$(QUIET)rm -rf ${PROJECT}-${VERSION}
+	$(QUIET)tar -czf $(TARFILE) --exclude=.gitignore `git ls-files`
 
 install: all
 	$(ECHO) installing executable file

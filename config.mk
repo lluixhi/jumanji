@@ -54,3 +54,7 @@ VERBOSE ?= 0
 
 # possible values are: sqlite and plain
 DATABASE ?= plain
+
+# dist
+TARFILE = ${PROJECT}-${VERSION}.tar.gz
+TARDIR = ${PROJECT}-${VERSION}
