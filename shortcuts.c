@@ -418,6 +418,11 @@ sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, girar
   }
 
   const char* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+
+  if (url == NULL) {
+    return false;
+  }
+
   const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
   girara_list_t* results = jumanji_db_bookmark_find(jumanji->database, url);
