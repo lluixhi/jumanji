@@ -418,22 +418,24 @@ sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, girar
   }
 
   const char* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
+  const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
   if (url == NULL) {
     return false;
   }
 
-  const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
+  gchar* escaped_url = g_markup_escape_text(url, -1);
 
   girara_list_t* results = jumanji_db_bookmark_find(jumanji->database, url);
   if (results && girara_list_size(results) > 0) {
     jumanji_db_bookmark_remove(jumanji->database, url);
-    girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", url);
+    girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", escaped_url);
   } else {
     jumanji_db_bookmark_add(jumanji->database, url, title);
-    girara_notify(session, GIRARA_INFO, "Added bookmark: %s", url);
+    girara_notify(session, GIRARA_INFO, "Added bookmark: %s", escaped_url);
   }
   girara_list_free(results);
+  g_free(escaped_url);
 
   return false;
 }
@@ -503,10 +505,6 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
 
   char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
 
-  if (url == NULL) {
-    return false;
-  }
-
   GtkClipboard* clipboard;
   char* default_clipboard = NULL;
   girara_setting_get(session, "default-clipboard", &default_clipboard);
@@ -519,8 +517,12 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
   }
 
   if (clipboard != NULL) {
+    gchar* escaped_url = g_markup_escape_text(url, -1);
+
     gtk_clipboard_set_text(clipboard, url, -1);
-    girara_notify(session, GIRARA_INFO, "Yanked: %s", url);
+    girara_notify(session, GIRARA_INFO, "Yanked: %s", escaped_url);
+
+    g_free(escaped_url);
   }
 
   return false;

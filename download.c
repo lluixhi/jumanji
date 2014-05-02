@@ -117,8 +117,7 @@ jumanji_download_file(jumanji_t* jumanji, WebKitDownload* download)
     /* start download */
     webkit_download_start(download);
 
-    girara_notify(jumanji->ui.session, GIRARA_INFO, "Started download: %s",
-        file);
+    girara_notify(jumanji->ui.session, GIRARA_INFO, "Started download: %s", file);
   }
 
   g_free(filename);
