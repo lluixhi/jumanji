@@ -28,7 +28,7 @@ build_girara_list(const char* string)
 
   girara_list_set_free_function(list, g_free);
 
-  for(int i = 0; i < argc; i++) {
+  for (int i = 0; i < argc; i++) {
     girara_list_append(list, (void*) g_strdup(argv[i]));
   }
 
@@ -38,7 +38,8 @@ build_girara_list(const char* string)
 }
 
 char*
-url_encode(const char* string) {
+url_encode(const char* string)
+{
   if (string == NULL) {
     return NULL;
   }

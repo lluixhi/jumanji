@@ -38,11 +38,13 @@ config_load_default(jumanji_t* jumanji)
 
   /* jumanji settings */
   bool_value = true;
-  girara_setting_add(gsession, "adblock",          &bool_value,  BOOLEAN, true,  "Block ads",                   NULL, NULL);
+  girara_setting_add(gsession, "adblock",                     &bool_value,  BOOLEAN, true,  "Block ads",                   NULL, NULL);
   bool_value = true;
   girara_setting_add(gsession, "auto-set-proxy",              &bool_value,  BOOLEAN, true,  "Set proxy on initialization", NULL, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "close-window-with-last-tab",  &bool_value,  BOOLEAN, false,  "Close window with last tab", NULL, NULL);
+  girara_setting_add(gsession, "close-window-with-last-tab",  &bool_value,  BOOLEAN, false, "Close window with last tab", NULL, NULL);
+  string_value = "primary";
+  girara_setting_add(gsession, "default-clipboard",           string_value, STRING,  false, "Default clipboard",           NULL, NULL);
   string_value = "~/dl";
   girara_setting_add(gsession, "download-dir",                string_value, STRING,  false, "Download directory",          NULL, NULL);
   string_value = NULL;
@@ -76,59 +78,59 @@ config_load_default(jumanji_t* jumanji)
 
   /* webkit settings */
   bool_value = true;
-  girara_setting_add(gsession, "auto-load-images",            &bool_value,   BOOLEAN, false, "Load images automatically",            cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "auto-load-images",            &bool_value,   BOOLEAN, false, "Load images automatically",             cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "auto-shrink-images",          &bool_value,   BOOLEAN, false, "Shrink standalone images to fit",      cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "auto-shrink-images",          &bool_value,   BOOLEAN, false, "Shrink standalone images to fit",       cb_settings_webkit, NULL);
   string_value = "serif";
-  girara_setting_add(gsession, "cursive-font-family",         &string_value, STRING,  false, "Default cursive font family",          cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "cursive-font-family",         &string_value, STRING,  false, "Default cursive font family",           cb_settings_webkit, NULL);
   string_value = "iso-8859-1";
-  girara_setting_add(gsession, "default-encoding",            &string_value, STRING , false, "Default encoding",                     cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "default-encoding",            &string_value, STRING , false, "Default encoding",                      cb_settings_webkit, NULL);
   string_value = "sans-serif";
-  girara_setting_add(gsession, "default-font-family",         &string_value, STRING , false, "Default font family",                  cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "default-font-family",         &string_value, STRING , false, "Default font family",                   cb_settings_webkit, NULL);
   int_value = 12;
-  girara_setting_add(gsession, "default-font-size",           &int_value,    INT,     false, "Default font size",                    cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "default-font-size",           &int_value,    INT,     false, "Default font size",                     cb_settings_webkit, NULL);
   int_value = 10;
-  girara_setting_add(gsession, "default-monospace-font-size", &int_value,    INT,     false, "Default monospace font size",          cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "default-monospace-font-size", &int_value,    INT,     false, "Default monospace font size",           cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enable-caret-browsing",       &bool_value,   BOOLEAN, false, "Wheter to enable caret browsing mode", cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-caret-browsing",       &bool_value,   BOOLEAN, false, "Whether to enable caret browsing mode", cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enable-developer-extras",     &bool_value,   BOOLEAN, false, "Enable webkit developer extensions",   cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-developer-extras",     &bool_value,   BOOLEAN, false, "Enable webkit developer extensions",    cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "enable-java-applet",          &bool_value,   BOOLEAN, false, "Enable java applets",                  cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-java-applet",          &bool_value,   BOOLEAN, false, "Enable java applets",                   cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enable-page-cache",           &bool_value,   BOOLEAN, false, "Enable page caching",                  cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-page-cache",           &bool_value,   BOOLEAN, false, "Enable page caching",                   cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "enable-plugins",              &bool_value,   BOOLEAN, false, "Enable plugins",                       cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-plugins",              &bool_value,   BOOLEAN, false, "Enable plugins",                        cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enable-private-browsing",     &bool_value,   BOOLEAN, false, "Enable private browsing",              cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-private-browsing",     &bool_value,   BOOLEAN, false, "Enable private browsing",               cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "enable-scripts",              &bool_value,   BOOLEAN, false, "Enable scripts",                       cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-scripts",              &bool_value,   BOOLEAN, false, "Enable scripts",                        cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enable-spell-checking",       &bool_value,   BOOLEAN, false, "Enable spell checking",                cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enable-spell-checking",       &bool_value,   BOOLEAN, false, "Enable spell checking",                 cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "enforce-96-dpi",              &bool_value,   BOOLEAN, false, "Enforce a resolution of 96 DPI",       cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "enforce-96-dpi",              &bool_value,   BOOLEAN, false, "Enforce a resolution of 96 DPI",        cb_settings_webkit, NULL);
   string_value = "serif";
-  girara_setting_add(gsession, "fantasy-font-family",         &string_value, STRING , false, "Fantasy font family",                  cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "fantasy-font-family",         &string_value, STRING , false, "Fantasy font family",                   cb_settings_webkit, NULL);
   bool_value = false;
-  girara_setting_add(gsession, "full-content-zoom",           &bool_value,   BOOLEAN, false, "Full-content zoom",                    cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "full-content-zoom",           &bool_value,   BOOLEAN, false, "Full-content zoom",                     cb_settings_webkit, NULL);
   int_value = 5;
-  girara_setting_add(gsession, "minimum-font-size",           &int_value,    INT,     false, "Minimum font size",                    cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "minimum-font-size",           &int_value,    INT,     false, "Minimum font size",                     cb_settings_webkit, NULL);
   string_value = "monospace";
-  girara_setting_add(gsession, "monospace-font-family",       &string_value, STRING,  false, "Monospace font family",                cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "monospace-font-family",       &string_value, STRING,  false, "Monospace font family",                 cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "print-backgrounds",           &bool_value,   BOOLEAN, false, "Print background images",              cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "print-backgrounds",           &bool_value,   BOOLEAN, false, "Print background images",               cb_settings_webkit, NULL);
   bool_value = true;
-  girara_setting_add(gsession, "resizeable-text-areas",       &bool_value,   BOOLEAN, false, "Allow resizeable text areas",          cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "resizable-text-areas",        &bool_value,   BOOLEAN, false, "Allow resizable text areas",            cb_settings_webkit, NULL);
   string_value = "sans-serif";
-  girara_setting_add(gsession, "sans-serif-font-family",      &string_value, STRING,  false, "Sans-serif font family",               cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "sans-serif-font-family",      &string_value, STRING,  false, "Sans-serif font family",                cb_settings_webkit, NULL);
   string_value = "serif";
-  girara_setting_add(gsession, "serif-font-family",           &string_value, STRING,  false, "Serif font family",                    cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "serif-font-family",           &string_value, STRING,  false, "Serif font family",                     cb_settings_webkit, NULL);
   string_value = NULL;
-  girara_setting_add(gsession, "spell-checking-languages",    &string_value, STRING,  false, "Spell checking languages",             cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "spell-checking-languages",    &string_value, STRING,  false, "Spell checking languages",              cb_settings_webkit, NULL);
   string_value = NULL;
-  girara_setting_add(gsession, "user-agent",                  &string_value, STRING,  false, "User agent",                           cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "user-agent",                  &string_value, STRING,  false, "User agent",                            cb_settings_webkit, NULL);
   string_value = NULL;
-  girara_setting_add(gsession, "user-stylesheet-uri",         &string_value, STRING,  false, "Custom stylesheet",                    cb_settings_webkit, NULL);
+  girara_setting_add(gsession, "user-stylesheet-uri",         &string_value, STRING,  false, "Custom stylesheet",                     cb_settings_webkit, NULL);
 
   /* define default shortcuts */
   girara_shortcut_add(gsession, 0,                GDK_KEY_apostrophe, NULL, sc_mark_evaluate,         NORMAL, 0,               NULL);
@@ -226,7 +228,15 @@ config_load_default(jumanji_t* jumanji)
   girara_shortcut_mapping_add(gsession, "proxy",            sc_toggle_proxy);
   girara_shortcut_mapping_add(gsession, "plugins",          sc_toggle_plugins);
   girara_shortcut_mapping_add(gsession, "user_stylesheet",  sc_toggle_stylesheet);
-
+  girara_shortcut_mapping_add(gsession, "close",            girara_sc_tab_close);
+  girara_shortcut_mapping_add(gsession, "search",           sc_search);
+  girara_shortcut_mapping_add(gsession, "bookmark",         sc_toggle_bookmark);
+  girara_shortcut_mapping_add(gsession, "hints",            sc_hints);
+  girara_shortcut_mapping_add(gsession, "qmark_add",        sc_quickmark_add);
+  girara_shortcut_mapping_add(gsession, "qmark_eval",       sc_quickmark_evaluate);
+  girara_shortcut_mapping_add(gsession, "mark_add",         sc_mark_add);
+  girara_shortcut_mapping_add(gsession, "mark_eval",        sc_mark_evaluate);
+  girara_shortcut_mapping_add(gsession, "tab_navigate",     sc_tab_navigate);
 
   girara_shortcut_mapping_add(gsession, "yank",             sc_yank);
   girara_shortcut_mapping_add(gsession, "zoom",             sc_zoom);
@@ -253,6 +263,8 @@ config_load_default(jumanji_t* jumanji)
   girara_argument_mapping_add(gsession, "tab",        NEW_TAB);
   girara_argument_mapping_add(gsession, "top",        TOP);
   girara_argument_mapping_add(gsession, "up",         UP);
+  girara_argument_mapping_add(gsession, "forward",    FORWARDS);
+  girara_argument_mapping_add(gsession, "backward",   BACKWARDS);
 
   /* add config handles */
   girara_config_handle_add(gsession, "searchengine", cmd_search_engine);

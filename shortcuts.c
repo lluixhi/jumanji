@@ -92,7 +92,7 @@ sc_goto_parent_directory(girara_session_t* session, girara_argument_t* argument,
     GString* tmp   = g_string_new("");
 
     int limit = length - count;
-    for(int i = 0; i < limit; i++) {
+    for (int i = 0; i < limit; i++) {
       if (i == 0) {
         g_string_append(tmp, tokens[i]);
       } else {
@@ -163,6 +163,20 @@ sc_focus_inputbar(girara_session_t* session, girara_argument_t* argument, girara
 }
 
 bool
+sc_tab_navigate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
+{
+  g_return_val_if_fail(argument != NULL, false);
+
+  girara_argument_t arg = { GIRARA_NEXT, argument->data };
+
+  if (argument->n == PREVIOUS) {
+    arg.n = GIRARA_PREVIOUS;
+  }
+
+  return girara_sc_tab_navigate(session, &arg, event, t);
+}
+
+bool
 sc_navigate_history(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
@@ -191,7 +205,17 @@ sc_put(girara_session_t* session, girara_argument_t* argument, girara_event_t* e
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(argument != NULL, false);
 
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  GtkClipboard* clipboard;
+  char* default_clipboard = NULL;
+  girara_setting_get(session, "default-clipboard", &default_clipboard);
+  if (g_strcmp0(default_clipboard, "secondary") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_SECONDARY);
+  } else if (g_strcmp0(default_clipboard, "clipboard") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  } else {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  }
+
   if (clipboard == NULL) {
     return false;
   }
@@ -396,15 +420,22 @@ sc_toggle_bookmark(girara_session_t* session, girara_argument_t* argument, girar
   const char* url   = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
   const char* title = webkit_web_view_get_title(WEBKIT_WEB_VIEW(tab->web_view));
 
+  if (url == NULL) {
+    return false;
+  }
+
+  gchar* escaped_url = g_markup_escape_text(url, -1);
+
   girara_list_t* results = jumanji_db_bookmark_find(jumanji->database, url);
   if (results && girara_list_size(results) > 0) {
     jumanji_db_bookmark_remove(jumanji->database, url);
-    girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", url);
+    girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", escaped_url);
   } else {
     jumanji_db_bookmark_add(jumanji->database, url, title);
-    girara_notify(session, GIRARA_INFO, "Added bookmark: %s", url);
+    girara_notify(session, GIRARA_INFO, "Added bookmark: %s", escaped_url);
   }
   girara_list_free(results);
+  g_free(escaped_url);
 
   return false;
 }
@@ -413,6 +444,7 @@ bool
 sc_toggle_proxy(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
   g_return_val_if_fail(session != NULL, false);
+
   return cb_statusbar_proxy(NULL, NULL, session);
 }
 
@@ -473,16 +505,25 @@ sc_yank(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
 
   char* url = (char*) webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
 
-  if (url == NULL) {
-    return false;
+  GtkClipboard* clipboard;
+  char* default_clipboard = NULL;
+  girara_setting_get(session, "default-clipboard", &default_clipboard);
+  if (g_strcmp0(default_clipboard, "secondary") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_SECONDARY);
+  } else if (g_strcmp0(default_clipboard, "clipboard") == 0) {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  } else {
+    clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
   }
 
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
   if (clipboard != NULL) {
-    gtk_clipboard_set_text(clipboard, url, -1);
-    girara_notify(session, GIRARA_INFO, "Yanked: %s", url);
-  }
+    gchar* escaped_url = g_markup_escape_text(url, -1);
 
+    gtk_clipboard_set_text(clipboard, url, -1);
+    girara_notify(session, GIRARA_INFO, "Yanked: %s", escaped_url);
+
+    g_free(escaped_url);
+  }
 
   return false;
 }
@@ -521,7 +562,8 @@ sc_zoom(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
 }
 
 bool
-sc_toggle_stylesheet(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t) {
+sc_toggle_stylesheet(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
+{
   jumanji_t* jumanji = session->global.data;
   g_return_val_if_fail(session != NULL, false);
   gchar* user_stylesheet_uri = NULL;

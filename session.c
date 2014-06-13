@@ -63,8 +63,11 @@ sessionsave(girara_session_t* session, const char* name)
     link->visited = false;
     girara_list_append(url_list, link);
   }
+
   jumanji_db_save_session(jumanji->database, name, url_list);
+
   girara_list_free(url_list);
+
   return true;
 }
 

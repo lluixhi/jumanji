@@ -33,7 +33,7 @@ void cb_girara_buffer_changed(girara_session_t* session);
 void cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab);
 
 /**
- * Executed when the page loaded. Saves the page in the history
+ * Executed when the page finishes loading. Saves the page in the history
  *
  * @param web_view Webkit web view
  * @param frame Webkit frame
@@ -148,7 +148,7 @@ bool cb_jumanji_tab_navigation_policy_decision_requested(WebKitWebView*
     jumanji_tab_t* tab);
 
 /**
- * Called when a webkit settings has been changed
+ * Called when a webkit setting has been changed
  *
  * @param session The girara session
  * @param setting The girara setting

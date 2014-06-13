@@ -37,8 +37,12 @@ cmd_bookmark_add(girara_session_t* session, girara_list_t* argument_list)
     }
   }
 
+  gchar* escaped_url = g_markup_escape_text(url, -1);
+
   jumanji_db_bookmark_add(jumanji->database, url, title);
-  girara_notify(session, GIRARA_INFO, "Added bookmark: %s", url);
+  girara_notify(session, GIRARA_INFO, "Added bookmark: %s", escaped_url);
+
+  g_free(escaped_url);
 
   return true;
 }
@@ -65,8 +69,12 @@ cmd_bookmark_delete(girara_session_t* session, girara_list_t* argument_list)
     }
   }
 
+  gchar* escaped_url = g_markup_escape_text(url, -1);
+
   jumanji_db_bookmark_remove(jumanji->database, url);
-  girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", url);
+  girara_notify(session, GIRARA_INFO, "Removed bookmark: %s", escaped_url);
+
+  g_free(escaped_url);
 
   return true;
 }
@@ -165,7 +173,7 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
 
   url = (strstr(url, "://") != NULL) ? g_strdup(url) : g_strconcat("http://", url, NULL);
 
-  /* search for existing search engine */
+  /* search for existing proxy */
   if (girara_list_size(jumanji->global.proxies) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(jumanji->global.proxies);
 

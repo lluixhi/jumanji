@@ -17,8 +17,8 @@ static bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKe
 bool
 sc_mark_add(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
-  g_return_val_if_fail(session != NULL,           FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,           false);
+  g_return_val_if_fail(session->gtk.view != NULL, false);
 
   /* redirect signal handler */
   g_signal_handler_disconnect(G_OBJECT(session->gtk.view), session->signals.view_key_pressed);
@@ -31,8 +31,8 @@ sc_mark_add(girara_session_t* session, girara_argument_t* argument, girara_event
 bool
 sc_mark_evaluate(girara_session_t* session, girara_argument_t* argument, girara_event_t* event, unsigned int t)
 {
-  g_return_val_if_fail(session != NULL,           FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,           false);
+  g_return_val_if_fail(session->gtk.view != NULL, false);
 
   /* redirect signal handler */
   g_signal_handler_disconnect(G_OBJECT(session->gtk.view), session->signals.view_key_pressed);
@@ -46,9 +46,9 @@ bool
 cb_marks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
     girara_session_t* session)
 {
-  g_return_val_if_fail(session != NULL,              FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL,    FALSE);
-  g_return_val_if_fail(session->global.data != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,              false);
+  g_return_val_if_fail(session->gtk.view != NULL,    false);
+  g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   /* reset signal handler */
@@ -57,8 +57,8 @@ cb_marks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
       G_CALLBACK(girara_callback_view_key_press_event), session);
 
   /* evaluate key */
-  if (((event->keyval >= 0x41 && event->keyval <= 0x5A) || (event->keyval >=
-          0x61 && event->keyval <= 0x7A)) == false) {
+  if (((event->keyval >= 0x41 && event->keyval <= 0x5A) ||
+       (event->keyval >= 0x61 && event->keyval <= 0x7A)) == false) {
     return false;
   }
 
@@ -72,12 +72,13 @@ cb_marks_view_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
   return true;
 }
 
-bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
+bool
+cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
     event, girara_session_t* session)
 {
-  g_return_val_if_fail(session != NULL,              FALSE);
-  g_return_val_if_fail(session->gtk.view != NULL,    FALSE);
-  g_return_val_if_fail(session->global.data != NULL, FALSE);
+  g_return_val_if_fail(session != NULL,              false);
+  g_return_val_if_fail(session->gtk.view != NULL,    false);
+  g_return_val_if_fail(session->global.data != NULL, false);
   jumanji_t* jumanji = (jumanji_t*) session->global.data;
 
   /* reset signal handler */
@@ -86,8 +87,8 @@ bool cb_marks_view_key_press_event_evaluate(GtkWidget* widget, GdkEventKey*
       G_CALLBACK(girara_callback_view_key_press_event), session);
 
   /* evaluate key */
-  if (((event->keyval >= 0x41 && event->keyval <= 0x5A) || (event->keyval >=
-          0x61 && event->keyval <= 0x7A)) == false) {
+  if (((event->keyval >= 0x41 && event->keyval <= 0x5A) ||
+       (event->keyval >= 0x61 && event->keyval <= 0x7A)) == false) {
     return false;
   }
 
@@ -129,8 +130,8 @@ cmd_marks_add(girara_session_t* session, girara_list_t* argument_list)
 
   char key = key_string[0];
 
-  if (((key >= 0x41 && key <= 0x5A) || (key >=
-          0x61 && key <= 0x7A)) == false) {
+  if (((key >= 0x41 && key <= 0x5A) ||
+       (key >= 0x61 && key <= 0x7A)) == false) {
     return false;
   }
 
@@ -170,8 +171,8 @@ cmd_marks_delete(girara_session_t* session, girara_list_t* argument_list)
 
     for (unsigned int i = 0; i < strlen(key_string); i++) {
       char key = key_string[i];
-      if (((key >= 0x41 && key <= 0x5A) || (key >=
-              0x61 && key <= 0x7A)) == false) {
+      if (((key >= 0x41 && key <= 0x5A) ||
+           (key >= 0x61 && key <= 0x7A)) == false) {
         continue;
       }
 

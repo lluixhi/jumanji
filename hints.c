@@ -61,9 +61,9 @@ bool
 cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
     jumanji_t* jumanji)
 {
-  g_return_val_if_fail(jumanji != NULL, FALSE);
-  g_return_val_if_fail(jumanji->ui.session != NULL, FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+  g_return_val_if_fail(jumanji != NULL, false);
+  g_return_val_if_fail(jumanji->ui.session != NULL, false);
+  g_return_val_if_fail(event != NULL, false);
 
   /* evaluate event */
   if (jumanji->hints.input == NULL) {
@@ -85,10 +85,8 @@ cb_hints_key_press_event_add(GtkWidget* widget, GdkEventKey* event,
 void
 hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
 {
-  if (tab == NULL ||
-      tab->web_view == NULL ||
-      jumanji == NULL ||
-      jumanji->ui.session == NULL) {
+  if (tab == NULL || tab->web_view == NULL ||
+      jumanji == NULL || jumanji->ui.session == NULL) {
     return;
   }
 
@@ -176,7 +174,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
   }
 
   /* retreive visible nodes */
-  for(guint i = 0; i < snapshot_length; i++) {
+  for (guint i = 0; i < snapshot_length; i++) {
     WebKitDOMNode *node = webkit_dom_xpath_result_snapshot_item(result, i, NULL);
 
     if (node == NULL) {
@@ -214,7 +212,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
     return;
   }
 
-  for(guint i = 0; i < number_of_hints; i++) {
+  for (guint i = 0; i < number_of_hints; i++) {
     WebKitDOMElement *hint = webkit_dom_document_create_element(dom_document, "div", NULL);
 
     if (hint == NULL) {
@@ -222,7 +220,7 @@ hints_show(jumanji_t* jumanji, jumanji_tab_t* tab)
     }
 
     webkit_dom_html_element_set_inner_text(WEBKIT_DOM_HTML_ELEMENT(hint), id, NULL);
-    webkit_dom_html_element_set_class_name(WEBKIT_DOM_HTML_ELEMENT(hint), "__jumanji_hint");
+    webkit_dom_element_set_class_name(WEBKIT_DOM_ELEMENT(hint), "__jumanji_hint");
 
     guint decimal = number_of_letters - 1;
     while (id[decimal] == 'z') {

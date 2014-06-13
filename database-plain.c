@@ -31,7 +31,7 @@
   }
 #endif
 
-/* forward declaration */
+/* forward declarations */
 static void jumanji_db_write_quickmarks_to_file(const char* filename,
     girara_list_t* quickmarks);
 static void cb_jumanji_db_watch_file(GFileMonitor* monitor, GFile* file, GFile*
@@ -421,7 +421,7 @@ jumanji_db_history_clean(jumanji_database_t* database, unsigned int age)
     return;
   }
 
-  /* remove url from list */
+  /* remove urls from list */
   if (girara_list_size(database->history) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(database->history);
 
@@ -496,7 +496,7 @@ jumanji_db_quickmark_find(jumanji_database_t* database, const char identifier)
     return NULL;
   }
 
-  /* search for existing entry and update it */
+  /* search for existing entry */
   if (girara_list_size(database->quickmarks) > 0) {
     char* url = NULL;
     girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
@@ -526,7 +526,7 @@ jumanji_db_quickmark_remove(jumanji_database_t* database, const char identifier)
     return;
   }
 
-  /* search for existing entry and update it */
+  /* search for existing entry */
   if (girara_list_size(database->quickmarks) > 0) {
     girara_list_iterator_t* iter = girara_list_iterator(database->quickmarks);
     do {
@@ -687,7 +687,7 @@ jumanji_db_write_urls_to_file(const char* filename, girara_list_t* urls, bool vi
     girara_list_iterator_t* iter = girara_list_iterator(urls);
     do {
       jumanji_db_result_link_t* link = (jumanji_db_result_link_t*) girara_list_iterator_data(iter);
-      if (link == NULL) {
+      if (link == NULL || link->url == NULL) {
         continue;
       }
 
@@ -833,7 +833,6 @@ jumanji_db_free_quickmark(void* data)
   free(quickmark);
 }
 
-
 void
 jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_list_t* urls)
 {
@@ -841,7 +840,7 @@ jumanji_db_save_session(jumanji_database_t* database, const char* name, girara_l
 
   /* Removes the session file, so closed tabs won't be opened on next startup
    * the return value shouldn't matter, since a error should only occur if
-   * the file doesn't already exists. When an sqlite backend is implemented
+   * the file doesn't already exist. When an sqlite backend is implemented
    * for session, this removal shouldn't be needed. */
   g_remove(session_path);
   jumanji_db_check_file(session_path);

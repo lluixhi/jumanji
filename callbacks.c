@@ -47,6 +47,10 @@ cb_jumanji_tab_destroy(GObject* object, jumanji_tab_t* tab)
     return;
   }
 
+  /* TODO: We may need to lock jumanji_tab_t instance
+   * with either a GRWLock or GRecMutex to avoid races */
+  g_signal_handlers_disconnect_by_data(G_OBJECT(tab->web_view), tab);
+
   if (tab->web_view != NULL && tab->jumanji->global.last_closed != NULL) {
     const char* uri = webkit_web_view_get_uri(WEBKIT_WEB_VIEW(tab->web_view));
     if (uri != NULL) {

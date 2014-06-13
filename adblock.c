@@ -86,9 +86,9 @@ adblock_filter_load(const char* path)
     return NULL;
   }
 
-  girara_list_set_free_function(pattern,     adblock_rule_free);
-  girara_list_set_free_function(exceptions,  adblock_rule_free);
-  girara_list_set_free_function(css_rules, adblock_rule_free);
+  girara_list_set_free_function(pattern,    adblock_rule_free);
+  girara_list_set_free_function(exceptions, adblock_rule_free);
+  girara_list_set_free_function(css_rules,  adblock_rule_free);
 
   /* read file */
   FILE* file = girara_file_open(path, "r");
@@ -138,7 +138,8 @@ adblock_filter_free(void* data)
   girara_list_free(filter->pattern);
 
   /* free exception rules */
-  girara_list_free(filter->exceptions); }
+  girara_list_free(filter->exceptions);
+}
 
 void
 adblock_rule_free(void* data)
