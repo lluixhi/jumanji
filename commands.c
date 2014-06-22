@@ -189,6 +189,7 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
         proxy->url         = g_strdup(url);
         proxy->description = description ? g_strdup(description) : NULL;
         g_free(url);
+        girara_list_iterator_free(iter);
         return true;
       }
     } while (girara_list_iterator_next(iter));
