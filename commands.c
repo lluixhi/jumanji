@@ -204,7 +204,7 @@ cmd_proxy(girara_session_t* session, girara_list_t* argument_list)
   }
 
   proxy->url         = url;
-  proxy->description = g_strdup(description);
+  proxy->description = description != NULL ? g_strdup(description) : NULL;
 
   girara_list_append(jumanji->global.proxies, proxy);
 
