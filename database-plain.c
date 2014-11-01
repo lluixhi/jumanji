@@ -574,7 +574,7 @@ jumanji_db_read_urls_from_file(const char* filename)
   while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
-      free(line);
+      g_free(line);
       continue;
     }
 
@@ -586,7 +586,7 @@ jumanji_db_read_urls_from_file(const char* filename)
       jumanji_db_result_link_t* link = malloc(sizeof(jumanji_db_result_link_t));
       if (link == NULL) {
         g_strfreev(argv);
-        free(line);
+        g_free(line);
         continue;
       }
 
@@ -598,7 +598,7 @@ jumanji_db_read_urls_from_file(const char* filename)
     }
 
     g_strfreev(argv);
-    free(line);
+    g_free(line);
   }
 
   file_lock_set(fileno(file), F_UNLCK);
@@ -633,7 +633,7 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
   while ((line = girara_file_read_line(file)) != NULL) {
     /* skip empty lines */
     if (strlen(line) == 0) {
-      free(line);
+      g_free(line);
       continue;
     }
 
@@ -643,13 +643,13 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
 
     if (g_shell_parse_argv(line, &argc, &argv, NULL) != FALSE) {
       if (argc < 2) {
-        free(line);
+        g_free(line);
         continue;
       }
 
       jumanji_db_quickmark_t* quickmark = malloc(sizeof(jumanji_db_quickmark_t));
       if (quickmark == NULL) {
-        free(line);
+        g_free(line);
         continue;
       }
 
@@ -660,7 +660,7 @@ jumanji_db_read_quickmarks_from_file(const char* filename)
     }
 
     g_strfreev(argv);
-    free(line);
+    g_free(line);
   }
 
   file_lock_set(fileno(file), F_UNLCK);
