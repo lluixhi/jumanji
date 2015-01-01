@@ -31,7 +31,7 @@ jumanji_soup_init(jumanji_t* jumanji)
     return NULL;
   }
 
-  char* cookie_file = g_build_filename(jumanji->config.config_dir,
+  char* cookie_file = g_build_filename(jumanji->config.data_dir,
       JUMANJI_COOKIE_FILE, NULL);
   if (cookie_file == NULL) {
     free(soup);

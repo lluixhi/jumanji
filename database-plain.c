@@ -17,7 +17,6 @@
 #define BOOKMARKS "bookmarks"
 #define HISTORY "history"
 #define QUICKMARKS "quickmarks"
-#define COOKIES "cookies"
 #define SESSION_DIR "sessions"
 
 #ifdef __GNU__
