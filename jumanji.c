@@ -520,9 +520,7 @@ jumanji_tab_get_nth(jumanji_t* jumanji, unsigned int index)
 void
 jumanji_tab_load_url(jumanji_tab_t* tab, const char* url)
 {
-  if (tab == NULL || url == NULL || tab->web_view == NULL) {
-    return;
-  }
+  g_return_if_fail(tab != NULL && url != NULL && tab->web_view != NULL);
 
   webkit_web_view_load_uri(WEBKIT_WEB_VIEW(tab->web_view), url);
 }

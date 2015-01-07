@@ -185,11 +185,32 @@ jumanji_download_create_widget(jumanji_t* jumanji, jumanji_download_t* download)
     return false;
   }
 
+  char* font = NULL;
+  char* inputbar_fg = NULL;
+  char* statusbar_fg = NULL;
+  girara_setting_get(jumanji->ui.session, "font", &font);
+  girara_setting_get(jumanji->ui.session, "inputbar-fg", &inputbar_fg);
+  girara_setting_get(jumanji->ui.session, "statusbar-fg", &statusbar_fg);
+
+  PangoFontDescription* pango_font = NULL;
+  GdkRGBA inputbar_fg_color = { 0, 0, 0, 0 };
+  GdkRGBA statusbar_fg_color = { 0, 0, 0, 0 };
+
+  pango_font = pango_font_description_from_string(font);
+  gdk_rgba_parse(&inputbar_fg_color, inputbar_fg);
+  gdk_rgba_parse(&statusbar_fg_color, statusbar_fg);
+
+  g_free(statusbar_fg);
+  g_free(inputbar_fg);
+  g_free(font);
+
   /* set style */
-  gtk_widget_override_color(GTK_WIDGET(download->widget.filename), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
-  gtk_widget_override_font(GTK_WIDGET(download->widget.filename),  jumanji->ui.session->style.font);
-  gtk_widget_override_color(GTK_WIDGET(download->widget.status), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.statusbar_foreground));
-  gtk_widget_override_font(GTK_WIDGET(download->widget.status),  jumanji->ui.session->style.font);
+  gtk_widget_override_color(GTK_WIDGET(download->widget.filename), GTK_STATE_FLAG_NORMAL, &inputbar_fg_color);
+  gtk_widget_override_font(GTK_WIDGET(download->widget.filename),  pango_font);
+  gtk_widget_override_color(GTK_WIDGET(download->widget.status), GTK_STATE_FLAG_NORMAL, &statusbar_fg_color);
+  gtk_widget_override_font(GTK_WIDGET(download->widget.status),  pango_font);
+
+  pango_font_description_free(pango_font);
 
   /* set properties */
   gtk_misc_set_alignment(GTK_MISC(download->widget.filename), 0.0, 0.0);
