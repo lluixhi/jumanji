@@ -170,11 +170,7 @@ jumanji_init(int argc, char* argv[])
   }
 
   /* initialize download widget */
-#if (GTK_MAJOR_VERSION == 3)
   jumanji->downloads.widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-  jumanji->downloads.widget = gtk_vbox_new(FALSE, 0);
-#endif
   if (jumanji->downloads.widget == NULL) {
     goto error_free;
   }

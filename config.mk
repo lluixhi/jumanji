@@ -23,16 +23,6 @@ SQLITE_LIB ?= $(shell pkg-config --libs sqlite3)
 GTHREAD_INC ?= $(shell pkg-config --cflags gthread-2.0)
 GTHREAD_LIB ?= $(shell pkg-config --libs gthread-2.0)
 
-# if you want to use gtk2 uncomment the following lines
-#GTK_INC ?= $(shell pkg-config --cflags gtk+-2.0)
-#GTK_LIB ?= $(shell pkg-config --libs   gtk+-2.0)
-
-#WEBKIT_INC ?= $(shell pkg-config --cflags webkit-1.0)
-#WEBKIT_LIB ?= $(shell pkg-config --libs   webkit-1.0)
-
-#GIRARA_INC ?= $(shell pkg-config --cflags girara-gtk2)
-#GIRARA_LIB ?= $(shell pkg-config --libs girara-gtk2)
-
 # libs
 INCS = ${GTK_INC} ${WEBKIT_INC} ${GIRARA_INC} ${GTHREAD_INC}
 LIBS = ${GIRARA_LIB} ${GTK_LIB} ${WEBKIT_LIB} ${GTHREAD_LIB} -lpthread -lm

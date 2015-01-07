@@ -174,12 +174,8 @@ jumanji_download_create_widget(jumanji_t* jumanji, jumanji_download_t* download)
     return false;
   }
 
-#if (GTK_MAJOR_VERSION == 3)
   download->widget.main     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(download->widget.main), TRUE);
-#else
-  download->widget.main     = gtk_vbox_new(TRUE, 0);
-#endif
   download->widget.filename = gtk_label_new(NULL);
   download->widget.status   = gtk_label_new(NULL);
 
@@ -190,17 +186,10 @@ jumanji_download_create_widget(jumanji_t* jumanji, jumanji_download_t* download)
   }
 
   /* set style */
-#if (GTK_MAJOR_VERSION == 3)
   gtk_widget_override_color(GTK_WIDGET(download->widget.filename), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
   gtk_widget_override_font(GTK_WIDGET(download->widget.filename),  jumanji->ui.session->style.font);
   gtk_widget_override_color(GTK_WIDGET(download->widget.status), GTK_STATE_FLAG_NORMAL, &(jumanji->ui.session->style.statusbar_foreground));
   gtk_widget_override_font(GTK_WIDGET(download->widget.status),  jumanji->ui.session->style.font);
-#else
-  gtk_widget_modify_fg(GTK_WIDGET(download->widget.filename), GTK_STATE_NORMAL, &(jumanji->ui.session->style.inputbar_foreground));
-  gtk_widget_modify_font(GTK_WIDGET(download->widget.filename),  jumanji->ui.session->style.font);
-  gtk_widget_modify_fg(GTK_WIDGET(download->widget.status), GTK_STATE_NORMAL, &(jumanji->ui.session->style.statusbar_foreground));
-  gtk_widget_modify_font(GTK_WIDGET(download->widget.status),  jumanji->ui.session->style.font);
-#endif
 
   /* set properties */
   gtk_misc_set_alignment(GTK_MISC(download->widget.filename), 0.0, 0.0);
