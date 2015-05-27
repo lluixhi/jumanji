@@ -74,7 +74,7 @@ jumanji_init(int argc, char* argv[])
   }
 
   if (data_dir) {
-    jumanji->config.data_dir = g_strdup(config_dir);
+    jumanji->config.data_dir = g_strdup(data_dir);
   } else {
     gchar* path = girara_get_xdg_path(XDG_DATA);
     jumanji->config.data_dir = g_build_filename(path, "jumanji", NULL);
