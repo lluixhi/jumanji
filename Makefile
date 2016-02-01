@@ -81,12 +81,18 @@ install: all
 	$(QUIET)mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	$(QUIET)sed "s/VERSION/${VERSION}/g" < ${PROJECT}.1 > ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
 	$(QUIET)chmod 644 ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+	$(ECHO) install desktop file
+	$(QUIET)mkdir -p ${DESTDIR}${PREFIX}/share/applications
+	$(QUIET)cp -f ${PROJECT}.desktop ${DESTDIR}${PREFIX}/share/applications
+	$(QUIET)chmod 644 ${DESTDIR}${PREFIX}/share/applications/${PROJECT}.desktop
 
 uninstall:
 	$(ECHO) removing executable file
 	$(QUIET)rm -f ${DESTDIR}${PREFIX}/bin/${PROJECT}
 	$(ECHO) removing manual page
 	$(QUIET)rm -f ${DESTDIR}${MANPREFIX}/man1/${PROJECT}.1
+	$(ECHO) removing desktop file
+	$(QUIET)rm -f ${DESTDIR}${PREFIX}/share/applications/${PROJECT}.desktop
 
 -include $(wildcard .depend/*.dep)
 
